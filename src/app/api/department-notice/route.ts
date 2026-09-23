@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     .eq('user_id', userId)
     .maybeSingle();
 
-  const myDepts = (me?.department ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+  const myDepts = (me?.department ?? '').split(',').map((s: string) => s.trim()).filter(Boolean);
   const isAdmin = me?.role === 'admin';
 
   let notices: DepartmentNotice[] = [];

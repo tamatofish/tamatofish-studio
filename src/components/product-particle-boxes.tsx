@@ -1,6 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 
 interface Box {
   x: number;
@@ -23,46 +22,17 @@ interface Particle {
   normalY: number;
 }
 
-const PRODUCTS = [
-  {
-    name: 'MAGIC',
-    tag: '标准辅助开发平台',
-    audience: '个人开发者 / 初学者',
-    price: '模块 299+',
-    period: '29 RMB / 月',
-    note: '内置数百个常用模块的一般用法与样例，让虚幻引擎的海量节点不再令初学者望而却步。',
-  },
-  {
-    name: 'MAGIC PRO',
-    tag: '旗舰辅助开发平台',
-    audience: '专业开发者 / 企业用户',
-    price: '模块 699+',
-    period: '999 RMB / 月',
-    note: '在标准版能力之上，支持调用本地部署 AI，为专业团队提供更完整的辅助开发能力。',
-  },
-  {
-    name: 'MAGIC SE',
-    tag: '即将上线',
-    audience: '学生开发者 / 爱好者',
-    price: '永久免费',
-    period: '敬请期待',
-    note: '面向学生开发者与爱好者的免费版本，让更多人有零门槛开始创作的机会。',
-  },
-];
+const SAFE_MARGIN = 40;
 
-export function ProductParticleBoxes({ className = '' }: { className?: string }) {
-  const router = useRouter();
+export function ProductParticleBoxes({
+  className = '',
+  children,
+}: {
+  className?: string;
+  children?: React.ReactNode;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [exiting, setExiting] = useState(false);
-
-  const handleProductClick = (href: string) => {
-    if (exiting) return;
-    setExiting(true);
-    window.setTimeout(() => {
-      router.push(href);
-    }, 700);
-  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -78,12 +48,11 @@ export function ProductParticleBoxes({ className = '' }: { className?: string })
     let hoveredBoxIndex = -1;
     let animId: number;
     const dpr = window.devicePixelRatio || 1;
-    const SAFE_MARGIN = 40;
 
     function collectBoxes() {
-      const cardContainer = container.querySelector('.grid') as HTMLElement;
+      const cardContainer = container!.querySelector('[data-particle-cards]') as HTMLElement;
       if (!cardContainer) return;
-      const containerRect = container.getBoundingClientRect();
+      const containerRect = container!.getBoundingClientRect();
       const cardNodes = Array.from(cardContainer.children);
       boxes = [];
       cardNodes.forEach((el) => {
@@ -146,18 +115,18 @@ export function ProductParticleBoxes({ className = '' }: { className?: string })
     }
 
     function resizeCanvas() {
-      const rect = container.getBoundingClientRect();
-      canvas.width = (rect.width + SAFE_MARGIN * 2) * dpr;
-      canvas.height = (rect.height + SAFE_MARGIN * 2) * dpr;
-      canvas.style.width = `${rect.width + SAFE_MARGIN * 2}px`;
-      canvas.style.height = `${rect.height + SAFE_MARGIN * 2}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, SAFE_MARGIN * dpr, SAFE_MARGIN * dpr);
+      const rect = container!.getBoundingClientRect();
+      canvas!.width = (rect.width + SAFE_MARGIN * 2) * dpr;
+      canvas!.height = (rect.height + SAFE_MARGIN * 2) * dpr;
+      canvas!.style.width = `${rect.width + SAFE_MARGIN * 2}px`;
+      canvas!.style.height = `${rect.height + SAFE_MARGIN * 2}px`;
+      ctx!.setTransform(dpr, 0, 0, dpr, SAFE_MARGIN * dpr, SAFE_MARGIN * dpr);
       collectBoxes();
       spawnParticles();
     }
 
     function animate(time: number) {
-      ctx.clearRect(-SAFE_MARGIN, -SAFE_MARGIN, canvas.width / dpr, canvas.height / dpr);
+      ctx!.clearRect(-SAFE_MARGIN, -SAFE_MARGIN, canvas!.width / dpr, canvas!.height / dpr);
 
       const repelRadius = 60;
       const repelStrength = 0.6;
@@ -202,16 +171,16 @@ export function ProductParticleBoxes({ className = '' }: { className?: string })
         p.y += p.vy;
 
         const radius = Math.max(0.1, p.baseSize * breathScale);
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(30, 30, 35, ${p.alpha * alphaScale})`;
-        ctx.fill();
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        ctx!.fillStyle = `rgba(30, 30, 35, ${p.alpha * alphaScale})`;
+        ctx!.fill();
       }
       animId = requestAnimationFrame(animate);
     }
 
     const onMouseMove = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect();
+      const rect = container!.getBoundingClientRect();
       mouseX = e.clientX - rect.left + SAFE_MARGIN;
       mouseY = e.clientY - rect.top + SAFE_MARGIN;
 
@@ -263,35 +232,8 @@ export function ProductParticleBoxes({ className = '' }: { className?: string })
         style={{ top: -40, left: -40 }}
       />
 
-      <div
-        className={`relative z-10 grid gap-5 md:grid-cols-3 transition-all duration-700 ${
-          exiting ? 'scale-105 opacity-0' : 'scale-100 opacity-100'
-        }`}
-      >
-        {PRODUCTS.map((p) => (
-          <button
-            key={p.name}
-            type="button"
-            onClick={() => handleProductClick('/magic')}
-            className="group flex h-full flex-col border border-transparent bg-white p-7 text-left transition-colors duration-300 hover:bg-[#fafafa]"
-          >
-            <div>
-              <p className="text-lg font-light tracking-wider text-[#1b1c1e]">{p.name}</p>
-              <p className="mt-1 text-[11px] font-light tracking-[0.2em] text-[#9b9ea4]">{p.tag}</p>
-            </div>
-
-            <p className="mt-5 text-xs font-light text-[#85888e]">{p.audience}</p>
-
-            <div className="mt-4 flex items-baseline gap-2">
-              <span className="text-sm font-light text-[#1b1c1e]">{p.price}</span>
-              <span className="text-xs text-[#9b9ea4]">{p.period}</span>
-            </div>
-
-            <p className="mt-5 flex-1 text-xs font-light leading-6 text-[#55585e]">
-              {p.note}
-            </p>
-          </button>
-        ))}
+      <div className="relative z-10" data-particle-cards>
+        {children}
       </div>
     </div>
   );

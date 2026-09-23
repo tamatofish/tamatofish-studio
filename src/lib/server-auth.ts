@@ -9,6 +9,23 @@ export interface AuthContext {
   isInternal: boolean;
   /** 内部成员角色：'admin' = 管理员（可审核文件），'staff' = 普通成员 */
   role: 'admin' | 'staff' | null;
+  /** 是否是管理员（等价于 role === 'admin'） */
+  isAdmin: boolean;
+  /** 内部成员完整记录 */
+  member: {
+    id: string;
+    role: string;
+    department: string | null;
+    name: string | null;
+    member_no: string | null;
+    user_id: string;
+    email: string | null;
+    status?: string | null;
+    title?: string | null;
+    bio?: string | null;
+    show_on_homepage?: boolean | null;
+    [key: string]: any;
+  } | null;
 }
 
 type AuthResult =
@@ -35,13 +52,15 @@ export async function requireAuth(req: NextRequest): Promise<AuthResult> {
 
   const { data: member, error: memberError } = await client
     .from('internal_members')
-    .select('id, role')
+    .select('*')
     .eq('user_id', user.id)
     .maybeSingle();
 
   if (memberError) {
     return { ok: false, response: NextResponse.json({ error: `查询身份失败: ${memberError.message}` }, { status: 500 }) };
   }
+
+  const role: 'admin' | 'staff' | null = member?.role === 'admin' ? 'admin' : member ? 'staff' : null;
 
   return {
     ok: true,
@@ -50,7 +69,9 @@ export async function requireAuth(req: NextRequest): Promise<AuthResult> {
       userId: user.id,
       email: user.email ?? '',
       isInternal: !!member,
-      role: member?.role === 'admin' ? 'admin' : member ? 'staff' : null,
+      role,
+      isAdmin: role === 'admin',
+      member: member ?? null,
     },
   };
 }

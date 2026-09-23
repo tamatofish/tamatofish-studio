@@ -160,7 +160,8 @@ type HistoryItem =
   | { type: 'dept'; notice: DepartmentNotice };
 const HISTORY_DEFAULT_LIMIT = 5;
 
-const parseError = async (res: Response): Promise<string> => {
+const parseError = async (res: Response | undefined): Promise<string> => {
+  if (!res) return '网络异常';
   const text = await res.text().catch(() => '');
   try { const d = JSON.parse(text); if (d.error) return d.error; } catch { /* ignore */ }
   return text || `HTTP ${res.status}`;
@@ -213,7 +214,11 @@ export default function AdminConsolePage() {
   const [renameValue, setRenameValue] = useState('');
   const [renameSaving, setRenameSaving] = useState(false);
   const [expandedDept, setExpandedDept] = useState<string | null>(null);
-
+  const [pwOpen, setPwOpen] = useState(false);
+  const [pwNew, setPwNew] = useState('');
+  const [pwConfirm, setPwConfirm] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMsg, setPwMsg] = useState<string | null>(null);
   const [fileList, setFileList] = useState<FileRecord[]>([]);
   const [fileLoading, setFileLoading] = useState(false);
   const [fileMsg, setFileMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
