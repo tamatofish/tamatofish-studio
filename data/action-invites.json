@@ -1,0 +1,37 @@
+[
+  {
+    "id": "3e410216-57c7-4460-8a38-4236bc05dd98",
+    "actionId": "50f384ca-b178-44ea-a163-2b91a4e980f3",
+    "actionCode": "",
+    "actionCodename": "",
+    "inviteeId": "37485af5-46d8-4fb1-ad7d-f12d9003614b",
+    "inviteeName": "超A炼金术士",
+    "inviterName": "fqy090807@163.com",
+    "status": "declined",
+    "createdAt": 1790064971250,
+    "respondedAt": 1790072537748
+  },
+  {
+    "id": "7574df39-919c-45f0-9382-8be0cb857d94",
+    "actionId": "50f384ca-b178-44ea-a163-2b91a4e980f3",
+    "actionCode": "DEC20260919814183",
+    "actionCodename": "无耻之徒",
+    "inviteeId": "a64c06c3-2eff-47ae-a25b-4a3f2f244c43",
+    "inviteeName": "G01",
+    "inviterName": "fqy090807@163.com",
+    "status": "pending",
+    "createdAt": 1790071300303
+  },
+  {
+    "id": "dfe0cd4d-65c0-4a8f-9643-5353a02d6bed",
+    "actionId": "50f384ca-b178-44ea-a163-2b91a4e980f3",
+    "actionCode": "DEC20260919814183",
+    "actionCodename": "无耻之徒",
+    "inviteeId": "37485af5-46d8-4fb1-ad7d-f12d9003614b",
+    "inviteeName": "超A炼金术士",
+    "inviterName": "fqy090807@163.com",
+    "status": "declined",
+    "createdAt": 1790072587043,
+    "respondedAt": 1790072846841
+  }
+]

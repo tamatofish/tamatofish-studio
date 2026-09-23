@@ -1,0 +1,17 @@
+[
+  {
+    "id": "50f384ca-b178-44ea-a163-2b91a4e980f3",
+    "code": "DEC20260919814183",
+    "codename": "无耻之徒",
+    "actionTime": 1789770000000,
+    "team": "ALPHA",
+    "airSupport": true,
+    "infoSupport": true,
+    "description": "由A组负责地面行动和空中侦察，B组提供信息支援\n下午14:20，A组抵达目标地\n下午14:25，环球力量抵达目标空域（UOM未申请）\n下午14:50，A组控制目标\n下午14:52，B组完成渗透\n下午14:54，任务完成",
+    "creatorId": "37485af5-46d8-4fb1-ad7d-f12d9003614b",
+    "creatorName": "tf666@qq.com",
+    "createdAt": 1790050959268,
+    "level": "secret",
+    "visibleTo": []
+  }
+]
