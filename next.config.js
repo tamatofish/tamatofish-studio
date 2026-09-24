@@ -1,8 +1,5 @@
-import type { NextConfig } from 'next';
-
-const nextConfig: NextConfig = {
-  // outputFileTracingRoot: path.resolve(__dirname, '../../'),
-  /* config options here */
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   serverExternalPackages: ['coze-coding-dev-sdk', 'pg', 'pg-cloudflare'],
   allowedDevOrigins: ['*.dev.coze.site'],
   images: {
@@ -16,4 +13,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
