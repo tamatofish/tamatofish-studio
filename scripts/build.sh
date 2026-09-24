@@ -10,7 +10,4 @@ pnpm install
 echo "Building the Next.js project..."
 pnpm next build
 
-echo "Bundling with @opennextjs/cloudflare..."
-npx @opennextjs/cloudflare build
-
 echo "Build completed successfully!"
