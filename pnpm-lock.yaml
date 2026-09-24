@@ -101,6 +101,9 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.8
         version: 1.2.8(@types/react-dom@19.2.3(@types/react@19.2.10))(@types/react@19.2.10)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@supabase/ssr':
+        specifier: ^0.12.7
+        version: 0.12.7(@supabase/supabase-js@2.95.3)
       '@supabase/supabase-js':
         specifier: 2.95.3
         version: 2.95.3
@@ -2890,6 +2893,11 @@ packages:
   '@supabase/realtime-js@2.95.3':
     resolution: {integrity: sha512-D7EAtfU3w6BEUxDACjowWNJo/ZRo7sDIuhuOGKHIm9FHieGeoJV5R6GKTLtga/5l/6fDr2u+WcW/m8I9SYmaIw==}
     engines: {node: '>=20.0.0'}
+
+  '@supabase/ssr@0.12.7':
+    resolution: {integrity: sha512-wiBtEie1KkRJi9RrZWY3R2imRhX1JY7qMyUCH2z9AUk15gQebNEplM+urbCKamdxaTJLXUU6LlpkJsaxhojCEg==}
+    peerDependencies:
+      '@supabase/supabase-js': ^2.114.0
 
   '@supabase/storage-js@2.95.3':
     resolution: {integrity: sha512-4GxkJiXI3HHWjxpC3sDx1BVrV87O0hfX+wvJdqGv67KeCu+g44SPnII8y0LL/Wr677jB7tpjAxKdtVWf+xhc9A==}
@@ -9562,6 +9570,11 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+
+  '@supabase/ssr@0.12.7(@supabase/supabase-js@2.95.3)':
+    dependencies:
+      '@supabase/supabase-js': 2.95.3
+      cookie: 1.1.1
 
   '@supabase/storage-js@2.95.3':
     dependencies:
