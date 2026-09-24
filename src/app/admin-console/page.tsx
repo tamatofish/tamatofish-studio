@@ -1160,7 +1160,17 @@ export default function AdminConsolePage() {
       if (editingMember) {
         const res = await callAuthenticatedApi('/api/members', {
           method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: editingMember.id, name: fName.trim(), title, department: validPairs.map((p) => p.dept.trim()), bio: fBio.trim() || null, role: fRole, status: fStatus, show_on_homepage: fShowHome }),
+          body: JSON.stringify({
+            id: editingMember.id,
+            name: fName.trim(),
+            email: fEmail.trim() || null,
+            title,
+            department: validPairs.map((p) => p.dept.trim()),
+            bio: fBio.trim() || null,
+            role: fRole,
+            status: fStatus,
+            show_on_homepage: fShowHome,
+          }),
         });
         if (!res?.ok) { setFMsg(await parseError(res)); return; }
       } else {
@@ -1312,14 +1322,14 @@ export default function AdminConsolePage() {
     <div className="space-y-4">
       <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">通知管理</h2>
       <div className={`${panelCls} space-y-3 p-5`}>
-        <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">📢 发布全局通知（所有成员可见，立即生效）</p>
+        <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">发布全局通知</p>
         <div className="flex gap-2">
           <Input value={newGlobalNotice} onChange={(e) => setNewGlobalNotice(e.target.value)} placeholder="输入全局通知内容，回车发布" className={fieldCls} onKeyDown={(e) => { if (e.key === 'Enter') submitGlobalNotice(); }} />
           <Button onClick={submitGlobalNotice} disabled={submittingGlobal} className={`${btnSolid} shrink-0`}>{submittingGlobal ? '发布中' : '发布'}</Button>
         </div>
       </div>
       <div className={`${panelCls} space-y-3 p-5`}>
-        <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">📋 发布部门通知（选择部门，直接发布无需审核）</p>
+        <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">发布部门通知</p>
         <div className="flex flex-wrap items-center gap-2">
           <Select value={selectedDept} onValueChange={setSelectedDept}>
             <SelectTrigger className="w-[160px] rounded-none border-[#e3e4e8] bg-white text-xs font-light text-[#1b1c1e]">
@@ -1337,7 +1347,7 @@ export default function AdminConsolePage() {
       </div>
       {pendingDeptNotices.length > 0 && (
         <div className={`${panelCls} space-y-3 p-5`}>
-          <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">⏳ 待审核部门通知（{pendingDeptNotices.length}）</p>
+          <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">待审核部门通知（{pendingDeptNotices.length}）</p>
           {pendingDeptNotices.map((n) => (
             <div key={n.id} className="flex items-start justify-between gap-3 border border-[#e3e4e8] p-3">
               <div>
@@ -1411,9 +1421,7 @@ export default function AdminConsolePage() {
         )}
       </div>
     </div>
-  );
-
-  const renderFiles = () => (
+  );  const renderFiles = () => (
     <div className="space-y-8">
       {pendingAccessRequests.length > 0 && (
         <section className="space-y-3">

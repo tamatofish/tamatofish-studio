@@ -1096,7 +1096,7 @@ export default function AdminPage() {
         <section className="space-y-3">
           {visibleGlobalNotices.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">📢 全局通知</p>
+              <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">全局通知</p>
               {visibleGlobalNotices.map((notice) => {
                 const isAnimating = animatingId === notice.id;
                 return (
@@ -1111,7 +1111,7 @@ export default function AdminPage() {
           )}
           {visibleDeptNotices.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">📋 部门通知</p>
+              <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">部门通知</p>
               {visibleDeptNotices.map((notice) => {
                 const isAnimating = animatingId === notice.id;
                 return (
@@ -1131,7 +1131,7 @@ export default function AdminPage() {
         <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">通知中心</h2>
         {isAdmin && (
           <div className={`${panelCls} space-y-3 p-5`}>
-            <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">📢 发布全局通知（所有成员可见，立即生效）</p>
+            <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">发布全局通知</p>
             <div className="flex gap-2">
               <Input value={newGlobalNotice} onChange={(e) => setNewGlobalNotice(e.target.value)} placeholder="输入通知内容，回车发布" onKeyDown={(e) => { if (e.key === 'Enter') submitGlobalNotice(); }} className={fieldCls} />
               <Button onClick={submitGlobalNotice} disabled={submittingGlobalNotice} className={`${btnSolid} shrink-0`}>{submittingGlobalNotice ? '发布中…' : '发布'}</Button>
@@ -1140,7 +1140,7 @@ export default function AdminPage() {
         )}
         {isLeader && (
           <div className={`${panelCls} space-y-3 p-5`}>
-            <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">📋 提交部门通知（需管理员审核后发布）</p>
+            <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">提交部门通知申请（管理员审核通过后自动发布）</p>
             <div className="flex flex-wrap items-center gap-2">
               {leaderDepts.length > 1 ? (
                 <Select value={selectedDeptForNotice} onValueChange={setSelectedDeptForNotice}>
@@ -1162,7 +1162,7 @@ export default function AdminPage() {
         {(isAdmin || isLeader) && (
           <div className={`${panelCls} space-y-3 p-5`}>
             <div className="flex items-center justify-between">
-              <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">📝 {isAdmin ? '所有通知申请' : '我的通知申请'}（{applicationList.length}）</p>
+              <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">{isAdmin ? '所有通知申请' : '我的通知申请'}（{applicationList.length}）</p>
               {sortedApplications.length > 3 && (
                 <Button size="sm" variant="outline" className={`${btnGhost} shrink-0`} onClick={() => setAppCollapsed(!appCollapsed)}>{appCollapsed ? '展开' : '折叠'}</Button>
               )}
@@ -1194,7 +1194,7 @@ export default function AdminPage() {
         )}
         <div className={`${panelCls} space-y-3 p-5`}>
           <div className="flex items-center justify-between">
-            <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">📜 通知历史（{historyItems.length}）</p>
+            <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">历史通知（{historyItems.length}）</p>
             {historyItems.length > 3 && (
               <Button size="sm" variant="outline" className={`${btnGhost} shrink-0`} onClick={() => setHistoryCollapsed(!historyCollapsed)}>{historyCollapsed ? '展开' : '折叠'}</Button>
             )}
