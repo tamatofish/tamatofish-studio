@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { getSupabaseBrowserClientWithRetry } from '@/lib/supabase-browser';
 import { callAuthenticatedApi } from '@/lib/auth-client';
 import { parseDeptTitles, serializeDeptTitles, type DeptTitle } from '@/lib/dept-title';
-import { INQUIRY_STATUS_MAP, INQUIRY_STATUS_OPTIONS, type Inquiry, type InternalMember, type MeResponse, type Visitor, type GlobalNotice, type DepartmentNotice } from '@/lib/types';
+import { INQUIRY_STATUS_MAP, INQUIRY_STATUS_OPTIONS, type Inquiry, type InternalMember, type MeResponse, type Visitor, type GlobalNotice, type DepartmentNotice, type Message } from '@/lib/types';
 
 const STATUS_CLASS_MAP: Record<string, string> = {
   pending: 'text-[#b45309] bg-[#fef3c7]',
@@ -167,7 +167,7 @@ const parseError = async (res: Response | undefined): Promise<string> => {
   return text || `HTTP ${res.status}`;
 };
 
-type SectionKey = 'members' | 'notices' | 'files' | 'inquiries' | 'visitors' | 'actions' | 'platform';
+type SectionKey = 'members' | 'notices' | 'files' | 'inquiries' | 'visitors' | 'actions' | 'chat' | 'platform';
 
 const SECTIONS: { key: SectionKey; label: string; icon: React.ReactNode }[] = [
   { key: 'members', label: '成员', icon: (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3" /><path d="M3 20c0-3 3-5 6-5s6 2 6 5" /><path d="M16 6a3 3 0 0 1 0 6" /><path d="M18 20c0-2-1-3.5-2.5-4" /></svg>) },
@@ -176,6 +176,7 @@ const SECTIONS: { key: SectionKey; label: string; icon: React.ReactNode }[] = [
   { key: 'inquiries', label: '意向', icon: (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 1 1-3.3-6.4" /><path d="M22 4l-10 10-3-3" /></svg>) },
   { key: 'visitors', label: '访客', icon: (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="3" /><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" /></svg>) },
   { key: 'actions', label: '行动', icon: (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /><path d="M12 3v3M12 18v3M3 12h3M18 12h3" /></svg>) },
+  { key: 'chat', label: '聊天', icon: (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" /></svg>) },
   { key: 'platform', label: '平台', icon: (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="1" /><path d="M3 10h18" /><path d="M8 4v6M16 4v6" /></svg>) },
 ];
 
@@ -279,8 +280,22 @@ export default function AdminConsolePage() {
 
   const [historyExpanded, setHistoryExpanded] = useState(false);
 
+  /* ===== 聊天 ===== */
+  const [chatTarget, setChatTarget] = useState<InternalMember | null>(null);
+  const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatSending, setChatSending] = useState(false);
+  const [chatFile, setChatFile] = useState<File | null>(null);
+  const [chatUploading, setChatUploading] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const chatBottomRef = useRef<HTMLDivElement>(null);
+  const chatFileInputRef = useRef<HTMLInputElement>(null);
+
   const [activeSection, setActiveSection] = useState<SectionKey>('members');
   const [refreshing, setRefreshing] = useState(false);
+
+  const myUserId = me?.member?.user_id ?? null;
 
   const allDepts = useMemo(() => {
     const set = new Set<string>();
@@ -394,6 +409,12 @@ export default function AdminConsolePage() {
     [actionAccessRequests],
   );
 
+  const chatContacts = useMemo(() => {
+    return members
+      .filter((m) => m.user_id && m.user_id !== myUserId)
+      .sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+  }, [members, myUserId]);
+
   const loadFiles = useCallback(async () => {
     setFileLoading(true);
     try {
@@ -465,6 +486,97 @@ export default function AdminConsolePage() {
       setActionLoading(false);
     }
   }, []);
+
+  /* ===== 聊天：加载 / 发送 ===== */
+  const loadChatMessages = useCallback(async (receiverId: string) => {
+    setChatLoading(true);
+    setChatError(null);
+    try {
+      const res = await callAuthenticatedApi(`/api/member-chat?receiver_id=${encodeURIComponent(receiverId)}`);
+      if (!res?.ok) {
+        const d = await res?.json().catch(() => ({}));
+        throw new Error(d.error || '加载聊天记录失败');
+      }
+      const data = await res.json();
+      setChatMessages(data.messages ?? []);
+    } catch (e) {
+      setChatError(e instanceof Error ? e.message : '加载聊天记录失败');
+      setChatMessages([]);
+    } finally {
+      setChatLoading(false);
+    }
+  }, []);
+
+  const openChat = useCallback(async (m: InternalMember) => {
+    if (!m.user_id) return;
+    if (chatTarget?.id === m.id) return;
+    setChatTarget(m);
+    setChatMessages([]);
+    setChatInput('');
+    setChatFile(null);
+    setChatError(null);
+    if (chatFileInputRef.current) chatFileInputRef.current.value = '';
+    await loadChatMessages(m.user_id);
+  }, [chatTarget?.id, loadChatMessages]);
+
+  const handleSendChat = useCallback(async () => {
+    if (!chatTarget?.user_id || chatSending) return;
+    const content = chatInput.trim();
+    if (!content && !chatFile) return;
+
+    setChatSending(true);
+    setChatError(null);
+    try {
+      let fileMeta: { file_url?: string; file_name?: string; file_size?: number; file_mime?: string } = {};
+
+      if (chatFile) {
+        setChatUploading(true);
+        const fd = new FormData();
+        fd.append('file', chatFile);
+        const upRes = await callAuthenticatedApi('/api/upload-chat-file', { method: 'POST', body: fd });
+        if (!upRes?.ok) {
+          const d = await upRes?.json().catch(() => ({}));
+          throw new Error(d.error || '文件上传失败');
+        }
+        const upData = await upRes.json();
+        fileMeta = {
+          file_url: upData.publicUrl,
+          file_name: upData.fileName,
+          file_size: upData.fileSize,
+          file_mime: upData.fileMime,
+        };
+        setChatUploading(false);
+      }
+
+      const res = await callAuthenticatedApi('/api/member-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          receiver_id: chatTarget.user_id,
+          content: content || null,
+          ...fileMeta,
+        }),
+      });
+      if (!res?.ok) {
+        const d = await res?.json().catch(() => ({}));
+        throw new Error(d.error || '发送失败');
+      }
+      const data = await res.json();
+      setChatMessages((prev) => [...prev, data.message as Message]);
+      setChatInput('');
+      setChatFile(null);
+      if (chatFileInputRef.current) chatFileInputRef.current.value = '';
+    } catch (e) {
+      setChatError(e instanceof Error ? e.message : '发送失败');
+    } finally {
+      setChatSending(false);
+      setChatUploading(false);
+    }
+  }, [chatTarget, chatSending, chatInput, chatFile]);
+
+  useEffect(() => {
+    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
 
   const getActionAccessors = useCallback((a: ActionRecord): string[] => {
     const raw = new Set<string>();
@@ -974,6 +1086,9 @@ export default function AdminConsolePage() {
         await Promise.all([loadFiles(), loadAccessRequests()]);
       } else if (activeSection === 'actions') {
         await Promise.all([loadActions(), loadActionInvites(), loadActionAccessRequests()]);
+      } else if (activeSection === 'chat') {
+        await loadAll();
+        if (chatTarget?.user_id) await loadChatMessages(chatTarget.user_id);
       } else if (activeSection === 'platform') {
         await loadAccessCodes();
       }
@@ -990,6 +1105,8 @@ export default function AdminConsolePage() {
     loadActionInvites,
     loadActionAccessRequests,
     loadAccessCodes,
+    chatTarget?.user_id,
+    loadChatMessages,
   ]);
 
   useEffect(() => {
@@ -1294,7 +1411,9 @@ export default function AdminConsolePage() {
         )}
       </div>
     </div>
-  );  const renderFiles = () => (
+  );
+
+  const renderFiles = () => (
     <div className="space-y-8">
       {pendingAccessRequests.length > 0 && (
         <section className="space-y-3">
@@ -1753,6 +1872,202 @@ export default function AdminConsolePage() {
     </section>
   );
 
+  /* ===== 聊天 ===== */
+  const renderChat = () => (
+    <div className="flex h-[calc(100vh-9rem)] flex-col">
+      <h2 className="mb-4 text-sm font-light tracking-[0.25em] text-[#1b1c1e]">内部聊天</h2>
+
+      <div className={`${panelCls} flex flex-1 overflow-hidden`}>
+        {/* 左栏：联系人 */}
+        <aside className="flex w-[220px] shrink-0 flex-col border-r border-[#e3e4e8]">
+          <div className="border-b border-[#e3e4e8] px-4 py-3">
+            <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">
+              联系人（{chatContacts.length}）
+            </p>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {chatContacts.length === 0 ? (
+              <p className="p-4 text-xs text-[#9b9ea4]">暂无联系人</p>
+            ) : chatContacts.map((m) => {
+              const active = chatTarget?.id === m.id;
+              const pairs = parseDeptTitles(m.department, m.title);
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => openChat(m)}
+                  className={`flex w-full items-center gap-3 border-b border-[#f0f1f3] px-4 py-3 text-left transition-colors ${
+                    active ? 'bg-[#1b1c1e] text-white' : 'hover:bg-[#f5f6f7]'
+                  }`}
+                >
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-light ${
+                    active ? 'bg-white/15 text-white' : 'bg-[#eef0f2] text-[#55585e]'
+                  }`}>
+                    {m.name.slice(0, 1)}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className={`block truncate text-sm font-light ${active ? 'text-white' : 'text-[#1b1c1e]'}`}>
+                      {m.name}
+                    </span>
+                    <span className={`mt-0.5 block truncate text-[10px] ${active ? 'text-white/60' : 'text-[#9b9ea4]'}`}>
+                      {pairs.map((p) => `${p.dept}：${p.title || '成员'}`).join(' / ') || '—'}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </aside>
+
+        {/* 中栏：消息区 */}
+        <section className="flex min-w-0 flex-1 flex-col">
+          {!chatTarget ? (
+            <div className="flex flex-1 items-center justify-center">
+              <p className="text-xs font-light text-[#b9bcc2]">点击左侧联系人开始对话</p>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between border-b border-[#e3e4e8] px-5 py-3">
+                <div>
+                  <p className="text-sm font-light text-[#1b1c1e]">{chatTarget.name}</p>
+                  <p className="mt-0.5 text-[10px] text-[#9b9ea4]">{chatTarget.member_no || '—'}</p>
+                </div>
+              </div>
+
+              <div className="flex-1 space-y-3 overflow-y-auto bg-[#fafbfc] p-5">
+                {chatLoading ? (
+                  <p className="text-center text-xs text-[#9b9ea4]">加载中…</p>
+                ) : chatMessages.length === 0 ? (
+                  <p className="text-center text-xs text-[#b9bcc2]">还没有消息，打个招呼吧</p>
+                ) : chatMessages.map((msg) => {
+                  const mine = msg.sender_id === myUserId;
+                  return (
+                    <div key={msg.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`flex max-w-[70%] flex-col gap-1 ${mine ? 'items-end' : 'items-start'}`}>
+                        {msg.content && (
+                          <div className={`whitespace-pre-wrap break-words px-3 py-2 text-xs font-light leading-5 ${
+                            mine ? 'bg-[#1b1c1e] text-white' : 'border border-[#e3e4e8] bg-white text-[#1b1c1e]'
+                          }`}>
+                            {msg.content}
+                          </div>
+                        )}
+                        {msg.file_url && (
+                          <a
+                            href={msg.file_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs ${
+                              mine ? 'bg-[#1b1c1e] text-white' : 'border border-[#e3e4e8] bg-white text-[#1b1c1e]'
+                            }`}
+                          >
+                            📎 {msg.file_name || '附件'}
+                            {msg.file_size ? <span className="opacity-60">（{formatSize(msg.file_size)}）</span> : null}
+                          </a>
+                        )}
+                        <span className="px-1 text-[10px] text-[#b9bcc2]">
+                          {new Date(msg.created_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div ref={chatBottomRef} />
+              </div>
+
+              <div className="border-t border-[#e3e4e8] p-3">
+                {chatError && (
+                  <p className="mb-2 text-[11px] text-red-500">{chatError}</p>
+                )}
+                {chatFile && (
+                  <div className="mb-2 flex items-center justify-between border border-[#e3e4e8] bg-[#f5f6f7] px-3 py-1.5">
+                    <span className="truncate text-[11px] text-[#55585e]">📎 {chatFile.name}</span>
+                    <button
+                      onClick={() => { setChatFile(null); if (chatFileInputRef.current) chatFileInputRef.current.value = ''; }}
+                      className="ml-2 text-[#9b9ea4] hover:text-red-500"
+                    >×</button>
+                  </div>
+                )}
+                <div className="flex items-end gap-2">
+                  <input
+                    ref={chatFileInputRef}
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => setChatFile(e.target.files?.[0] ?? null)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => chatFileInputRef.current?.click()}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#e3e4e8] text-[#85888e] hover:border-[#1b1c1e] hover:text-[#1b1c1e]"
+                    title="添加附件（≤10MB）"
+                  >
+                    📎
+                  </button>
+                  <textarea
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendChat(); }
+                    }}
+                    rows={1}
+                    placeholder="输入消息，回车发送（Shift+Enter 换行）"
+                    className="min-h-[36px] flex-1 resize-none rounded-none border border-[#e3e4e8] bg-white px-3 py-2 text-xs font-light text-[#1b1c1e] placeholder:text-[#b9bcc2] focus:border-[#1b1c1e] focus:outline-none"
+                  />
+                  <Button
+                    onClick={handleSendChat}
+                    disabled={chatSending || (!chatInput.trim() && !chatFile)}
+                    className={`${btnSolid} h-9 shrink-0`}
+                  >
+                    {chatUploading ? '上传中…' : chatSending ? '发送中…' : '发送'}
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </section>
+
+        {/* 右栏：全部成员 */}
+        <aside className="hidden w-[240px] shrink-0 flex-col border-l border-[#e3e4e8] xl:flex">
+          <div className="border-b border-[#e3e4e8] px-4 py-3">
+            <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">
+              全部成员（{members.length}）
+            </p>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {members.length === 0 ? (
+              <p className="p-4 text-xs text-[#9b9ea4]">暂无成员</p>
+            ) : members.map((m) => {
+              const pairs = parseDeptTitles(m.department, m.title);
+              const isMe = m.user_id === myUserId;
+              return (
+                <button
+                  key={m.id}
+                  disabled={isMe}
+                  onClick={() => openChat(m)}
+                  className={`flex w-full items-start gap-2.5 border-b border-[#f0f1f3] px-4 py-3 text-left transition-colors ${
+                    isMe ? 'cursor-default opacity-60' : 'hover:bg-[#f5f6f7]'
+                  }`}
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eef0f2] text-[11px] font-light text-[#55585e]">
+                    {m.name.slice(0, 1)}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-xs font-light text-[#1b1c1e]">
+                      {m.name}{isMe && <span className="ml-1 text-[10px] text-[#9b9ea4]">（我）</span>}
+                    </span>
+                    {pairs.map((p, i) => (
+                      <span key={i} className="mt-0.5 block truncate text-[10px] text-[#9b9ea4]">
+                        {p.dept}：{p.title || '成员'}
+                      </span>
+                    ))}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+
   const renderPlatform = () => (
     <div className="space-y-6">
       <div>
@@ -1882,6 +2197,7 @@ export default function AdminConsolePage() {
     inquiries: renderInquiries,
     visitors: renderVisitors,
     actions: renderActions,
+    chat: renderChat,
     platform: renderPlatform,
   };
 
