@@ -7,7 +7,7 @@ cd "${COZE_WORKSPACE_PATH}"
 echo "Installing dependencies..."
 pnpm install
 
-echo "Building with Cloudflare next-on-pages adapter..."
-npx @cloudflare/next-on-pages@1
+echo "Building the Next.js project..."
+pnpm next build
 
 echo "Build completed successfully!"
