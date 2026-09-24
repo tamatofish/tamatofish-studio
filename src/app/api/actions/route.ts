@@ -45,7 +45,8 @@ export async function GET(req: NextRequest) {
   const role = await getMyRole(ctx.client, ctx.userId);
 
   if (role === 'admin') {
-    return NextResponse.json({ actions: readActions(), role: 'admin' });
+    const list = await readActions();
+    return NextResponse.json({ actions: list, role: 'admin' });
   }
 
   const isDefense = await isDefenseMember(ctx.client, ctx.userId);
@@ -70,8 +71,9 @@ export async function GET(req: NextRequest) {
   const idList = Array.from(identifiers);
 
   /* 拉取当前用户所有 accepted 的邀请，作为 visibleTo 之外的兜底 */
+  const allInvites = await readActionInvites();
   const myAcceptedActionIds = new Set(
-    readActionInvites()
+    allInvites
       .filter(
         (inv) =>
           inv.status === 'accepted' &&
@@ -80,7 +82,7 @@ export async function GET(req: NextRequest) {
       .map((inv) => inv.actionId),
   );
 
-  const all = readActions();
+  const all = await readActions();
   const visible = all.filter((a) => {
     const vt = a.visibleTo ?? [];
     if (vt.some((v) => idList.includes(v))) return true;
@@ -144,7 +146,7 @@ export async function POST(req: NextRequest) {
     createdAt: Date.now(),
   };
 
-  addAction(record);
+  await addAction(record);
   return NextResponse.json({ action: record });
 }
 
@@ -176,7 +178,7 @@ export async function PATCH(req: NextRequest) {
   const id = body?.id;
   if (!id) return NextResponse.json({ error: '缺少 id' }, { status: 400 });
 
-  const all = readActions();
+  const all = await readActions();
   const idx = all.findIndex((a) => a.id === id);
   if (idx === -1) return NextResponse.json({ error: '档案不存在' }, { status: 404 });
 
@@ -209,7 +211,7 @@ export async function PATCH(req: NextRequest) {
 
   const updated: ActionRecord = { ...target, ...patch };
   all[idx] = updated;
-  writeActions(all);
+  await writeActions(all);
 
   return NextResponse.json({ action: updated });
 }
@@ -228,7 +230,7 @@ export async function DELETE(req: NextRequest) {
   const id = new URL(req.url).searchParams.get('id');
   if (!id) return NextResponse.json({ error: '缺少 id' }, { status: 400 });
 
-  const removed = deleteAction(id);
+  const removed = await deleteAction(id);
   if (!removed) return NextResponse.json({ error: '档案不存在' }, { status: 404 });
   return NextResponse.json({ ok: true });
 }
