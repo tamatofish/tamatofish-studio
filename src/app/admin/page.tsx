@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -302,6 +302,9 @@ export default function AdminPage() {
   const [actionAccessLoading, setActionAccessLoading] = useState(false);
   const [actionAccessMsg, setActionAccessMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
   const [myActionRequestsExpanded, setMyActionRequestsExpanded] = useState(false);
+
+  /* ===== 行动档案展开 ===== */
+  const [expandedActionId, setExpandedActionId] = useState<string | null>(null);
 
   const [activeSection, setActiveSection] = useState<SectionKey>('overview');
 
@@ -1291,7 +1294,9 @@ export default function AdminPage() {
         </div>
       )}
     </section>
-  );  const renderFiles = () => (
+  );
+
+  const renderFiles = () => (
     <div className="space-y-8">
       {myInvites.filter((i) => i.status === 'pending').length > 0 && (
         <section className="space-y-3">
@@ -1675,41 +1680,102 @@ export default function AdminPage() {
               <th className="px-5 py-3 font-light">信息支援</th>
               <th className="px-5 py-3 font-light">等级</th>
               <th className="px-5 py-3 font-light">简介</th>
+              <th className="px-5 py-3 font-light text-right">详情</th>
             </tr>
           </thead>
           <tbody>
             {actionLoading ? (
-              <tr><td colSpan={8} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">加载中…</td></tr>
+              <tr><td colSpan={9} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">加载中…</td></tr>
             ) : actionList.length === 0 ? (
-              <tr><td colSpan={8} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">暂无可见档案</td></tr>
-            ) : actionList.map((a) => (
-              <tr key={a.id} className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
-                <td className="px-5 py-3.5 font-mono text-[11px] text-[#1b1c1e]">{a.code}</td>
-                <td className="px-5 py-3.5 text-[#1b1c1e]">{a.codename}</td>
-                <td className="px-5 py-3.5 text-[#85888e]">
-                  {new Date(a.actionTime).toLocaleString('zh-CN')}
-                </td>
-                <td className="px-5 py-3.5 font-mono text-[#1b1c1e]">{a.team}</td>
-                <td className="px-5 py-3.5">
-                  <Badge variant="outline" className={`rounded-none border-0 font-light ${a.airSupport ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#eef0f2] text-[#9b9ea4]'}`}>
-                    {a.airSupport ? '有' : '无'}
-                  </Badge>
-                </td>
-                <td className="px-5 py-3.5">
-                  <Badge variant="outline" className={`rounded-none border-0 font-light ${a.infoSupport ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#eef0f2] text-[#9b9ea4]'}`}>
-                    {a.infoSupport ? '有' : '无'}
-                  </Badge>
-                </td>
-                <td className="px-5 py-3.5">{renderActionLevelBadge(a.level)}</td>
-                <td className="max-w-[260px] px-5 py-3.5">
-                  {a.description ? (
-                    <span className="block truncate" title={a.description}>{a.description}</span>
-                  ) : (
-                    <span className="text-[#b9bcc2]">—</span>
+              <tr><td colSpan={9} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">暂无可见档案</td></tr>
+            ) : actionList.map((a) => {
+              const isExpanded = expandedActionId === a.id;
+              return (
+                <Fragment key={a.id}>
+                  <tr className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
+                    <td className="px-5 py-3.5 font-mono text-[11px] text-[#1b1c1e]">{a.code}</td>
+                    <td className="px-5 py-3.5 text-[#1b1c1e]">{a.codename}</td>
+                    <td className="px-5 py-3.5 text-[#85888e]">
+                      {new Date(a.actionTime).toLocaleString('zh-CN')}
+                    </td>
+                    <td className="px-5 py-3.5 font-mono text-[#1b1c1e]">{a.team}</td>
+                    <td className="px-5 py-3.5">
+                      <Badge variant="outline" className={`rounded-none border-0 font-light ${a.airSupport ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#eef0f2] text-[#9b9ea4]'}`}>
+                        {a.airSupport ? '有' : '无'}
+                      </Badge>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <Badge variant="outline" className={`rounded-none border-0 font-light ${a.infoSupport ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#eef0f2] text-[#9b9ea4]'}`}>
+                        {a.infoSupport ? '有' : '无'}
+                      </Badge>
+                    </td>
+                    <td className="px-5 py-3.5">{renderActionLevelBadge(a.level)}</td>
+                    <td className="max-w-[260px] px-5 py-3.5">
+                      {a.description ? (
+                        <span className="block truncate" title={a.description}>{a.description}</span>
+                      ) : (
+                        <span className="text-[#b9bcc2]">—</span>
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-3.5 text-right">
+                      <button
+                        onClick={() => setExpandedActionId((prev) => (prev === a.id ? null : a.id))}
+                        className="text-xs text-[#1b1c1e] hover:text-[#e8704a] hover:underline"
+                      >
+                        {isExpanded ? '收起' : '展开'}
+                      </button>
+                    </td>
+                  </tr>
+
+                  {isExpanded && (
+                    <tr className="border-b border-[#f0f1f3] bg-[#fafbfc] last:border-0">
+                      <td colSpan={9} className="px-5 py-5">
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div>
+                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">档案编号</p>
+                            <p className="mt-1 font-mono text-xs text-[#1b1c1e]">{a.code}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">行动代号</p>
+                            <p className="mt-1 text-xs text-[#1b1c1e]">{a.codename}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">行动时间</p>
+                            <p className="mt-1 text-xs text-[#1b1c1e]">{new Date(a.actionTime).toLocaleString('zh-CN')}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">小组</p>
+                            <p className="mt-1 font-mono text-xs text-[#1b1c1e]">{a.team}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">空中支援</p>
+                            <p className="mt-1 text-xs text-[#1b1c1e]">{a.airSupport ? '有' : '无'}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">信息支援</p>
+                            <p className="mt-1 text-xs text-[#1b1c1e]">{a.infoSupport ? '有' : '无'}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">档案等级</p>
+                            <p className="mt-1">{renderActionLevelBadge(a.level)}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">创建者</p>
+                            <p className="mt-1 text-xs text-[#1b1c1e]">{a.creatorName || '—'}</p>
+                          </div>
+                          <div className="sm:col-span-2">
+                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">完整简介</p>
+                            <p className="mt-1 whitespace-pre-wrap break-words text-xs leading-6 text-[#55585e]">
+                              {a.description?.trim() ? a.description : '（无简介）'}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
                   )}
-                </td>
-              </tr>
-            ))}
+                </Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>
