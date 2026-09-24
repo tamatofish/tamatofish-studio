@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   if (!auth.ok) return auth.response;
   const { ctx } = auth;
 
-  const list = readActionInvites();
+  const list = await readActionInvites();
   if (ctx.role === 'admin') {
     return NextResponse.json({ invites: list });
   }
@@ -46,13 +46,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '参数不完整' }, { status: 400 });
   }
 
-  const allActions = readActions();
+  const allActions = await readActions();
   const targetAction = allActions.find((a) => a.id === body.actionId);
   if (!targetAction) {
     return NextResponse.json({ error: '档案不存在' }, { status: 404 });
   }
 
-  const all = readActionInvites();
+  const all = await readActionInvites();
   const created: ActionViewInvite[] = [];
 
   for (const inv of body.invitees) {
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, invites: [] });
   }
 
-  writeActionInvites([...all, ...created]);
+  await writeActionInvites([...all, ...created]);
   return NextResponse.json({ ok: true, invites: created });
 }
 
@@ -112,13 +112,14 @@ export async function PATCH(req: NextRequest) {
     }
 
     /* 1) 从 visibleTo 里移除该用户的所有可能标识 */
-    const allActions = readActions();
+    const allActions = await readActions();
     const idx = allActions.findIndex((a) => a.id === body.actionId);
     if (idx !== -1) {
       const vt = allActions[idx].visibleTo ?? [];
 
       /* 找出这条邀请对应的完整身份信息 */
-      const inv = readActionInvites().find(
+      const allInvitesForRevoke = await readActionInvites();
+      const inv = allInvitesForRevoke.find(
         (x) => x.actionId === body.actionId && x.inviteeId === body.inviteeId,
       );
 
@@ -128,11 +129,11 @@ export async function PATCH(req: NextRequest) {
 
       const next = vt.filter((v) => !toRemove.has(v));
       allActions[idx] = { ...allActions[idx], visibleTo: next };
-      writeActions(allActions);
+      await writeActions(allActions);
     }
 
     /* 2) 把邀请标记为 declined */
-    const all = readActionInvites();
+    const all = await readActionInvites();
     const target = all.find(
       (inv) =>
         inv.actionId === body.actionId &&
@@ -142,7 +143,7 @@ export async function PATCH(req: NextRequest) {
     if (!target) {
       return NextResponse.json({ error: '未找到该邀请记录' }, { status: 404 });
     }
-    const updated = updateActionInvite(target.id, {
+    const updated = await updateActionInvite(target.id, {
       status: 'declined',
       respondedAt: Date.now(),
     });
@@ -154,7 +155,8 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: '参数不完整' }, { status: 400 });
   }
 
-  const target = readActionInvites().find((inv) => inv.id === body.id);
+  const allInvitesForUser = await readActionInvites();
+  const target = allInvitesForUser.find((inv) => inv.id === body.id);
   if (!target) {
     return NextResponse.json({ error: '邀请不存在' }, { status: 404 });
   }
@@ -167,7 +169,7 @@ export async function PATCH(req: NextRequest) {
 
   /* 接受时写入 visibleTo —— 把能拿到的所有标识全写进去 */
   if (body.action === 'accept') {
-    const allActions = readActions();
+    const allActions = await readActions();
     const idx = allActions.findIndex((a) => a.id === target.actionId);
     if (idx !== -1) {
       /* 从 internal_members 查这个邀请对象的完整信息 */
@@ -188,11 +190,11 @@ export async function PATCH(req: NextRequest) {
       const vt = allActions[idx].visibleTo ?? [];
       const next = Array.from(new Set([...vt, ...Array.from(candidates)]));
       allActions[idx] = { ...allActions[idx], visibleTo: next };
-      writeActions(allActions);
+      await writeActions(allActions);
     }
   }
 
-  const updated = updateActionInvite(target.id, {
+  const updated = await updateActionInvite(target.id, {
     status: body.action === 'accept' ? 'accepted' : 'declined',
     respondedAt: Date.now(),
   });

@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   if (!auth.ok) return auth.response;
   const { ctx } = auth;
 
-  const list = readInvites();
+  const list = await readInvites();
 
   if (ctx.role === 'admin') {
     return NextResponse.json({ invites: list });
@@ -44,13 +44,14 @@ export async function POST(req: NextRequest) {
   if (!fileId) return NextResponse.json({ error: '缺少文件 id' }, { status: 400 });
   if (invitees.length === 0) return NextResponse.json({ error: '请至少选择一位邀请对象' }, { status: 400 });
 
-  const file = readFiles().find((f) => f.id === fileId);
+  const allFiles = await readFiles();
+  const file = allFiles.find((f) => f.id === fileId);
   if (!file) return NextResponse.json({ error: '文件不存在' }, { status: 404 });
   if (file.level !== 'secret') {
     return NextResponse.json({ error: '仅「绝密」文件可邀请查看' }, { status: 400 });
   }
 
-  const existing = readInvites();
+  const existing = await readInvites();
   const created: FileViewInvite[] = [];
 
   for (const inv of invitees) {
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
       status: 'pending',
       createdAt: Date.now(),
     };
-    addInvite(record);
+    await addInvite(record);
     created.push(record);
   }
 
@@ -92,7 +93,8 @@ export async function PATCH(req: NextRequest) {
   const action = body?.action;
   if (!id || !action) return NextResponse.json({ error: '参数不完整' }, { status: 400 });
 
-  const target = readInvites().find((r) => r.id === id);
+  const allInvites = await readInvites();
+  const target = allInvites.find((r) => r.id === id);
   if (!target) return NextResponse.json({ error: '邀请不存在' }, { status: 404 });
   if (target.inviteeId !== ctx.userId) {
     return NextResponse.json({ error: '无权处理该邀请' }, { status: 403 });
@@ -102,14 +104,15 @@ export async function PATCH(req: NextRequest) {
   }
 
   if (action === 'accept') {
-    const file = readFiles().find((f) => f.id === target.fileId);
+    const allFiles = await readFiles();
+    const file = allFiles.find((f) => f.id === target.fileId);
     if (!file) return NextResponse.json({ error: '文件已不存在' }, { status: 404 });
     const vt = file.visibleTo ?? [];
     const next = Array.from(new Set([...vt, target.inviteeName]));
-    updateFile(file.id, { visibleTo: next });
+    await updateFile(file.id, { visibleTo: next });
   }
 
-  const updated = updateInvite(id, {
+  const updated = await updateInvite(id, {
     status: action === 'accept' ? 'accepted' : 'declined',
     respondedAt: Date.now(),
   });

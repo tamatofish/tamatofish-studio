@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
 import crypto from 'crypto';
+import { createClient } from '@supabase/supabase-js';
 import {
   addFile,
   readFiles,
@@ -14,14 +13,21 @@ import {
 import { requireAuth } from '@/lib/server-auth';
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads');
+const BUCKET = 'files';
+
+function getStorageClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error('缺少 Supabase 环境变量');
+  return createClient(url, key, { auth: { persistSession: false } });
+}
 
 export async function GET(req: NextRequest) {
   const auth = await requireAuth(req);
   if (!auth.ok) return auth.response;
   const { ctx } = auth;
 
-  const files = readFiles();
+  const files = await readFiles();
 
   if (ctx.role === 'admin') {
     const status = new URL(req.url).searchParams.get('status');
@@ -54,14 +60,26 @@ export async function POST(req: NextRequest) {
   const allowedLevels: FileLevel[] = ['public', 'internal', 'confidential'];
   const level: FileLevel = (allowedLevels.includes(levelRaw as FileLevel) ? levelRaw : 'internal') as FileLevel;
 
-  if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-  const ext = path.extname(file.name);
   const id = crypto.randomUUID();
-  const storagePath = path.join(UPLOAD_DIR, `${id}${ext}`);
-  fs.writeFileSync(storagePath, Buffer.from(await file.arrayBuffer()));
+  const ext = file.name.includes('.') ? file.name.slice(file.name.lastIndexOf('.')) : '';
+  const safeExt = ext.replace(/[^a-zA-Z0-9.]/g, '') || '';
+  const storagePath = `${id}${safeExt}`;
+
+  // 上传到 Supabase Storage
+  const admin = getStorageClient();
+  const arrayBuffer = await file.arrayBuffer();
+  const { error: upErr } = await admin.storage
+    .from(BUCKET)
+    .upload(storagePath, arrayBuffer, {
+      contentType: file.type || 'application/octet-stream',
+      upsert: false,
+    });
+  if (upErr) {
+    return NextResponse.json({ error: `上传失败: ${upErr.message}` }, { status: 500 });
+  }
 
   const isAdmin = ctx.role === 'admin';
-  const code = generateFileCode();
+  const code = await generateFileCode();
 
   const record: FileRecord = {
     id,
@@ -81,7 +99,7 @@ export async function POST(req: NextRequest) {
     visibleTo: [],
   };
 
-  addFile(record);
+  await addFile(record);
   return NextResponse.json({ file: record });
 }
 
@@ -106,7 +124,7 @@ export async function PATCH(req: NextRequest) {
   if (!id) return NextResponse.json({ error: '缺少 id' }, { status: 400 });
 
   if (action === 'meta') {
-    const updated = updateFile(id, {
+    const updated = await updateFile(id, {
       level: body.level ?? 'internal',
       visibleTo: body.visibleTo ?? [],
     });
@@ -115,7 +133,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   if (action === 'approve') {
-    const updated = updateFile(id, {
+    const updated = await updateFile(id, {
       status: 'approved',
       reviewedBy: ctx.email,
       reviewedAt: Date.now(),
@@ -125,8 +143,13 @@ export async function PATCH(req: NextRequest) {
   }
 
   if (action === 'reject') {
-    const removed = deleteFile(id);
+    const removed = await deleteFile(id);
     if (!removed) return NextResponse.json({ error: '文件不存在' }, { status: 404 });
+    // 同时删除 Storage 里的文件（失败也不阻断）
+    try {
+      const admin = getStorageClient();
+      await admin.storage.from(BUCKET).remove([removed.storagePath]);
+    } catch { /* ignore */ }
     return NextResponse.json({ ok: true, removed: removed.displayName });
   }
 
@@ -141,13 +164,20 @@ export async function DELETE(req: NextRequest) {
   const id = new URL(req.url).searchParams.get('id');
   if (!id) return NextResponse.json({ error: '缺少 id' }, { status: 400 });
 
-  const target = readFiles().find((f) => f.id === id);
+  const allFiles = await readFiles();
+  const target = allFiles.find((f) => f.id === id);
   if (!target) return NextResponse.json({ error: '文件不存在' }, { status: 404 });
 
   if (ctx.role !== 'admin' && target.uploaderId !== ctx.userId) {
     return NextResponse.json({ error: '无权限' }, { status: 403 });
   }
 
-  deleteFile(id);
+  await deleteFile(id);
+  // 同时删除 Storage 里的文件
+  try {
+    const admin = getStorageClient();
+    await admin.storage.from(BUCKET).remove([target.storagePath]);
+  } catch { /* ignore */ }
+
   return NextResponse.json({ ok: true });
 }

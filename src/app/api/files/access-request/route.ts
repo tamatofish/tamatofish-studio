@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   if (!auth.ok) return auth.response;
   const { ctx } = auth;
 
-  const list = readRequests();
+  const list = await readRequests();
 
   if (ctx.role === 'admin') {
     return NextResponse.json({ requests: list });
@@ -37,7 +37,8 @@ export async function POST(req: NextRequest) {
   const codeRaw = (body?.code ?? '').trim().toUpperCase();
   if (!codeRaw) return NextResponse.json({ error: '请填写文件编号' }, { status: 400 });
 
-  const file = readFiles().find((f) => (f.code ?? '').toUpperCase() === codeRaw);
+  const allFiles = await readFiles();
+  const file = allFiles.find((f) => (f.code ?? '').toUpperCase() === codeRaw);
   if (!file) return NextResponse.json({ error: '未找到该编号对应的文件' }, { status: 404 });
   if (file.status !== 'approved') {
     return NextResponse.json({ error: '该文件尚未通过审核，无法申请' }, { status: 400 });
@@ -54,7 +55,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '你已有访问权限' }, { status: 400 });
   }
 
-  const existing = readRequests().find(
+  const allRequests = await readRequests();
+  const existing = allRequests.find(
     (r) => r.fileId === file.id && r.requesterId === ctx.userId && r.status !== 'rejected',
   );
   if (existing) {
@@ -76,7 +78,7 @@ export async function POST(req: NextRequest) {
     createdAt: Date.now(),
   };
 
-  addRequest(record);
+  await addRequest(record);
   return NextResponse.json({ request: record });
 }
 
@@ -99,21 +101,23 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: '参数不完整' }, { status: 400 });
   }
 
-  const target = readRequests().find((r) => r.id === id);
+  const allRequests = await readRequests();
+  const target = allRequests.find((r) => r.id === id);
   if (!target) return NextResponse.json({ error: '申请不存在' }, { status: 404 });
   if (target.status !== 'pending') {
     return NextResponse.json({ error: '该申请已处理' }, { status: 400 });
   }
 
   if (action === 'approve') {
-    const file = readFiles().find((f) => f.id === target.fileId);
+    const allFiles = await readFiles();
+    const file = allFiles.find((f) => f.id === target.fileId);
     if (!file) return NextResponse.json({ error: '文件不存在' }, { status: 404 });
     const vt = file.visibleTo ?? [];
     const next = Array.from(new Set([...vt, target.requesterName]));
-    updateFile(file.id, { visibleTo: next });
+    await updateFile(file.id, { visibleTo: next });
   }
 
-  const updated = updateRequest(id, {
+  const updated = await updateRequest(id, {
     status: action === 'approve' ? 'approved' : 'rejected',
     reviewedBy: ctx.email,
     reviewedAt: Date.now(),

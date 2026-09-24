@@ -1,5 +1,20 @@
-import fs from 'fs';
-import path from 'path';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+
+/* ==================== 客户端 ==================== */
+
+let _client: SupabaseClient | null = null;
+function getClient(): SupabaseClient {
+  if (_client) return _client;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error('缺少 Supabase 环境变量');
+  }
+  _client = createClient(url, key, { auth: { persistSession: false } });
+  return _client;
+}
+
+/* ==================== 文件 ==================== */
 
 export type FileStatus = 'pending' | 'approved' | 'rejected';
 export type FileLevel = 'public' | 'internal' | 'confidential' | 'secret';
@@ -23,69 +38,96 @@ export interface FileRecord {
   visibleTo: string[];
 }
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const DB_FILE = path.join(DATA_DIR, 'files.json');
-const REQUEST_FILE = path.join(DATA_DIR, 'file-requests.json');
-const INVITE_FILE = path.join(DATA_DIR, 'file-invites.json');
-const ACTION_FILE = path.join(DATA_DIR, 'actions.json');
-const ACTION_INVITE_FILE = path.join(DATA_DIR, 'action-invites.json');
-const ACTION_REQUEST_FILE = path.join(DATA_DIR, 'action-requests.json');
-
-function ensureDir() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+function rowToFile(r: any): FileRecord {
+  return {
+    id: r.id,
+    name: r.name,
+    displayName: r.display_name ?? r.name,
+    code: r.code ?? '',
+    size: Number(r.size ?? 0),
+    mimeType: r.mime_type ?? '',
+    uploaderId: r.uploader_id,
+    uploaderName: r.uploader_name ?? '',
+    uploadedAt: Number(r.uploaded_at ?? 0),
+    status: r.status,
+    reviewedBy: r.reviewed_by ?? undefined,
+    reviewedAt: r.reviewed_at != null ? Number(r.reviewed_at) : undefined,
+    rejectReason: r.reject_reason ?? undefined,
+    storagePath: r.storage_path ?? '',
+    level: r.level ?? 'internal',
+    visibleTo: r.visible_to ?? [],
+  };
 }
 
-/* ==================== 文件 ==================== */
-
-export function readFiles(): FileRecord[] {
-  ensureDir();
-  if (!fs.existsSync(DB_FILE)) return [];
-  try {
-    const list = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8')) as FileRecord[];
-    return list.map((f) => ({
-      ...f,
-      displayName: f.displayName ?? f.name,
-      code: f.code ?? '',
-      level: f.level ?? 'internal',
-      visibleTo: f.visibleTo ?? [],
-    }));
-  } catch {
-    return [];
-  }
+function fileToRow(f: FileRecord) {
+  return {
+    id: f.id,
+    name: f.name,
+    display_name: f.displayName,
+    code: f.code,
+    size: f.size,
+    mime_type: f.mimeType,
+    uploader_id: f.uploaderId,
+    uploader_name: f.uploaderName,
+    uploaded_at: f.uploadedAt,
+    status: f.status,
+    reviewed_by: f.reviewedBy ?? null,
+    reviewed_at: f.reviewedAt ?? null,
+    reject_reason: f.rejectReason ?? null,
+    storage_path: f.storagePath,
+    level: f.level,
+    visible_to: f.visibleTo,
+  };
 }
 
-export function writeFiles(records: FileRecord[]) {
-  ensureDir();
-  fs.writeFileSync(DB_FILE, JSON.stringify(records, null, 2), 'utf-8');
+export async function readFiles(): Promise<FileRecord[]> {
+  const { data, error } = await getClient()
+    .from('files')
+    .select('*')
+    .order('uploaded_at', { ascending: false });
+  if (error) throw new Error(`读取文件失败: ${error.message}`);
+  return (data ?? []).map(rowToFile);
 }
 
-export function addFile(record: FileRecord) {
-  const files = readFiles();
-  files.unshift(record);
-  writeFiles(files);
+export async function addFile(record: FileRecord): Promise<void> {
+  const { error } = await getClient().from('files').insert(fileToRow(record));
+  if (error) throw new Error(`写入文件失败: ${error.message}`);
 }
 
-export function updateFile(id: string, patch: Partial<FileRecord>) {
-  const files = readFiles();
-  const idx = files.findIndex((f) => f.id === id);
-  if (idx === -1) return null;
-  files[idx] = { ...files[idx], ...patch };
-  writeFiles(files);
-  return files[idx];
+export async function updateFile(id: string, patch: Partial<FileRecord>): Promise<FileRecord | null> {
+  const row: any = {};
+  if (patch.displayName !== undefined) row.display_name = patch.displayName;
+  if (patch.code !== undefined) row.code = patch.code;
+  if (patch.status !== undefined) row.status = patch.status;
+  if (patch.reviewedBy !== undefined) row.reviewed_by = patch.reviewedBy;
+  if (patch.reviewedAt !== undefined) row.reviewed_at = patch.reviewedAt;
+  if (patch.rejectReason !== undefined) row.reject_reason = patch.rejectReason;
+  if (patch.level !== undefined) row.level = patch.level;
+  if (patch.visibleTo !== undefined) row.visible_to = patch.visibleTo;
+  if (Object.keys(row).length === 0) return null;
+
+  const { data, error } = await getClient()
+    .from('files')
+    .update(row)
+    .eq('id', id)
+    .select()
+    .maybeSingle();
+  if (error) throw new Error(`更新文件失败: ${error.message}`);
+  return data ? rowToFile(data) : null;
 }
 
-export function deleteFile(id: string) {
-  const files = readFiles();
-  const target = files.find((f) => f.id === id);
-  if (!target) return null;
-  writeFiles(files.filter((f) => f.id !== id));
-  if (fs.existsSync(target.storagePath)) {
-    try { fs.unlinkSync(target.storagePath); } catch { /* ignore */ }
-  }
-  return target;
+export async function deleteFile(id: string): Promise<FileRecord | null> {
+  const { data, error } = await getClient()
+    .from('files')
+    .delete()
+    .eq('id', id)
+    .select()
+    .maybeSingle();
+  if (error) throw new Error(`删除文件失败: ${error.message}`);
+  return data ? rowToFile(data) : null;
 }
 
-export function generateFileCode(): string {
+export async function generateFileCode(): Promise<string> {
   const now = new Date();
   const yyyy = now.getFullYear();
   const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -93,10 +135,13 @@ export function generateFileCode(): string {
   const dateStr = `${yyyy}${mm}${dd}`;
   const prefix = `F-${dateStr}-`;
 
-  const existing = readFiles().filter((f) => f.code && f.code.startsWith(prefix));
+  const { data } = await getClient()
+    .from('files')
+    .select('code')
+    .like('code', `${prefix}%`);
   let maxSeq = 0;
-  for (const f of existing) {
-    const seq = parseInt(f.code.slice(prefix.length), 10);
+  for (const r of data ?? []) {
+    const seq = parseInt(String(r.code).slice(prefix.length), 10);
     if (!isNaN(seq) && seq > maxSeq) maxSeq = seq;
   }
   const next = String(maxSeq + 1).padStart(3, '0');
@@ -122,34 +167,64 @@ export interface FileAccessRequest {
   reviewedAt?: number;
 }
 
-export function readRequests(): FileAccessRequest[] {
-  ensureDir();
-  if (!fs.existsSync(REQUEST_FILE)) return [];
-  try {
-    return JSON.parse(fs.readFileSync(REQUEST_FILE, 'utf-8')) as FileAccessRequest[];
-  } catch {
-    return [];
-  }
+function rowToFileReq(r: any): FileAccessRequest {
+  return {
+    id: r.id,
+    fileId: r.file_id,
+    fileCode: r.file_code ?? '',
+    fileName: r.file_name ?? '',
+    requesterId: r.requester_id,
+    requesterName: r.requester_name ?? '',
+    requesterMemberNo: r.requester_member_no ?? undefined,
+    reason: r.reason ?? undefined,
+    status: r.status,
+    createdAt: Number(r.created_at_ms ?? 0),
+    reviewedBy: r.reviewed_by ?? undefined,
+    reviewedAt: r.reviewed_at != null ? Number(r.reviewed_at) : undefined,
+  };
 }
 
-export function writeRequests(records: FileAccessRequest[]) {
-  ensureDir();
-  fs.writeFileSync(REQUEST_FILE, JSON.stringify(records, null, 2), 'utf-8');
+export async function readRequests(): Promise<FileAccessRequest[]> {
+  const { data, error } = await getClient()
+    .from('file_requests')
+    .select('*')
+    .order('created_at_ms', { ascending: false });
+  if (error) throw new Error(`读取文件申请失败: ${error.message}`);
+  return (data ?? []).map(rowToFileReq);
 }
 
-export function addRequest(record: FileAccessRequest) {
-  const list = readRequests();
-  list.unshift(record);
-  writeRequests(list);
+export async function addRequest(record: FileAccessRequest): Promise<void> {
+  const { error } = await getClient().from('file_requests').insert({
+    id: record.id,
+    file_id: record.fileId,
+    file_code: record.fileCode,
+    file_name: record.fileName,
+    requester_id: record.requesterId,
+    requester_name: record.requesterName,
+    requester_member_no: record.requesterMemberNo ?? null,
+    reason: record.reason ?? null,
+    status: record.status,
+    created_at_ms: record.createdAt,
+    reviewed_by: record.reviewedBy ?? null,
+    reviewed_at: record.reviewedAt ?? null,
+  });
+  if (error) throw new Error(`写入文件申请失败: ${error.message}`);
 }
 
-export function updateRequest(id: string, patch: Partial<FileAccessRequest>) {
-  const list = readRequests();
-  const idx = list.findIndex((r) => r.id === id);
-  if (idx === -1) return null;
-  list[idx] = { ...list[idx], ...patch };
-  writeRequests(list);
-  return list[idx];
+export async function updateRequest(id: string, patch: Partial<FileAccessRequest>): Promise<FileAccessRequest | null> {
+  const row: any = {};
+  if (patch.status !== undefined) row.status = patch.status;
+  if (patch.reviewedBy !== undefined) row.reviewed_by = patch.reviewedBy;
+  if (patch.reviewedAt !== undefined) row.reviewed_at = patch.reviewedAt;
+  if (Object.keys(row).length === 0) return null;
+  const { data, error } = await getClient()
+    .from('file_requests')
+    .update(row)
+    .eq('id', id)
+    .select()
+    .maybeSingle();
+  if (error) throw new Error(`更新文件申请失败: ${error.message}`);
+  return data ? rowToFileReq(data) : null;
 }
 
 /* ==================== 文件查看邀请 ==================== */
@@ -170,34 +245,61 @@ export interface FileViewInvite {
   respondedAt?: number;
 }
 
-export function readInvites(): FileViewInvite[] {
-  ensureDir();
-  if (!fs.existsSync(INVITE_FILE)) return [];
-  try {
-    return JSON.parse(fs.readFileSync(INVITE_FILE, 'utf-8')) as FileViewInvite[];
-  } catch {
-    return [];
-  }
+function rowToFileInvite(r: any): FileViewInvite {
+  return {
+    id: r.id,
+    fileId: r.file_id,
+    fileCode: r.file_code ?? '',
+    fileName: r.file_name ?? '',
+    inviteeId: r.invitee_id,
+    inviteeName: r.invitee_name ?? '',
+    inviteeEmail: r.invitee_email ?? undefined,
+    inviterName: r.inviter_name ?? '',
+    status: r.status,
+    createdAt: Number(r.created_at_ms ?? 0),
+    respondedAt: r.responded_at != null ? Number(r.responded_at) : undefined,
+  };
 }
 
-export function writeInvites(records: FileViewInvite[]) {
-  ensureDir();
-  fs.writeFileSync(INVITE_FILE, JSON.stringify(records, null, 2), 'utf-8');
+export async function readInvites(): Promise<FileViewInvite[]> {
+  const { data, error } = await getClient()
+    .from('file_invites')
+    .select('*')
+    .order('created_at_ms', { ascending: false });
+  if (error) throw new Error(`读取文件邀请失败: ${error.message}`);
+  return (data ?? []).map(rowToFileInvite);
 }
 
-export function addInvite(record: FileViewInvite) {
-  const list = readInvites();
-  list.unshift(record);
-  writeInvites(list);
+export async function addInvite(record: FileViewInvite): Promise<void> {
+  const { error } = await getClient().from('file_invites').insert({
+    id: record.id,
+    file_id: record.fileId,
+    file_code: record.fileCode,
+    file_name: record.fileName,
+    invitee_id: record.inviteeId,
+    invitee_name: record.inviteeName,
+    invitee_email: record.inviteeEmail ?? null,
+    inviter_name: record.inviterName,
+    status: record.status,
+    created_at_ms: record.createdAt,
+    responded_at: record.respondedAt ?? null,
+  });
+  if (error) throw new Error(`写入文件邀请失败: ${error.message}`);
 }
 
-export function updateInvite(id: string, patch: Partial<FileViewInvite>) {
-  const list = readInvites();
-  const idx = list.findIndex((r) => r.id === id);
-  if (idx === -1) return null;
-  list[idx] = { ...list[idx], ...patch };
-  writeInvites(list);
-  return list[idx];
+export async function updateInvite(id: string, patch: Partial<FileViewInvite>): Promise<FileViewInvite | null> {
+  const row: any = {};
+  if (patch.status !== undefined) row.status = patch.status;
+  if (patch.respondedAt !== undefined) row.responded_at = patch.respondedAt;
+  if (Object.keys(row).length === 0) return null;
+  const { data, error } = await getClient()
+    .from('file_invites')
+    .update(row)
+    .eq('id', id)
+    .select()
+    .maybeSingle();
+  if (error) throw new Error(`更新文件邀请失败: ${error.message}`);
+  return data ? rowToFileInvite(data) : null;
 }
 
 /* ==================== 行动档案 ==================== */
@@ -220,38 +322,79 @@ export interface ActionRecord {
   createdAt: number;
 }
 
-export function readActions(): ActionRecord[] {
-  ensureDir();
-  if (!fs.existsSync(ACTION_FILE)) return [];
-  try {
-    const list = JSON.parse(fs.readFileSync(ACTION_FILE, 'utf-8')) as ActionRecord[];
-    return list.map((a) => ({
-      ...a,
-      level: a.level ?? 'secret',
-      visibleTo: a.visibleTo ?? [],
-    }));
-  } catch {
-    return [];
-  }
+function rowToAction(r: any): ActionRecord {
+  return {
+    id: r.id,
+    code: r.code,
+    codename: r.codename,
+    actionTime: Number(r.action_time ?? 0),
+    team: r.team ?? '',
+    airSupport: !!r.air_support,
+    infoSupport: !!r.info_support,
+    description: r.description ?? '',
+    level: r.level ?? 'secret',
+    visibleTo: r.visible_to ?? [],
+    creatorId: r.creator_id,
+    creatorName: r.creator_name ?? '',
+    createdAt: Number(r.created_at_ms ?? 0),
+  };
 }
 
-export function writeActions(records: ActionRecord[]) {
-  ensureDir();
-  fs.writeFileSync(ACTION_FILE, JSON.stringify(records, null, 2), 'utf-8');
+export async function readActions(): Promise<ActionRecord[]> {
+  const { data, error } = await getClient()
+    .from('actions')
+    .select('*')
+    .order('created_at_ms', { ascending: false });
+  if (error) throw new Error(`读取行动档案失败: ${error.message}`);
+  return (data ?? []).map(rowToAction);
 }
 
-export function addAction(record: ActionRecord) {
-  const list = readActions();
-  list.unshift(record);
-  writeActions(list);
+export async function writeActions(records: ActionRecord[]): Promise<void> {
+  if (records.length === 0) return;
+  const { error } = await getClient().from('actions').upsert(records.map((r) => ({
+    id: r.id,
+    code: r.code,
+    codename: r.codename,
+    action_time: r.actionTime,
+    team: r.team,
+    air_support: r.airSupport,
+    info_support: r.infoSupport,
+    description: r.description,
+    level: r.level,
+    visible_to: r.visibleTo,
+    creator_id: r.creatorId,
+    creator_name: r.creatorName,
+    created_at_ms: r.createdAt,
+  })));
+  if (error) throw new Error(`写入行动档案失败: ${error.message}`);
 }
 
-export function deleteAction(id: string) {
-  const list = readActions();
-  const next = list.filter((a) => a.id !== id);
-  if (next.length === list.length) return null;
-  writeActions(next);
-  return true;
+export async function addAction(record: ActionRecord): Promise<void> {
+  const { error } = await getClient().from('actions').insert({
+    id: record.id,
+    code: record.code,
+    codename: record.codename,
+    action_time: record.actionTime,
+    team: record.team,
+    air_support: record.airSupport,
+    info_support: record.infoSupport,
+    description: record.description,
+    level: record.level,
+    visible_to: record.visibleTo,
+    creator_id: record.creatorId,
+    creator_name: record.creatorName,
+    created_at_ms: record.createdAt,
+  });
+  if (error) throw new Error(`写入行动档案失败: ${error.message}`);
+}
+
+export async function deleteAction(id: string): Promise<boolean> {
+  const { error, count } = await getClient()
+    .from('actions')
+    .delete({ count: 'exact' })
+    .eq('id', id);
+  if (error) throw new Error(`删除行动档案失败: ${error.message}`);
+  return (count ?? 0) > 0;
 }
 
 export function generateActionCode(actionTime: number): string {
@@ -280,34 +423,64 @@ export interface ActionViewInvite {
   respondedAt?: number;
 }
 
-export function readActionInvites(): ActionViewInvite[] {
-  ensureDir();
-  if (!fs.existsSync(ACTION_INVITE_FILE)) return [];
-  try {
-    return JSON.parse(fs.readFileSync(ACTION_INVITE_FILE, 'utf-8')) as ActionViewInvite[];
-  } catch {
-    return [];
-  }
+function rowToActionInvite(r: any): ActionViewInvite {
+  return {
+    id: r.id,
+    actionId: r.action_id,
+    actionCode: r.action_code ?? '',
+    actionCodename: r.action_codename ?? '',
+    inviteeId: r.invitee_id,
+    inviteeName: r.invitee_name ?? '',
+    inviterName: r.inviter_name ?? '',
+    status: r.status,
+    createdAt: Number(r.created_at_ms ?? 0),
+    respondedAt: r.responded_at != null ? Number(r.responded_at) : undefined,
+  };
 }
 
-export function writeActionInvites(records: ActionViewInvite[]) {
-  ensureDir();
-  fs.writeFileSync(ACTION_INVITE_FILE, JSON.stringify(records, null, 2), 'utf-8');
+export async function readActionInvites(): Promise<ActionViewInvite[]> {
+  const { data, error } = await getClient()
+    .from('action_invites')
+    .select('*')
+    .order('created_at_ms', { ascending: false });
+  if (error) throw new Error(`读取行动邀请失败: ${error.message}`);
+  return (data ?? []).map(rowToActionInvite);
 }
 
-export function addActionInvite(record: ActionViewInvite) {
-  const list = readActionInvites();
-  list.unshift(record);
-  writeActionInvites(list);
+export async function writeActionInvites(records: ActionViewInvite[]): Promise<void> {
+  if (records.length === 0) return;
+  const { error } = await getClient().from('action_invites').upsert(records.map((r) => ({
+    id: r.id,
+    action_id: r.actionId,
+    action_code: r.actionCode,
+    action_codename: r.actionCodename,
+    invitee_id: r.inviteeId,
+    invitee_name: r.inviteeName,
+    inviter_name: r.inviterName,
+    status: r.status,
+    created_at_ms: r.createdAt,
+    responded_at: r.respondedAt ?? null,
+  })));
+  if (error) throw new Error(`写入行动邀请失败: ${error.message}`);
 }
 
-export function updateActionInvite(id: string, patch: Partial<ActionViewInvite>) {
-  const list = readActionInvites();
-  const idx = list.findIndex((r) => r.id === id);
-  if (idx === -1) return null;
-  list[idx] = { ...list[idx], ...patch };
-  writeActionInvites(list);
-  return list[idx];
+export async function addActionInvite(record: ActionViewInvite): Promise<void> {
+  await writeActionInvites([record]);
+}
+
+export async function updateActionInvite(id: string, patch: Partial<ActionViewInvite>): Promise<ActionViewInvite | null> {
+  const row: any = {};
+  if (patch.status !== undefined) row.status = patch.status;
+  if (patch.respondedAt !== undefined) row.responded_at = patch.respondedAt;
+  if (Object.keys(row).length === 0) return null;
+  const { data, error } = await getClient()
+    .from('action_invites')
+    .update(row)
+    .eq('id', id)
+    .select()
+    .maybeSingle();
+  if (error) throw new Error(`更新行动邀请失败: ${error.message}`);
+  return data ? rowToActionInvite(data) : null;
 }
 
 /* ==================== 行动档案查看申请 ==================== */
@@ -328,32 +501,60 @@ export interface ActionAccessRequest {
   reviewedAt?: number;
 }
 
-export function readActionRequests(): ActionAccessRequest[] {
-  ensureDir();
-  if (!fs.existsSync(ACTION_REQUEST_FILE)) return [];
-  try {
-    return JSON.parse(fs.readFileSync(ACTION_REQUEST_FILE, 'utf-8')) as ActionAccessRequest[];
-  } catch {
-    return [];
-  }
+function rowToActionReq(r: any): ActionAccessRequest {
+  return {
+    id: r.id,
+    actionId: r.action_id,
+    actionCode: r.action_code ?? '',
+    actionCodename: r.action_codename ?? '',
+    requesterId: r.requester_id,
+    requesterName: r.requester_name ?? '',
+    reason: r.reason ?? undefined,
+    status: r.status,
+    createdAt: Number(r.created_at_ms ?? 0),
+    reviewedBy: r.reviewed_by ?? undefined,
+    reviewedAt: r.reviewed_at != null ? Number(r.reviewed_at) : undefined,
+  };
 }
 
-export function writeActionRequests(records: ActionAccessRequest[]) {
-  ensureDir();
-  fs.writeFileSync(ACTION_REQUEST_FILE, JSON.stringify(records, null, 2), 'utf-8');
+export async function readActionRequests(): Promise<ActionAccessRequest[]> {
+  const { data, error } = await getClient()
+    .from('action_requests')
+    .select('*')
+    .order('created_at_ms', { ascending: false });
+  if (error) throw new Error(`读取行动申请失败: ${error.message}`);
+  return (data ?? []).map(rowToActionReq);
 }
 
-export function addActionRequest(record: ActionAccessRequest) {
-  const list = readActionRequests();
-  list.unshift(record);
-  writeActionRequests(list);
+export async function addActionRequest(record: ActionAccessRequest): Promise<void> {
+  const { error } = await getClient().from('action_requests').insert({
+    id: record.id,
+    action_id: record.actionId,
+    action_code: record.actionCode,
+    action_codename: record.actionCodename,
+    requester_id: record.requesterId,
+    requester_name: record.requesterName,
+    reason: record.reason ?? null,
+    status: record.status,
+    created_at_ms: record.createdAt,
+    reviewed_by: record.reviewedBy ?? null,
+    reviewed_at: record.reviewedAt ?? null,
+  });
+  if (error) throw new Error(`写入行动申请失败: ${error.message}`);
 }
 
-export function updateActionRequest(id: string, patch: Partial<ActionAccessRequest>) {
-  const list = readActionRequests();
-  const idx = list.findIndex((r) => r.id === id);
-  if (idx === -1) return null;
-  list[idx] = { ...list[idx], ...patch };
-  writeActionRequests(list);
-  return list[idx];
+export async function updateActionRequest(id: string, patch: Partial<ActionAccessRequest>): Promise<ActionAccessRequest | null> {
+  const row: any = {};
+  if (patch.status !== undefined) row.status = patch.status;
+  if (patch.reviewedBy !== undefined) row.reviewed_by = patch.reviewedBy;
+  if (patch.reviewedAt !== undefined) row.reviewed_at = patch.reviewedAt;
+  if (Object.keys(row).length === 0) return null;
+  const { data, error } = await getClient()
+    .from('action_requests')
+    .update(row)
+    .eq('id', id)
+    .select()
+    .maybeSingle();
+  if (error) throw new Error(`更新行动申请失败: ${error.message}`);
+  return data ? rowToActionReq(data) : null;
 }

@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   if (!auth.ok) return auth.response;
   const { ctx } = auth;
 
-  const list = readActionRequests();
+  const list = await readActionRequests();
 
   if (ctx.role === 'admin') {
     return NextResponse.json({ requests: list });
@@ -39,7 +39,8 @@ export async function POST(req: NextRequest) {
   const codeRaw = (body?.code ?? '').trim().toUpperCase();
   if (!codeRaw) return NextResponse.json({ error: '请填写档案编号' }, { status: 400 });
 
-  const action = readActions().find((a) => (a.code ?? '').toUpperCase() === codeRaw);
+  const allActions = await readActions();
+  const action = allActions.find((a) => (a.code ?? '').toUpperCase() === codeRaw);
   if (!action) return NextResponse.json({ error: '未找到该编号对应的档案' }, { status: 404 });
 
   if (action.level === 'public') {
@@ -51,7 +52,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '你已拥有访问权限' }, { status: 400 });
   }
 
-  const existing = readActionRequests().find(
+  const existingRequests = await readActionRequests();
+  const existing = existingRequests.find(
     (r) => r.actionId === action.id && r.requesterId === ctx.userId && r.status !== 'rejected',
   );
   if (existing) {
@@ -81,7 +83,7 @@ export async function POST(req: NextRequest) {
     createdAt: Date.now(),
   };
 
-  addActionRequest(record);
+  await addActionRequest(record);
   return NextResponse.json({ request: record });
 }
 
@@ -102,14 +104,15 @@ export async function PATCH(req: NextRequest) {
   const action = body?.action;
   if (!id || !action) return NextResponse.json({ error: '参数不完整' }, { status: 400 });
 
-  const target = readActionRequests().find((r) => r.id === id);
+  const allRequests = await readActionRequests();
+  const target = allRequests.find((r) => r.id === id);
   if (!target) return NextResponse.json({ error: '申请不存在' }, { status: 404 });
   if (target.status !== 'pending') {
     return NextResponse.json({ error: '该申请已处理' }, { status: 400 });
   }
 
   if (action === 'approve') {
-    const all = readActions();
+    const all = await readActions();
     const idx = all.findIndex((a) => a.id === target.actionId);
     if (idx === -1) return NextResponse.json({ error: '档案已不存在' }, { status: 404 });
 
@@ -132,10 +135,10 @@ export async function PATCH(req: NextRequest) {
     const vt = all[idx].visibleTo ?? [];
     const next = Array.from(new Set([...vt, ...Array.from(candidates)]));
     all[idx] = { ...all[idx], visibleTo: next };
-    writeActions(all);
+    await writeActions(all);
   }
 
-  const updated = updateActionRequest(id, {
+  const updated = await updateActionRequest(id, {
     status: action === 'approve' ? 'approved' : 'rejected',
     reviewedBy: ctx.email,
     reviewedAt: Date.now(),
