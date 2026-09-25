@@ -91,42 +91,42 @@ export default function RegisterPage() {
             <span className="h-1.5 w-1.5 rounded-full bg-[#e8704a]" />
             <span className="text-sm font-light tracking-[0.35em] text-[#1b1c1e]">番茄鱼工作室</span>
           </div>
-          <h1 className="mt-8 text-xl font-light tracking-[0.3em] text-[#1b1c1e]">注册访客账号</h1>
-          <p className="mt-3 text-xs font-light text-[#9b9ea4]">注册后可提交合作意向、跟进处理进度</p>
+          <h1 className="mt-8 text-xl font-light tracking-[0.3em] text-[#1b1c1e]">注册账号</h1>
+          <p className="mt-3 text-xs font-light text-[#9b9ea4]">登录后可查看合作意向、跟进处理进度</p>
           <div className="mx-auto mt-4 h-px w-10 bg-[#e8704a]" />
         </div>
 
         <form onSubmit={handleSubmit} className="mt-9 space-y-5">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-xs font-light tracking-[0.15em] text-[#85888e]">称呼 *</Label>
+              <Label htmlFor="name" className="text-xs font-light tracking-[0.15em] text-[#85888e]">昵称 *</Label>
               <Input
                 id="name"
                 value={form.name}
                 onChange={(e) => set('name', e.target.value)}
-                placeholder="例如：王先生 / 张女士"
+                placeholder="点击输入文本"
                 className={fieldCls}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="company" className="text-xs font-light tracking-[0.15em] text-[#85888e]">公司 / 组织（选填）</Label>
+              <Label htmlFor="company" className="text-xs font-light tracking-[0.15em] text-[#85888e]">公司/组织/个人（选填）</Label>
               <Input
                 id="company"
                 value={form.company}
                 onChange={(e) => set('company', e.target.value)}
-                placeholder="你的公司名称"
+                placeholder="点击输入"
                 className={fieldCls}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="interest" className="text-xs font-light tracking-[0.15em] text-[#85888e]">感兴趣的方向（选填）</Label>
+            <Label htmlFor="interest" className="text-xs font-light tracking-[0.15em] text-[#85888e]">合作方向（选填）</Label>
             <Input
               id="interest"
               value={form.interest}
               onChange={(e) => set('interest', e.target.value)}
-              placeholder="如：游戏合作 / 软件定制"
+              placeholder="游戏合作 / 软件定制"
               className={fieldCls}
             />
           </div>
@@ -163,7 +163,7 @@ export default function RegisterPage() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[#b9bcc2] transition-colors hover:text-[#1b1c1e]"
                   aria-label={showPassword ? '隐藏密码' : '显示密码'}
                 >
-                  {showPassword ? '🙈' : '👁'}
+                  {showPassword ? '隐' : '👁'}
                 </button>
               </div>
             </div>
