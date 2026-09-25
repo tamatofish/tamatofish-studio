@@ -199,7 +199,7 @@ export default function RegisterPage() {
               去登录
             </Link>
           </p>
-          <p>工作室成员由内部统一创建账号，不开放自助注册</p>
+          <p>管理平台账户由内部统一创建</p>
         </div>
       </div>
     </div>
