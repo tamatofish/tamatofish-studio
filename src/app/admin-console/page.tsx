@@ -457,7 +457,6 @@ export default function AdminConsolePage() {
       .sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
   }, [members, myUserId]);
 
-  // 访客搜索过滤
   const filteredVisitors = useMemo(() => {
     const kw = visitorSearch.trim().toLowerCase();
     if (!kw) return visitors;
@@ -468,7 +467,6 @@ export default function AdminConsolePage() {
     });
   }, [visitors, visitorSearch]);
 
-  // 反馈过滤
   const filteredFeedbacks = useMemo(() => {
     if (feedbackFilter === 'all') return feedbacks;
     return feedbacks.filter((f) => f.status === feedbackFilter);
@@ -535,7 +533,6 @@ export default function AdminConsolePage() {
     } catch { /* ignore */ }
     finally { setAccessCodesLoading(false); }
   }, []);
-
   const loadActions = useCallback(async () => {
     setActionLoading(true);
     try {
@@ -608,6 +605,31 @@ export default function AdminConsolePage() {
       alert(err instanceof Error ? err.message : '回复失败');
     } finally {
       setReplySaving(false);
+    }
+  };
+
+  const copyToClipboard = async (text: string) => {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      const el = document.createElement('div');
+      el.textContent = '已复制';
+      el.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1b1c1e;color:#fff;font-size:12px;padding:6px 14px;border-radius:4px;z-index:9999;pointer-events:none;';
+      document.body.appendChild(el);
+      setTimeout(() => {
+        el.style.transition = 'opacity .3s';
+        el.style.opacity = '0';
+        setTimeout(() => { if (el.parentNode) document.body.removeChild(el); }, 300);
+      }, 1000);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch { /* ignore */ }
+      document.body.removeChild(ta);
     }
   };
 
@@ -1809,10 +1831,23 @@ const renderInquiries = () => (
             </Select>
           </div>
           <p className="whitespace-pre-wrap text-xs leading-6 text-[#55585e]">{q.message}</p>
-          <div className="flex flex-wrap gap-x-5 text-[11px] text-[#9b9ea4]">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-[#9b9ea4]">
             <span>访客：{visitor?.name ?? '—'}</span>
             {visitor?.company && <span>公司：{visitor.company}</span>}
             {visitor?.phone && <span>电话：{visitor.phone}</span>}
+            {visitor?.email && (
+              <span className="inline-flex items-center gap-2">
+                邮箱：{visitor.email}
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(visitor.email ?? '')}
+                  className="text-[11px] text-[#1b1c1e] hover:text-[#e8704a] hover:underline"
+                  title="复制邮箱"
+                >
+                  复制
+                </button>
+              </span>
+            )}
             <span>{new Date(q.created_at).toLocaleString('zh-CN')}</span>
           </div>
         </div>
@@ -1853,7 +1888,21 @@ const renderVisitors = () => (
           ) : filteredVisitors.map((v) => (
             <tr key={v.id} className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
               <td className="px-5 py-3 text-[#1b1c1e]">{v.name}</td>
-              <td className="px-5 py-3 text-[#85888e]">{v.email || '—'}</td>
+              <td className="px-5 py-3 text-[#85888e]">
+                {v.email ? (
+                  <span className="inline-flex items-center gap-2">
+                    {v.email}
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(v.email ?? '')}
+                      className="text-[11px] text-[#1b1c1e] hover:text-[#e8704a] hover:underline"
+                      title="复制邮箱"
+                    >
+                      复制
+                    </button>
+                  </span>
+                ) : '—'}
+              </td>
               <td className="px-5 py-3">{v.company || '—'}</td>
               <td className="px-5 py-3">{v.phone || '—'}</td>
               <td className="px-5 py-3">{v.interest || '—'}</td>
