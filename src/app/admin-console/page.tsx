@@ -474,7 +474,6 @@ export default function AdminConsolePage() {
     } catch { /* ignore */ }
     finally { setAccessCodesLoading(false); }
   }, []);
-
   const loadActions = useCallback(async () => {
     setActionLoading(true);
     try {
@@ -1079,28 +1078,22 @@ export default function AdminConsolePage() {
     await loadAccessCodes();
   }, [loadAccessRequests, loadActions, loadActionAccessRequests, loadActionInvites, loadAccessCodes]);
 
-  const handleManualRefresh = useCallback(async () => {
-    if (refreshing) return;
-    setRefreshing(true);
-    try {
-      if (activeSection === 'members' || activeSection === 'notices' || activeSection === 'inquiries' || activeSection === 'visitors') {
-        await loadAll();
-      } else if (activeSection === 'files') {
-        await Promise.all([loadFiles(), loadAccessRequests()]);
-      } else if (activeSection === 'actions') {
-        await Promise.all([loadActions(), loadActionInvites(), loadActionAccessRequests()]);
-      } else if (activeSection === 'chat') {
-        await loadAll();
-        if (chatTarget?.user_id) await loadChatMessages(chatTarget.user_id);
-      } else if (activeSection === 'platform') {
-        await loadAccessCodes();
-      }
-    } finally {
-      window.setTimeout(() => setRefreshing(false), 300);
+  /** 刷新指定分区的数据 */
+  const refreshSection = useCallback(async (key: SectionKey) => {
+    if (key === 'members' || key === 'notices' || key === 'inquiries' || key === 'visitors') {
+      // 这几个分区共用 loadAll 里的成员/访客/意向/通知数据
+      await loadAll();
+    } else if (key === 'files') {
+      await Promise.all([loadFiles(), loadAccessRequests()]);
+    } else if (key === 'actions') {
+      await Promise.all([loadActions(), loadActionInvites(), loadActionAccessRequests()]);
+    } else if (key === 'chat') {
+      await loadAll();
+      if (chatTarget?.user_id) await loadChatMessages(chatTarget.user_id);
+    } else if (key === 'platform') {
+      await loadAccessCodes();
     }
   }, [
-    refreshing,
-    activeSection,
     loadAll,
     loadFiles,
     loadAccessRequests,
@@ -1111,6 +1104,27 @@ export default function AdminConsolePage() {
     chatTarget?.user_id,
     loadChatMessages,
   ]);
+
+  /** 刷新按钮：刷新当前分区 */
+  const handleManualRefresh = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      await refreshSection(activeSection);
+    } finally {
+      window.setTimeout(() => setRefreshing(false), 300);
+    }
+  }, [refreshing, activeSection, refreshSection]);
+
+  /** 切换分区：切过去 + 自动刷新该分区 */
+  const handleSectionChange = useCallback(async (key: SectionKey) => {
+    setActiveSection(key);
+    try {
+      await refreshSection(key);
+    } catch (e) {
+      console.error('切换分区刷新失败', e);
+    }
+  }, [refreshSection]);
 
   useEffect(() => {
     let active = true;
@@ -1320,7 +1334,6 @@ export default function AdminConsolePage() {
       </section>
     </div>
   );
-
   const renderNotices = () => (
     <div className="space-y-4">
       <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">通知管理</h2>
@@ -2309,7 +2322,7 @@ return (
             return (
               <button
                 key={s.key}
-                onClick={() => setActiveSection(s.key)}
+                onClick={() => handleSectionChange(s.key)}
                 className={`flex flex-col items-center gap-1.5 py-4 transition-colors ${
                   active ? 'bg-[#1b1c1e] text-white' : 'text-[#85888e] hover:bg-[#f5f6f7] hover:text-[#1b1c1e]'
                 }`}

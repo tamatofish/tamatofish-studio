@@ -307,6 +307,7 @@ export default function AdminPage() {
   const [expandedActionId, setExpandedActionId] = useState<string | null>(null);
 
   const [activeSection, setActiveSection] = useState<SectionKey>('overview');
+  const [refreshing, setRefreshing] = useState(false);
 
   const mergedReadGlobalIds = useMemo(() => {
     const local = loadLocalRead(GLOBAL_READ_KEY);
@@ -332,8 +333,7 @@ export default function AdminPage() {
   }, [me]);
 
   const isAdmin = me?.member?.role === 'admin';
-
-  const loadGlobalNotices = async () => {
+  const loadGlobalNotices = useCallback(async () => {
     try {
       const res = await callAuthenticatedApi('/api/global-notice');
       if (res && res.ok) {
@@ -343,8 +343,9 @@ export default function AdminPage() {
         setGlobalDetail(data.detail ?? {});
       }
     } catch (e) { console.error('加载全局通知失败', e); }
-  };
-  const loadDeptNotices = async () => {
+  }, []);
+
+  const loadDeptNotices = useCallback(async () => {
     try {
       const res = await callAuthenticatedApi('/api/department-notice');
       if (res && res.ok) {
@@ -354,7 +355,8 @@ export default function AdminPage() {
         setDeptDetail(data.detail ?? {});
       }
     } catch (e) { console.error('加载部门通知失败', e); }
-  };
+  }, []);
+
   const markGlobalRead = (noticeId: string) => {
     if (mergedReadGlobalIds.includes(noticeId)) return;
     const next = [...mergedReadGlobalIds, noticeId];
@@ -878,7 +880,60 @@ export default function AdminPage() {
     await loadMyActionInvites();
     await loadMyActionRequests();
     await loadActions();
-  }, [loadFiles, loadMyRequests, loadMyInvites, loadMyActionInvites, loadMyActionRequests, loadActions]);
+  }, [loadGlobalNotices, loadDeptNotices, loadFiles, loadMyRequests, loadMyInvites, loadMyActionInvites, loadMyActionRequests, loadActions]);
+
+  /** 刷新指定分区的数据 */
+  const refreshSection = useCallback(async (key: SectionKey) => {
+    if (key === 'overview') {
+      await loadAll();
+    } else if (key === 'notices') {
+      await loadGlobalNotices();
+      await loadDeptNotices();
+    } else if (key === 'inquiries') {
+      await loadAll();
+    } else if (key === 'files') {
+      await loadFiles();
+      await loadMyRequests();
+      await loadMyInvites();
+    } else if (key === 'visitors') {
+      await loadAll();
+    } else if (key === 'actions') {
+      await loadActions();
+      await loadMyActionInvites();
+      await loadMyActionRequests();
+    }
+  }, [
+    loadAll,
+    loadGlobalNotices,
+    loadDeptNotices,
+    loadFiles,
+    loadMyRequests,
+    loadMyInvites,
+    loadActions,
+    loadMyActionInvites,
+    loadMyActionRequests,
+  ]);
+
+  /** 刷新按钮：刷新当前分区 */
+  const handleManualRefresh = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      await refreshSection(activeSection);
+    } finally {
+      window.setTimeout(() => setRefreshing(false), 300);
+    }
+  }, [refreshing, activeSection, refreshSection]);
+
+  /** 切换分区：切过去 + 自动刷新该分区 */
+  const handleSectionChange = useCallback(async (key: SectionKey) => {
+    setActiveSection(key);
+    try {
+      await refreshSection(key);
+    } catch (e) {
+      console.error('切换分区刷新失败', e);
+    }
+  }, [refreshSection]);
 
   useEffect(() => {
     let active = true;
@@ -1092,7 +1147,6 @@ export default function AdminPage() {
       <MemberChat me={me} />
     </div>
   );
-
   const renderNotices = () => (
     <div className="space-y-6">
       {hasAnyVisibleNotice && (
@@ -1296,1031 +1350,1039 @@ export default function AdminPage() {
     </section>
   );
 
-  const renderFiles = () => (
-    <div className="space-y-8">
-      {myInvites.filter((i) => i.status === 'pending').length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">
-            查看邀请（{myInvites.filter((i) => i.status === 'pending').length}）
-          </h2>
-          <div className={`${panelCls} divide-y divide-[#f0f1f3]`}>
-            {myInvites.filter((i) => i.status === 'pending').map((inv) => (
-              <div key={inv.id} className="flex items-start justify-between gap-3 p-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className="rounded-none border-0 bg-[#fdecea] text-[10px] font-light text-[#c62828]">
-                      绝密
-                    </Badge>
-                    <p className="text-xs font-light text-[#1b1c1e] break-words">
-                      管理员邀请你查看「{inv.fileName}」
-                    </p>
-                  </div>
-                  <p className="mt-1 text-[10px] text-[#9b9ea4] font-mono">
-                    编号：{inv.fileCode} · {new Date(inv.createdAt).toLocaleString('zh-CN')}
+  const renderFiles = () => (    <div className="space-y-8">
+    {myInvites.filter((i) => i.status === 'pending').length > 0 && (
+      <section className="space-y-3">
+        <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">
+          查看邀请（{myInvites.filter((i) => i.status === 'pending').length}）
+        </h2>
+        <div className={`${panelCls} divide-y divide-[#f0f1f3]`}>
+          {myInvites.filter((i) => i.status === 'pending').map((inv) => (
+            <div key={inv.id} className="flex items-start justify-between gap-3 p-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="outline" className="rounded-none border-0 bg-[#fdecea] text-[10px] font-light text-[#c62828]">
+                    绝密
+                  </Badge>
+                  <p className="text-xs font-light text-[#1b1c1e] break-words">
+                    管理员邀请你查看「{inv.fileName}」
                   </p>
                 </div>
-                <div className="flex shrink-0 gap-1">
-                  <Button
-                    size="sm"
-                    className={btnSolid}
-                    disabled={inviteHandling === inv.id}
-                    onClick={() => handleInviteResponse(inv.id, 'accept')}
-                  >
-                    接受
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className={btnGhost}
-                    disabled={inviteHandling === inv.id}
-                    onClick={() => handleInviteResponse(inv.id, 'decline')}
-                  >
-                    拒绝
-                  </Button>
-                </div>
+                <p className="mt-1 text-[10px] text-[#9b9ea4] font-mono">
+                  编号：{inv.fileCode} · {new Date(inv.createdAt).toLocaleString('zh-CN')}
+                </p>
               </div>
-            ))}
-          </div>
-        </section>
+              <div className="flex shrink-0 gap-1">
+                <Button
+                  size="sm"
+                  className={btnSolid}
+                  disabled={inviteHandling === inv.id}
+                  onClick={() => handleInviteResponse(inv.id, 'accept')}
+                >
+                  接受
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className={btnGhost}
+                  disabled={inviteHandling === inv.id}
+                  onClick={() => handleInviteResponse(inv.id, 'decline')}
+                >
+                  拒绝
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <section className="space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">正在审核（{pendingMine.length}）</h2>
+          <p className="mt-1 text-[11px] font-light text-[#9b9ea4]">你上传的文件，正在等待管理员审核</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <input ref={fileInputRef} type="file" className="hidden" onChange={handleFilePicked} />
+          <Button variant="outline" className={btnGhost} onClick={openAccessDialog}>申请权限</Button>
+          <Button onClick={openUploadDialog} disabled={fileUploading} className={btnSolid}>
+            {fileUploading ? '上传中…' : '上传文件（≤10MB）'}
+          </Button>
+        </div>
+      </div>
+
+      {fileMsg && (
+        <p className={`text-xs font-light ${fileMsg.type === 'ok' ? 'text-[#e8704a]' : 'text-red-500'}`}>
+          {fileMsg.text}
+        </p>
       )}
 
-      <section className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">正在审核（{pendingMine.length}）</h2>
-            <p className="mt-1 text-[11px] font-light text-[#9b9ea4]">你上传的文件，正在等待管理员审核</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <input ref={fileInputRef} type="file" className="hidden" onChange={handleFilePicked} />
-            <Button variant="outline" className={btnGhost} onClick={openAccessDialog}>申请权限</Button>
-            <Button onClick={openUploadDialog} disabled={fileUploading} className={btnSolid}>
-              {fileUploading ? '上传中…' : '上传文件（≤10MB）'}
-            </Button>
-          </div>
-        </div>
-
-        {fileMsg && (
-          <p className={`text-xs font-light ${fileMsg.type === 'ok' ? 'text-[#e8704a]' : 'text-red-500'}`}>
-            {fileMsg.text}
-          </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          value={pendingSearch}
+          onChange={(e) => setPendingSearch(e.target.value)}
+          placeholder="按编号或文件名查找…"
+          className={`${fieldCls} max-w-xs text-xs`}
+        />
+        {pendingSearch && (
+          <button onClick={() => setPendingSearch('')} className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]">清空</button>
         )}
+      </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Input
-            value={pendingSearch}
-            onChange={(e) => setPendingSearch(e.target.value)}
-            placeholder="按编号或文件名查找…"
-            className={`${fieldCls} max-w-xs text-xs`}
-          />
-          {pendingSearch && (
-            <button onClick={() => setPendingSearch('')} className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]">清空</button>
-          )}
-        </div>
-
-        <div className={`${panelCls} overflow-x-auto`}>
-          <table className="w-full min-w-[720px] text-sm font-light">
-            <thead>
-              <tr className="border-b border-[#e3e4e8] text-left text-[11px] tracking-[0.15em] text-[#9b9ea4]">
-                <th className="px-5 py-3 font-light">编号</th>
-                <th className="px-5 py-3 font-light">文件名</th>
-                <th className="px-5 py-3 font-light">大小</th>
-                <th className="px-5 py-3 font-light">上传时间</th>
-                <th className="px-5 py-3 font-light">状态</th>
-                <th className="px-5 py-3 font-light text-right">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {fileLoading ? (
-                <tr><td colSpan={6} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">加载中…</td></tr>
-              ) : pendingMine.length === 0 ? (
-                <tr><td colSpan={6} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">
-                  {pendingSearch ? '没有匹配的文件' : '暂无正在审核的文件'}
-                </td></tr>
-              ) : pendingMine.map((f) => (
-                <tr key={f.id} className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
-                  <td className="px-5 py-3.5 font-mono text-[11px] text-[#9b9ea4]">{f.code || '—'}</td>
-                  <td className="max-w-[260px] px-5 py-3.5">
-                    <span className="block truncate text-[#1b1c1e]" title={f.displayName}>{f.displayName}</span>
-                  </td>
-                  <td className="px-5 py-3.5 text-[#85888e]">{formatSize(f.size)}</td>
-                  <td className="px-5 py-3.5 text-[#85888e]">
-                    {new Date(f.uploadedAt).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <Badge variant="outline" className={`rounded-none border-0 font-light ${FILE_STATUS_MAP.pending.cls}`}>
-                      {FILE_STATUS_MAP.pending.text}
-                    </Badge>
-                  </td>
-                  <td className="whitespace-nowrap px-5 py-3.5 text-right">
-                    <button onClick={() => handleFileDelete(f.id, '（撤回后文件将无法恢复）')} className="text-xs text-[#9b9ea4] hover:text-red-500">撤回</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">我的权限申请（{myRequests.length}）</h2>
-            <p className="mt-1 text-[11px] font-light text-[#9b9ea4]">你提交的文件访问权限申请记录</p>
-          </div>
-          {myRequests.length > 5 && (
-            <Button
-              size="sm"
-              variant="outline"
-              className={btnGhost}
-              onClick={() => setMyRequestsExpanded((v) => !v)}
-            >
-              {myRequestsExpanded ? '收起' : `展开全部（共 ${myRequests.length} 条）`}
-            </Button>
-          )}
-        </div>
-
-        <div className={`${panelCls} overflow-x-auto`}>
-          <table className="w-full min-w-[820px] text-sm font-light">
-            <thead>
-              <tr className="border-b border-[#e3e4e8] text-left text-[11px] tracking-[0.15em] text-[#9b9ea4]">
-                <th className="px-5 py-3 font-light">编号</th>
-                <th className="px-5 py-3 font-light">文件名</th>
-                <th className="px-5 py-3 font-light">申请时间</th>
-                <th className="px-5 py-3 font-light">理由</th>
-                <th className="px-5 py-3 font-light">状态</th>
-              </tr>
-            </thead>
-            <tbody>
-              {myRequests.length === 0 ? (
-                <tr><td colSpan={5} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">暂无申请记录</td></tr>
-              ) : (myRequestsExpanded ? myRequests : myRequests.slice(0, 5)).map((r) => {
-                const statusMap: Record<string, { text: string; cls: string }> = {
-                  pending: { text: '等待处理', cls: 'bg-[#fef3c7] text-[#b45309]' },
-                  approved: { text: '已通过', cls: 'bg-[#dcfce7] text-[#166534]' },
-                  rejected: { text: '已拒绝', cls: 'bg-[#fdecea] text-[#c62828]' },
-                };
-                const st = statusMap[r.status] ?? { text: r.status, cls: 'bg-[#eef0f2] text-[#85888e]' };
-                return (
-                  <tr key={r.id} className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
-                    <td className="px-5 py-3.5 font-mono text-[11px] text-[#9b9ea4]">{r.fileCode}</td>
-                    <td className="max-w-[260px] px-5 py-3.5">
-                      <span className="block truncate text-[#1b1c1e]" title={r.fileName}>{r.fileName}</span>
-                    </td>
-                    <td className="px-5 py-3.5 text-[#85888e]">
-                      {new Date(r.createdAt).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                    </td>
-                    <td className="max-w-[220px] px-5 py-3.5 text-[#85888e]">
-                      {r.reason ? (
-                        <span className="block truncate" title={r.reason}>{r.reason}</span>
-                      ) : (
-                        <span className="text-[#b9bcc2]">—</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <Badge variant="outline" className={`rounded-none border-0 font-light ${st.cls}`}>
-                        {st.text}
-                      </Badge>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {myRequests.length > 0 && (
-          <p className="text-[11px] font-light tracking-wider text-[#b9bcc2]">
-            显示 {(myRequestsExpanded ? myRequests : myRequests.slice(0, 5)).length} / {myRequests.length} 条
-          </p>
-        )}
-      </section>
-
-      <section className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">可访问文件（{visibleFiles.length}）</h2>
-            <p className="mt-1 text-[11px] font-light text-[#9b9ea4]">按文件等级与可查看人员判断</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {([
-              { key: 'all', label: '全部' },
-              { key: 'approved', label: '已通过' },
-            ] as const).map((item) => {
-              const active = fileFilter === item.key;
-              return (
-                <button
-                  key={item.key}
-                  onClick={() => setFileFilter(item.key as FileFilter)}
-                  className={`px-3 py-1.5 text-xs font-light tracking-wider transition-colors ${active ? 'bg-[#1b1c1e] text-white' : 'bg-[#f5f6f7] text-[#85888e] hover:text-[#1b1c1e]'}`}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Input
-            value={visibleSearch}
-            onChange={(e) => setVisibleSearch(e.target.value)}
-            placeholder="按编号或文件名查找…"
-            className={`${fieldCls} max-w-xs text-xs`}
-          />
-          {visibleSearch && (
-            <button onClick={() => setVisibleSearch('')} className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]">清空</button>
-          )}
-        </div>
-
-        <div className={`${panelCls} overflow-x-auto`}>
-          <table className="w-full min-w-[820px] text-sm font-light">
-            <thead>
-              <tr className="border-b border-[#e3e4e8] text-left text-[11px] tracking-[0.15em] text-[#9b9ea4]">
-                <th className="px-5 py-3 font-light">编号</th>
-                <th className="px-5 py-3 font-light">文件名</th>
-                <th className="px-5 py-3 font-light">大小</th>
-                <th className="px-5 py-3 font-light">文件等级</th>
-                <th className="px-5 py-3 font-light">上传时间</th>
-                <th className="px-5 py-3 font-light">状态</th>
-                <th className="px-5 py-3 font-light text-right">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {fileLoading ? (
-                <tr><td colSpan={7} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">加载中…</td></tr>
-              ) : visibleFiles.length === 0 ? (
-                <tr><td colSpan={7} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">
-                  {visibleSearch ? '没有匹配的文件' : '暂无文件'}
-                </td></tr>
-              ) : visibleFiles.map((f) => (
-                <tr key={f.id} className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
-                  <td className="px-5 py-3.5 font-mono text-[11px] text-[#9b9ea4]">{f.code || '—'}</td>
-                  <td className="max-w-[260px] px-5 py-3.5">
-                    <button
-                      onClick={() => handleDownload(f)}
-                      className="block max-w-full truncate text-left text-[#1b1c1e] hover:text-[#e8704a]"
-                      title={f.displayName}
-                    >
-                      {f.displayName}
-                    </button>
-                  </td>
-                  <td className="px-5 py-3.5 text-[#85888e]">{formatSize(f.size)}</td>
-                  <td className="px-5 py-3.5">{renderLevelBadge(f.level)}</td>
-                  <td className="px-5 py-3.5 text-[#85888e]">
-                    {new Date(f.uploadedAt).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <Badge variant="outline" className={`rounded-none border-0 font-light ${FILE_STATUS_MAP[f.status].cls}`}>
-                      {FILE_STATUS_MAP[f.status].text}
-                    </Badge>
-                  </td>
-                  <td className="whitespace-nowrap px-5 py-3.5 text-right">
-                    <button onClick={() => handleDownload(f)} className="text-xs text-[#85888e] hover:text-[#1b1c1e]">下载</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="text-[11px] font-light tracking-wider text-[#b9bcc2]">共 {visibleFiles.length} 个文件 · 单个文件不超过 10MB</p>
-      </section>
-    </div>
-  );
-
-  const renderVisitors = () => (
-    <section className="space-y-4">
-      <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">注册访客（{visitors.length}）</h2>
       <div className={`${panelCls} overflow-x-auto`}>
-        <table className="w-full min-w-[680px] text-sm font-light">
-          <thead><tr className="border-b border-[#e3e4e8] text-left text-[11px] tracking-[0.15em] text-[#9b9ea4]">
-            <th className="px-5 py-3 font-light">称呼</th><th className="px-5 py-3 font-light">注册邮箱</th>
-            <th className="px-5 py-3 font-light">公司 / 组织</th><th className="px-5 py-3 font-light">电话</th>
-            <th className="px-5 py-3 font-light">感兴趣方向</th><th className="px-5 py-3 font-light">注册时间</th>
-          </tr></thead>
+        <table className="w-full min-w-[720px] text-sm font-light">
+          <thead>
+            <tr className="border-b border-[#e3e4e8] text-left text-[11px] tracking-[0.15em] text-[#9b9ea4]">
+              <th className="px-5 py-3 font-light">编号</th>
+              <th className="px-5 py-3 font-light">文件名</th>
+              <th className="px-5 py-3 font-light">大小</th>
+              <th className="px-5 py-3 font-light">上传时间</th>
+              <th className="px-5 py-3 font-light">状态</th>
+              <th className="px-5 py-3 font-light text-right">操作</th>
+            </tr>
+          </thead>
           <tbody>
-            {visitors.length === 0 ? <tr><td colSpan={6} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">暂无注册访客</td></tr> : visitors.map((v) => (
-              <tr key={v.id} className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
-                <td className="px-5 py-3.5 text-[#1b1c1e]">{v.name}</td>
-                <td className="px-5 py-3.5 text-[#85888e]">{v.email || '—'}</td>
-                <td className="px-5 py-3.5">{v.company || '—'}</td>
-                <td className="px-5 py-3.5">{v.phone || '—'}</td>
-                <td className="px-5 py-3.5">{v.interest || '—'}</td>
-                <td className="px-5 py-3.5 text-[#b9bcc2]">{new Date(v.created_at).toLocaleDateString('zh-CN')}</td>
+            {fileLoading ? (
+              <tr><td colSpan={6} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">加载中…</td></tr>
+            ) : pendingMine.length === 0 ? (
+              <tr><td colSpan={6} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">
+                {pendingSearch ? '没有匹配的文件' : '暂无正在审核的文件'}
+              </td></tr>
+            ) : pendingMine.map((f) => (
+              <tr key={f.id} className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
+                <td className="px-5 py-3.5 font-mono text-[11px] text-[#9b9ea4]">{f.code || '—'}</td>
+                <td className="max-w-[260px] px-5 py-3.5">
+                  <span className="block truncate text-[#1b1c1e]" title={f.displayName}>{f.displayName}</span>
+                </td>
+                <td className="px-5 py-3.5 text-[#85888e]">{formatSize(f.size)}</td>
+                <td className="px-5 py-3.5 text-[#85888e]">
+                  {new Date(f.uploadedAt).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                </td>
+                <td className="px-5 py-3.5">
+                  <Badge variant="outline" className={`rounded-none border-0 font-light ${FILE_STATUS_MAP.pending.cls}`}>
+                    {FILE_STATUS_MAP.pending.text}
+                  </Badge>
+                </td>
+                <td className="whitespace-nowrap px-5 py-3.5 text-right">
+                  <button onClick={() => handleFileDelete(f.id, '（撤回后文件将无法恢复）')} className="text-xs text-[#9b9ea4] hover:text-red-500">撤回</button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
     </section>
-  );
 
-  const renderActions = () => (
     <section className="space-y-4">
-      {myActionInvites.filter((i) => i.status === 'pending').length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">
-            行动邀请（{myActionInvites.filter((i) => i.status === 'pending').length}）
-          </h2>
-          <div className={`${panelCls} divide-y divide-[#f0f1f3]`}>
-            {myActionInvites.filter((i) => i.status === 'pending').map((inv) => (
-              <div key={inv.id} className="flex items-start justify-between gap-3 p-4">
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-light text-[#1b1c1e] break-words">
-                    管理员邀请你查看行动档案「{inv.actionCodename}」
-                  </p>
-                  <p className="mt-1 text-[10px] text-[#9b9ea4] font-mono">
-                    编号：{inv.actionCode} · {new Date(inv.createdAt).toLocaleString('zh-CN')}
-                  </p>
-                </div>
-                <div className="flex shrink-0 gap-1">
-                  <Button
-                    size="sm"
-                    className={btnSolid}
-                    disabled={actionInviteHandling === inv.id}
-                    onClick={() => handleActionInviteResponse(inv.id, 'accept')}
-                  >
-                    接受
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className={btnGhost}
-                    disabled={actionInviteHandling === inv.id}
-                    onClick={() => handleActionInviteResponse(inv.id, 'decline')}
-                  >
-                    拒绝
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <div className="flex items-center justify-between">
+      <div className="flex items-end justify-between">
         <div>
-          <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">行动档案（{actionList.length}）</h2>
-          <p className="mt-1 text-[11px] font-light text-[#9b9ea4]">仅显示管理员允许你查看的档案</p>
+          <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">我的权限申请（{myRequests.length}）</h2>
+          <p className="mt-1 text-[11px] font-light text-[#9b9ea4]">你提交的文件访问权限申请记录</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" className={btnGhost} onClick={openActionAccessDialog}>申请权限</Button>
-          <Button size="sm" className={btnSolid} onClick={openActionDialog}>添加档案</Button>
-        </div>
+        {myRequests.length > 5 && (
+          <Button
+            size="sm"
+            variant="outline"
+            className={btnGhost}
+            onClick={() => setMyRequestsExpanded((v) => !v)}
+          >
+            {myRequestsExpanded ? '收起' : `展开全部（共 ${myRequests.length} 条）`}
+          </Button>
+        )}
       </div>
 
       <div className={`${panelCls} overflow-x-auto`}>
-        <table className="w-full min-w-[1000px] text-sm font-light">
+        <table className="w-full min-w-[820px] text-sm font-light">
+          <thead>
+            <tr className="border-b border-[#e3e4e8] text-left text-[11px] tracking-[0.15em] text-[#9b9ea4]">
+              <th className="px-5 py-3 font-light">编号</th>
+              <th className="px-5 py-3 font-light">文件名</th>
+              <th className="px-5 py-3 font-light">申请时间</th>
+              <th className="px-5 py-3 font-light">理由</th>
+              <th className="px-5 py-3 font-light">状态</th>
+            </tr>
+          </thead>
+          <tbody>
+            {myRequests.length === 0 ? (
+              <tr><td colSpan={5} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">暂无申请记录</td></tr>
+            ) : (myRequestsExpanded ? myRequests : myRequests.slice(0, 5)).map((r) => {
+              const statusMap: Record<string, { text: string; cls: string }> = {
+                pending: { text: '等待处理', cls: 'bg-[#fef3c7] text-[#b45309]' },
+                approved: { text: '已通过', cls: 'bg-[#dcfce7] text-[#166534]' },
+                rejected: { text: '已拒绝', cls: 'bg-[#fdecea] text-[#c62828]' },
+              };
+              const st = statusMap[r.status] ?? { text: r.status, cls: 'bg-[#eef0f2] text-[#85888e]' };
+              return (
+                <tr key={r.id} className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
+                  <td className="px-5 py-3.5 font-mono text-[11px] text-[#9b9ea4]">{r.fileCode}</td>
+                  <td className="max-w-[260px] px-5 py-3.5">
+                    <span className="block truncate text-[#1b1c1e]" title={r.fileName}>{r.fileName}</span>
+                  </td>
+                  <td className="px-5 py-3.5 text-[#85888e]">
+                    {new Date(r.createdAt).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                  </td>
+                  <td className="max-w-[220px] px-5 py-3.5 text-[#85888e]">
+                    {r.reason ? (
+                      <span className="block truncate" title={r.reason}>{r.reason}</span>
+                    ) : (
+                      <span className="text-[#b9bcc2]">—</span>
+                    )}
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <Badge variant="outline" className={`rounded-none border-0 font-light ${st.cls}`}>
+                      {st.text}
+                    </Badge>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {myRequests.length > 0 && (
+        <p className="text-[11px] font-light tracking-wider text-[#b9bcc2]">
+          显示 {(myRequestsExpanded ? myRequests : myRequests.slice(0, 5)).length} / {myRequests.length} 条
+        </p>
+      )}
+    </section>
+
+    <section className="space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">可访问文件（{visibleFiles.length}）</h2>
+          <p className="mt-1 text-[11px] font-light text-[#9b9ea4]">按文件等级与可查看人员判断</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {([
+            { key: 'all', label: '全部' },
+            { key: 'approved', label: '已通过' },
+          ] as const).map((item) => {
+            const active = fileFilter === item.key;
+            return (
+              <button
+                key={item.key}
+                onClick={() => setFileFilter(item.key as FileFilter)}
+                className={`px-3 py-1.5 text-xs font-light tracking-wider transition-colors ${active ? 'bg-[#1b1c1e] text-white' : 'bg-[#f5f6f7] text-[#85888e] hover:text-[#1b1c1e]'}`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          value={visibleSearch}
+          onChange={(e) => setVisibleSearch(e.target.value)}
+          placeholder="按编号或文件名查找…"
+          className={`${fieldCls} max-w-xs text-xs`}
+        />
+        {visibleSearch && (
+          <button onClick={() => setVisibleSearch('')} className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]">清空</button>
+        )}
+      </div>
+
+      <div className={`${panelCls} overflow-x-auto`}>
+        <table className="w-full min-w-[820px] text-sm font-light">
+          <thead>
+            <tr className="border-b border-[#e3e4e8] text-left text-[11px] tracking-[0.15em] text-[#9b9ea4]">
+              <th className="px-5 py-3 font-light">编号</th>
+              <th className="px-5 py-3 font-light">文件名</th>
+              <th className="px-5 py-3 font-light">大小</th>
+              <th className="px-5 py-3 font-light">文件等级</th>
+              <th className="px-5 py-3 font-light">上传时间</th>
+              <th className="px-5 py-3 font-light">状态</th>
+              <th className="px-5 py-3 font-light text-right">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {fileLoading ? (
+              <tr><td colSpan={7} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">加载中…</td></tr>
+            ) : visibleFiles.length === 0 ? (
+              <tr><td colSpan={7} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">
+                {visibleSearch ? '没有匹配的文件' : '暂无文件'}
+              </td></tr>
+            ) : visibleFiles.map((f) => (
+              <tr key={f.id} className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
+                <td className="px-5 py-3.5 font-mono text-[11px] text-[#9b9ea4]">{f.code || '—'}</td>
+                <td className="max-w-[260px] px-5 py-3.5">
+                  <button
+                    onClick={() => handleDownload(f)}
+                    className="block max-w-full truncate text-left text-[#1b1c1e] hover:text-[#e8704a]"
+                    title={f.displayName}
+                  >
+                    {f.displayName}
+                  </button>
+                </td>
+                <td className="px-5 py-3.5 text-[#85888e]">{formatSize(f.size)}</td>
+                <td className="px-5 py-3.5">{renderLevelBadge(f.level)}</td>
+                <td className="px-5 py-3.5 text-[#85888e]">
+                  {new Date(f.uploadedAt).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                </td>
+                <td className="px-5 py-3.5">
+                  <Badge variant="outline" className={`rounded-none border-0 font-light ${FILE_STATUS_MAP[f.status].cls}`}>
+                    {FILE_STATUS_MAP[f.status].text}
+                  </Badge>
+                </td>
+                <td className="whitespace-nowrap px-5 py-3.5 text-right">
+                  <button onClick={() => handleDownload(f)} className="text-xs text-[#85888e] hover:text-[#1b1c1e]">下载</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-[11px] font-light tracking-wider text-[#b9bcc2]">共 {visibleFiles.length} 个文件 · 单个文件不超过 10MB</p>
+    </section>
+  </div>
+);
+
+const renderVisitors = () => (
+  <section className="space-y-4">
+    <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">注册访客（{visitors.length}）</h2>
+    <div className={`${panelCls} overflow-x-auto`}>
+      <table className="w-full min-w-[680px] text-sm font-light">
+        <thead><tr className="border-b border-[#e3e4e8] text-left text-[11px] tracking-[0.15em] text-[#9b9ea4]">
+          <th className="px-5 py-3 font-light">称呼</th><th className="px-5 py-3 font-light">注册邮箱</th>
+          <th className="px-5 py-3 font-light">公司 / 组织</th><th className="px-5 py-3 font-light">电话</th>
+          <th className="px-5 py-3 font-light">感兴趣方向</th><th className="px-5 py-3 font-light">注册时间</th>
+        </tr></thead>
+        <tbody>
+          {visitors.length === 0 ? <tr><td colSpan={6} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">暂无注册访客</td></tr> : visitors.map((v) => (
+            <tr key={v.id} className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
+              <td className="px-5 py-3.5 text-[#1b1c1e]">{v.name}</td>
+              <td className="px-5 py-3.5 text-[#85888e]">{v.email || '—'}</td>
+              <td className="px-5 py-3.5">{v.company || '—'}</td>
+              <td className="px-5 py-3.5">{v.phone || '—'}</td>
+              <td className="px-5 py-3.5">{v.interest || '—'}</td>
+              <td className="px-5 py-3.5 text-[#b9bcc2]">{new Date(v.created_at).toLocaleDateString('zh-CN')}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+);
+
+const renderActions = () => (
+  <section className="space-y-4">
+    {myActionInvites.filter((i) => i.status === 'pending').length > 0 && (
+      <section className="space-y-3">
+        <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">
+          行动邀请（{myActionInvites.filter((i) => i.status === 'pending').length}）
+        </h2>
+        <div className={`${panelCls} divide-y divide-[#f0f1f3]`}>
+          {myActionInvites.filter((i) => i.status === 'pending').map((inv) => (
+            <div key={inv.id} className="flex items-start justify-between gap-3 p-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-light text-[#1b1c1e] break-words">
+                  管理员邀请你查看行动档案「{inv.actionCodename}」
+                </p>
+                <p className="mt-1 text-[10px] text-[#9b9ea4] font-mono">
+                  编号：{inv.actionCode} · {new Date(inv.createdAt).toLocaleString('zh-CN')}
+                </p>
+              </div>
+              <div className="flex shrink-0 gap-1">
+                <Button
+                  size="sm"
+                  className={btnSolid}
+                  disabled={actionInviteHandling === inv.id}
+                  onClick={() => handleActionInviteResponse(inv.id, 'accept')}
+                >
+                  接受
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className={btnGhost}
+                  disabled={actionInviteHandling === inv.id}
+                  onClick={() => handleActionInviteResponse(inv.id, 'decline')}
+                >
+                  拒绝
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <div className="flex items-center justify-between">
+      <div>
+        <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">行动档案（{actionList.length}）</h2>
+        <p className="mt-1 text-[11px] font-light text-[#9b9ea4]">仅显示管理员允许你查看的档案</p>
+      </div>
+      <div className="flex items-center gap-2">
+        <Button size="sm" variant="outline" className={btnGhost} onClick={openActionAccessDialog}>申请权限</Button>
+        <Button size="sm" className={btnSolid} onClick={openActionDialog}>添加档案</Button>
+      </div>
+    </div>
+
+    <div className={`${panelCls} overflow-x-auto`}>
+      <table className="w-full min-w-[1000px] text-sm font-light">
+        <thead>
+          <tr className="border-b border-[#e3e4e8] text-left text-[11px] tracking-[0.15em] text-[#9b9ea4]">
+            <th className="px-5 py-3 font-light">档案编号</th>
+            <th className="px-5 py-3 font-light">行动代号</th>
+            <th className="px-5 py-3 font-light">时间</th>
+            <th className="px-5 py-3 font-light">小组</th>
+            <th className="px-5 py-3 font-light">空中支援</th>
+            <th className="px-5 py-3 font-light">信息支援</th>
+            <th className="px-5 py-3 font-light">等级</th>
+            <th className="px-5 py-3 font-light">简介</th>
+            <th className="px-5 py-3 font-light text-right">详情</th>
+          </tr>
+        </thead>
+        <tbody>
+          {actionLoading ? (
+            <tr><td colSpan={9} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">加载中…</td></tr>
+          ) : actionList.length === 0 ? (
+            <tr><td colSpan={9} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">暂无可见档案</td></tr>
+          ) : actionList.map((a) => {
+            const isExpanded = expandedActionId === a.id;
+            return (
+              <Fragment key={a.id}>
+                <tr className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
+                  <td className="px-5 py-3.5 font-mono text-[11px] text-[#1b1c1e]">{a.code}</td>
+                  <td className="px-5 py-3.5 text-[#1b1c1e]">{a.codename}</td>
+                  <td className="px-5 py-3.5 text-[#85888e]">
+                    {new Date(a.actionTime).toLocaleString('zh-CN')}
+                  </td>
+                  <td className="px-5 py-3.5 font-mono text-[#1b1c1e]">{a.team}</td>
+                  <td className="px-5 py-3.5">
+                    <Badge variant="outline" className={`rounded-none border-0 font-light ${a.airSupport ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#eef0f2] text-[#9b9ea4]'}`}>
+                      {a.airSupport ? '有' : '无'}
+                    </Badge>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <Badge variant="outline" className={`rounded-none border-0 font-light ${a.infoSupport ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#eef0f2] text-[#9b9ea4]'}`}>
+                      {a.infoSupport ? '有' : '无'}
+                    </Badge>
+                  </td>
+                  <td className="px-5 py-3.5">{renderActionLevelBadge(a.level)}</td>
+                  <td className="max-w-[260px] px-5 py-3.5">
+                    {a.description ? (
+                      <span className="block truncate" title={a.description}>{a.description}</span>
+                    ) : (
+                      <span className="text-[#b9bcc2]">—</span>
+                    )}
+                  </td>
+                  <td className="whitespace-nowrap px-5 py-3.5 text-right">
+                    <button
+                      onClick={() => setExpandedActionId((prev) => (prev === a.id ? null : a.id))}
+                      className="text-xs text-[#1b1c1e] hover:text-[#e8704a] hover:underline"
+                    >
+                      {isExpanded ? '收起' : '展开'}
+                    </button>
+                  </td>
+                </tr>
+
+                {isExpanded && (
+                  <tr className="border-b border-[#f0f1f3] bg-[#fafbfc] last:border-0">
+                    <td colSpan={9} className="px-5 py-5">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">档案编号</p>
+                          <p className="mt-1 font-mono text-xs text-[#1b1c1e]">{a.code}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">行动代号</p>
+                          <p className="mt-1 text-xs text-[#1b1c1e]">{a.codename}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">行动时间</p>
+                          <p className="mt-1 text-xs text-[#1b1c1e]">{new Date(a.actionTime).toLocaleString('zh-CN')}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">小组</p>
+                          <p className="mt-1 font-mono text-xs text-[#1b1c1e]">{a.team}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">空中支援</p>
+                          <p className="mt-1 text-xs text-[#1b1c1e]">{a.airSupport ? '有' : '无'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">信息支援</p>
+                          <p className="mt-1 text-xs text-[#1b1c1e]">{a.infoSupport ? '有' : '无'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">档案等级</p>
+                          <p className="mt-1">{renderActionLevelBadge(a.level)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">创建者</p>
+                          <p className="mt-1 text-xs text-[#1b1c1e]">{a.creatorName || '—'}</p>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">完整简介</p>
+                          <p className="mt-1 whitespace-pre-wrap break-words text-xs leading-6 text-[#55585e]">
+                            {a.description?.trim() ? a.description : '（无简介）'}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+    <p className="text-[11px] font-light tracking-wider text-[#b9bcc2]">共 {actionList.length} 条档案</p>
+
+    <section className="space-y-4">
+      <div className="flex items-end justify-between">
+        <div>
+          <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">我的档案权限申请（{myActionRequests.length}）</h2>
+          <p className="mt-1 text-[11px] font-light text-[#9b9ea4]">你提交的行动档案查看权限申请记录</p>
+        </div>
+        {myActionRequests.length > 5 && (
+          <Button size="sm" variant="outline" className={btnGhost} onClick={() => setMyActionRequestsExpanded((v) => !v)}>
+            {myActionRequestsExpanded ? '收起' : `展开全部（共 ${myActionRequests.length} 条）`}
+          </Button>
+        )}
+      </div>
+
+      <div className={`${panelCls} overflow-x-auto`}>
+        <table className="w-full min-w-[820px] text-sm font-light">
           <thead>
             <tr className="border-b border-[#e3e4e8] text-left text-[11px] tracking-[0.15em] text-[#9b9ea4]">
               <th className="px-5 py-3 font-light">档案编号</th>
               <th className="px-5 py-3 font-light">行动代号</th>
-              <th className="px-5 py-3 font-light">时间</th>
-              <th className="px-5 py-3 font-light">小组</th>
-              <th className="px-5 py-3 font-light">空中支援</th>
-              <th className="px-5 py-3 font-light">信息支援</th>
-              <th className="px-5 py-3 font-light">等级</th>
-              <th className="px-5 py-3 font-light">简介</th>
-              <th className="px-5 py-3 font-light text-right">详情</th>
+              <th className="px-5 py-3 font-light">申请时间</th>
+              <th className="px-5 py-3 font-light">理由</th>
+              <th className="px-5 py-3 font-light">状态</th>
             </tr>
           </thead>
           <tbody>
-            {actionLoading ? (
-              <tr><td colSpan={9} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">加载中…</td></tr>
-            ) : actionList.length === 0 ? (
-              <tr><td colSpan={9} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">暂无可见档案</td></tr>
-            ) : actionList.map((a) => {
-              const isExpanded = expandedActionId === a.id;
+            {myActionRequests.length === 0 ? (
+              <tr><td colSpan={5} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">暂无申请记录</td></tr>
+            ) : (myActionRequestsExpanded ? myActionRequests : myActionRequests.slice(0, 5)).map((r) => {
+              const statusMap: Record<string, { text: string; cls: string }> = {
+                pending: { text: '等待处理', cls: 'bg-[#fef3c7] text-[#b45309]' },
+                approved: { text: '已通过', cls: 'bg-[#dcfce7] text-[#166534]' },
+                rejected: { text: '已拒绝', cls: 'bg-[#fdecea] text-[#c62828]' },
+              };
+              const st = statusMap[r.status] ?? { text: r.status, cls: 'bg-[#eef0f2] text-[#85888e]' };
               return (
-                <Fragment key={a.id}>
-                  <tr className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
-                    <td className="px-5 py-3.5 font-mono text-[11px] text-[#1b1c1e]">{a.code}</td>
-                    <td className="px-5 py-3.5 text-[#1b1c1e]">{a.codename}</td>
-                    <td className="px-5 py-3.5 text-[#85888e]">
-                      {new Date(a.actionTime).toLocaleString('zh-CN')}
-                    </td>
-                    <td className="px-5 py-3.5 font-mono text-[#1b1c1e]">{a.team}</td>
-                    <td className="px-5 py-3.5">
-                      <Badge variant="outline" className={`rounded-none border-0 font-light ${a.airSupport ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#eef0f2] text-[#9b9ea4]'}`}>
-                        {a.airSupport ? '有' : '无'}
-                      </Badge>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <Badge variant="outline" className={`rounded-none border-0 font-light ${a.infoSupport ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#eef0f2] text-[#9b9ea4]'}`}>
-                        {a.infoSupport ? '有' : '无'}
-                      </Badge>
-                    </td>
-                    <td className="px-5 py-3.5">{renderActionLevelBadge(a.level)}</td>
-                    <td className="max-w-[260px] px-5 py-3.5">
-                      {a.description ? (
-                        <span className="block truncate" title={a.description}>{a.description}</span>
-                      ) : (
-                        <span className="text-[#b9bcc2]">—</span>
-                      )}
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-3.5 text-right">
-                      <button
-                        onClick={() => setExpandedActionId((prev) => (prev === a.id ? null : a.id))}
-                        className="text-xs text-[#1b1c1e] hover:text-[#e8704a] hover:underline"
-                      >
-                        {isExpanded ? '收起' : '展开'}
-                      </button>
-                    </td>
-                  </tr>
-
-                  {isExpanded && (
-                    <tr className="border-b border-[#f0f1f3] bg-[#fafbfc] last:border-0">
-                      <td colSpan={9} className="px-5 py-5">
-                        <div className="grid gap-4 sm:grid-cols-2">
-                          <div>
-                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">档案编号</p>
-                            <p className="mt-1 font-mono text-xs text-[#1b1c1e]">{a.code}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">行动代号</p>
-                            <p className="mt-1 text-xs text-[#1b1c1e]">{a.codename}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">行动时间</p>
-                            <p className="mt-1 text-xs text-[#1b1c1e]">{new Date(a.actionTime).toLocaleString('zh-CN')}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">小组</p>
-                            <p className="mt-1 font-mono text-xs text-[#1b1c1e]">{a.team}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">空中支援</p>
-                            <p className="mt-1 text-xs text-[#1b1c1e]">{a.airSupport ? '有' : '无'}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">信息支援</p>
-                            <p className="mt-1 text-xs text-[#1b1c1e]">{a.infoSupport ? '有' : '无'}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">档案等级</p>
-                            <p className="mt-1">{renderActionLevelBadge(a.level)}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">创建者</p>
-                            <p className="mt-1 text-xs text-[#1b1c1e]">{a.creatorName || '—'}</p>
-                          </div>
-                          <div className="sm:col-span-2">
-                            <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">完整简介</p>
-                            <p className="mt-1 whitespace-pre-wrap break-words text-xs leading-6 text-[#55585e]">
-                              {a.description?.trim() ? a.description : '（无简介）'}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </Fragment>
+                <tr key={r.id} className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
+                  <td className="px-5 py-3.5 font-mono text-[11px] text-[#9b9ea4]">{r.actionCode}</td>
+                  <td className="max-w-[260px] px-5 py-3.5">
+                    <span className="block truncate text-[#1b1c1e]" title={r.actionCodename}>{r.actionCodename}</span>
+                  </td>
+                  <td className="px-5 py-3.5 text-[#85888e]">
+                    {new Date(r.createdAt).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                  </td>
+                  <td className="max-w-[220px] px-5 py-3.5 text-[#85888e]">
+                    {r.reason ? <span className="block truncate" title={r.reason}>{r.reason}</span> : <span className="text-[#b9bcc2]">—</span>}
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <Badge variant="outline" className={`rounded-none border-0 font-light ${st.cls}`}>{st.text}</Badge>
+                  </td>
+                </tr>
               );
             })}
           </tbody>
         </table>
       </div>
-      <p className="text-[11px] font-light tracking-wider text-[#b9bcc2]">共 {actionList.length} 条档案</p>
+    </section>
+  </section>
+);
 
-      <section className="space-y-4">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">我的档案权限申请（{myActionRequests.length}）</h2>
-            <p className="mt-1 text-[11px] font-light text-[#9b9ea4]">你提交的行动档案查看权限申请记录</p>
+const SECTION_RENDER: Record<SectionKey, () => React.ReactNode> = {
+  overview: renderOverview,
+  notices: renderNotices,
+  inquiries: renderInquiries,
+  files: renderFiles,
+  visitors: renderVisitors,
+  actions: renderActions,
+};
+
+return (
+  <div className="min-h-screen bg-[#f2f3f5]">
+    <header className="border-b border-[#e3e4e8] bg-[#f2f3f5]/90 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+        <div className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#e8704a]" />
+          <span className="text-sm font-light tracking-[0.35em] text-[#1b1c1e]">番茄鱼工作室</span>
+          <span className="ml-1 text-xs font-light tracking-[0.2em] text-[#9b9ea4]">工作台</span>
+          <Badge variant="outline" className="ml-2 rounded-none border-[#e3e4e8] bg-white text-[10px] font-light text-[#85888e]">内部</Badge>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="hidden text-xs font-light text-[#85888e] sm:inline">{me.email}</span>
+          <Button
+            size="sm"
+            variant="outline"
+            className={btnGhost}
+            onClick={handleManualRefresh}
+            disabled={refreshing}
+          >
+            {refreshing ? '刷新中…' : '刷新'}
+          </Button>
+          <Button size="sm" variant="outline" className={btnGhost} onClick={() => { setPwMsg(null); setPwNew(''); setPwConfirm(''); setPwOpen(true); }}>修改密码</Button>
+          <Button size="sm" variant="outline" className={btnGhost} onClick={handleLogout}>退出登录</Button>
+        </div>
+      </div>
+    </header>
+
+    <div className="mx-auto flex max-w-7xl gap-6 px-6 py-8">
+      <aside className="sticky top-20 h-fit w-[88px] shrink-0 border border-[#e3e4e8] bg-white">
+        <nav className="flex flex-col">
+          {SECTIONS.filter((s) => s.key !== 'actions' || isDefenseMember || isAdmin).map((s) => {
+            const active = activeSection === s.key;
+            return (
+              <button
+                key={s.key}
+                onClick={() => handleSectionChange(s.key)}
+                className={`flex flex-col items-center gap-1.5 py-4 transition-colors ${
+                  active ? 'bg-[#1b1c1e] text-white' : 'text-[#85888e] hover:bg-[#f5f6f7] hover:text-[#1b1c1e]'
+                }`}
+              >
+                <span className="flex h-5 w-5 items-center justify-center">{s.icon}</span>
+                <span className="text-[11px] font-light tracking-wider">{s.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      </aside>
+
+      <main className="min-w-0 flex-1">
+        {SECTION_RENDER[activeSection]()}
+      </main>
+    </div>
+
+    <Dialog
+      open={uploadOpen}
+      onOpenChange={(v) => {
+        if (!fileUploading) {
+          setUploadOpen(v);
+          if (!v) {
+            setUploadFile(null);
+            setUploadDisplayName('');
+            setUploadLevel('internal');
+          }
+        }
+      }}
+    >
+      <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-base font-light tracking-[0.15em]">上传文件</DialogTitle>
+          <DialogDescription className="text-xs text-[#9b9ea4]">
+            请为文件设置一个便于识别的名称；内部编号将在上传后自动生成。
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-xs text-[#85888e]">原始文件</Label>
+            <p className="rounded-none border border-[#e3e4e8] bg-[#f5f6f7] px-3 py-2 text-xs text-[#55585e] truncate">
+              {uploadFile?.name ?? '—'}
+            </p>
           </div>
-          {myActionRequests.length > 5 && (
-            <Button size="sm" variant="outline" className={btnGhost} onClick={() => setMyActionRequestsExpanded((v) => !v)}>
-              {myActionRequestsExpanded ? '收起' : `展开全部（共 ${myActionRequests.length} 条）`}
-            </Button>
+          <div className="space-y-2">
+            <Label className="text-xs text-[#85888e]">文件名 *</Label>
+            <Input
+              value={uploadDisplayName}
+              onChange={(e) => setUploadDisplayName(e.target.value)}
+              placeholder="例如：项目需求文档"
+              className={fieldCls}
+              autoFocus
+              onKeyDown={(e) => { if (e.key === 'Enter') confirmUpload(); }}
+            />
+            <p className="text-[10px] text-[#9b9ea4]">扩展名会保留自原文件，无需重复填写</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-xs text-[#85888e]">文件等级</Label>
+            <Select value={uploadLevel} onValueChange={(v) => setUploadLevel(v as FileLevel)}>
+              <SelectTrigger className={`${fieldCls} text-xs`}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="public">公开 - 所有人可见</SelectItem>
+                <SelectItem value="internal">内部 - 默认内部人员可见</SelectItem>
+                <SelectItem value="confidential">机密 - 仅指定人员可见</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-[10px] text-[#9b9ea4]">
+              {uploadLevel === 'public' && '上传后所有人可见（仍需管理员审核）'}
+              {uploadLevel === 'internal' && '上传后内部人员可见（仍需管理员审核）'}
+              {uploadLevel === 'confidential' && '上传后仅管理员指定的人可见（仍需管理员审核）'}
+            </p>
+          </div>
+
+          {fileMsg?.type === 'err' && (
+            <p className="text-xs font-light text-red-500">{fileMsg.text}</p>
           )}
         </div>
-
-        <div className={`${panelCls} overflow-x-auto`}>
-          <table className="w-full min-w-[820px] text-sm font-light">
-            <thead>
-              <tr className="border-b border-[#e3e4e8] text-left text-[11px] tracking-[0.15em] text-[#9b9ea4]">
-                <th className="px-5 py-3 font-light">档案编号</th>
-                <th className="px-5 py-3 font-light">行动代号</th>
-                <th className="px-5 py-3 font-light">申请时间</th>
-                <th className="px-5 py-3 font-light">理由</th>
-                <th className="px-5 py-3 font-light">状态</th>
-              </tr>
-            </thead>
-            <tbody>
-              {myActionRequests.length === 0 ? (
-                <tr><td colSpan={5} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">暂无申请记录</td></tr>
-              ) : (myActionRequestsExpanded ? myActionRequests : myActionRequests.slice(0, 5)).map((r) => {
-                const statusMap: Record<string, { text: string; cls: string }> = {
-                  pending: { text: '等待处理', cls: 'bg-[#fef3c7] text-[#b45309]' },
-                  approved: { text: '已通过', cls: 'bg-[#dcfce7] text-[#166534]' },
-                  rejected: { text: '已拒绝', cls: 'bg-[#fdecea] text-[#c62828]' },
-                };
-                const st = statusMap[r.status] ?? { text: r.status, cls: 'bg-[#eef0f2] text-[#85888e]' };
-                return (
-                  <tr key={r.id} className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
-                    <td className="px-5 py-3.5 font-mono text-[11px] text-[#9b9ea4]">{r.actionCode}</td>
-                    <td className="max-w-[260px] px-5 py-3.5">
-                      <span className="block truncate text-[#1b1c1e]" title={r.actionCodename}>{r.actionCodename}</span>
-                    </td>
-                    <td className="px-5 py-3.5 text-[#85888e]">
-                      {new Date(r.createdAt).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                    </td>
-                    <td className="max-w-[220px] px-5 py-3.5 text-[#85888e]">
-                      {r.reason ? <span className="block truncate" title={r.reason}>{r.reason}</span> : <span className="text-[#b9bcc2]">—</span>}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <Badge variant="outline" className={`rounded-none border-0 font-light ${st.cls}`}>{st.text}</Badge>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </section>
-  );
-
-  const SECTION_RENDER: Record<SectionKey, () => React.ReactNode> = {
-    overview: renderOverview,
-    notices: renderNotices,
-    inquiries: renderInquiries,
-    files: renderFiles,
-    visitors: renderVisitors,
-    actions: renderActions,
-  };
-
-  return (
-    <div className="min-h-screen bg-[#f2f3f5]">
-      <header className="border-b border-[#e3e4e8] bg-[#f2f3f5]/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#e8704a]" />
-            <span className="text-sm font-light tracking-[0.35em] text-[#1b1c1e]">番茄鱼工作室</span>
-            <span className="ml-1 text-xs font-light tracking-[0.2em] text-[#9b9ea4]">工作台</span>
-            <Badge variant="outline" className="ml-2 rounded-none border-[#e3e4e8] bg-white text-[10px] font-light text-[#85888e]">内部</Badge>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="hidden text-xs font-light text-[#85888e] sm:inline">{me.email}</span>
-            <Button size="sm" variant="outline" className={btnGhost} onClick={() => { setPwMsg(null); setPwNew(''); setPwConfirm(''); setPwOpen(true); }}>修改密码</Button>
-            <Button size="sm" variant="outline" className={btnGhost} onClick={handleLogout}>退出登录</Button>
-          </div>
-        </div>
-      </header>
-
-      <div className="mx-auto flex max-w-7xl gap-6 px-6 py-8">
-        <aside className="sticky top-20 h-fit w-[88px] shrink-0 border border-[#e3e4e8] bg-white">
-          <nav className="flex flex-col">
-            {SECTIONS.filter((s) => s.key !== 'actions' || isDefenseMember || isAdmin).map((s) => {
-              const active = activeSection === s.key;
-              return (
-                <button
-                  key={s.key}
-                  onClick={() => setActiveSection(s.key)}
-                  className={`flex flex-col items-center gap-1.5 py-4 transition-colors ${
-                    active ? 'bg-[#1b1c1e] text-white' : 'text-[#85888e] hover:bg-[#f5f6f7] hover:text-[#1b1c1e]'
-                  }`}
-                >
-                  <span className="flex h-5 w-5 items-center justify-center">{s.icon}</span>
-                  <span className="text-[11px] font-light tracking-wider">{s.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-        </aside>
-
-        <main className="min-w-0 flex-1">
-          {SECTION_RENDER[activeSection]()}
-        </main>
-      </div>
-
-      <Dialog
-        open={uploadOpen}
-        onOpenChange={(v) => {
-          if (!fileUploading) {
-            setUploadOpen(v);
-            if (!v) {
+        <DialogFooter>
+          <Button
+            variant="outline"
+            className={btnGhost}
+            onClick={() => {
+              setUploadOpen(false);
               setUploadFile(null);
               setUploadDisplayName('');
               setUploadLevel('internal');
-            }
-          }
-        }}
-      >
-        <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-base font-light tracking-[0.15em]">上传文件</DialogTitle>
-            <DialogDescription className="text-xs text-[#9b9ea4]">
-              请为文件设置一个便于识别的名称；内部编号将在上传后自动生成。
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs text-[#85888e]">原始文件</Label>
-              <p className="rounded-none border border-[#e3e4e8] bg-[#f5f6f7] px-3 py-2 text-xs text-[#55585e] truncate">
-                {uploadFile?.name ?? '—'}
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs text-[#85888e]">文件名 *</Label>
+            }}
+            disabled={fileUploading}
+          >
+            取消
+          </Button>
+          <Button onClick={confirmUpload} disabled={fileUploading} className={btnSolid}>
+            {fileUploading ? '上传中…' : '确认上传'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <Dialog open={accessOpen} onOpenChange={(v) => { if (!accessLoading) setAccessOpen(v); }}>
+      <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-base font-light tracking-[0.15em]">申请文件访问权限</DialogTitle>
+          <DialogDescription className="text-xs text-[#9b9ea4]">
+            输入文件编号查找文件。仅「机密 / 绝密」等级的文件可以申请；通过后你会获得该文件的访问权限。
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-xs text-[#85888e]">文件编号</Label>
+            <div className="flex gap-2">
               <Input
-                value={uploadDisplayName}
-                onChange={(e) => setUploadDisplayName(e.target.value)}
-                placeholder="例如：项目需求文档"
-                className={fieldCls}
-                autoFocus
-                onKeyDown={(e) => { if (e.key === 'Enter') confirmUpload(); }}
+                value={accessCode}
+                onChange={(e) => setAccessCode(e.target.value)}
+                placeholder="例如：F-20260922-001"
+                className={`${fieldCls} flex-1 font-mono text-xs`}
+                onKeyDown={(e) => { if (e.key === 'Enter') findFileByCode(); }}
               />
-              <p className="text-[10px] text-[#9b9ea4]">扩展名会保留自原文件，无需重复填写</p>
+              <Button onClick={findFileByCode} className={`${btnSolid} shrink-0`}>查找</Button>
             </div>
-
-            <div className="space-y-2">
-              <Label className="text-xs text-[#85888e]">文件等级</Label>
-              <Select value={uploadLevel} onValueChange={(v) => setUploadLevel(v as FileLevel)}>
-                <SelectTrigger className={`${fieldCls} text-xs`}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="public">公开 - 所有人可见</SelectItem>
-                  <SelectItem value="internal">内部 - 默认内部人员可见</SelectItem>
-                  <SelectItem value="confidential">机密 - 仅指定人员可见</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-[10px] text-[#9b9ea4]">
-                {uploadLevel === 'public' && '上传后所有人可见（仍需管理员审核）'}
-                {uploadLevel === 'internal' && '上传后内部人员可见（仍需管理员审核）'}
-                {uploadLevel === 'confidential' && '上传后仅管理员指定的人可见（仍需管理员审核）'}
-              </p>
-            </div>
-
-            {fileMsg?.type === 'err' && (
-              <p className="text-xs font-light text-red-500">{fileMsg.text}</p>
-            )}
           </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              className={btnGhost}
-              onClick={() => {
-                setUploadOpen(false);
-                setUploadFile(null);
-                setUploadDisplayName('');
-                setUploadLevel('internal');
-              }}
-              disabled={fileUploading}
-            >
-              取消
-            </Button>
-            <Button onClick={confirmUpload} disabled={fileUploading} className={btnSolid}>
-              {fileUploading ? '上传中…' : '确认上传'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
-      <Dialog open={accessOpen} onOpenChange={(v) => { if (!accessLoading) setAccessOpen(v); }}>
-        <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-base font-light tracking-[0.15em]">申请文件访问权限</DialogTitle>
-            <DialogDescription className="text-xs text-[#9b9ea4]">
-              输入文件编号查找文件。仅「机密 / 绝密」等级的文件可以申请；通过后你会获得该文件的访问权限。
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs text-[#85888e]">文件编号</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={accessCode}
-                  onChange={(e) => setAccessCode(e.target.value)}
-                  placeholder="例如：F-20260922-001"
-                  className={`${fieldCls} flex-1 font-mono text-xs`}
-                  onKeyDown={(e) => { if (e.key === 'Enter') findFileByCode(); }}
-                />
-                <Button onClick={findFileByCode} className={`${btnSolid} shrink-0`}>查找</Button>
+          {accessFound && (
+            <div className="space-y-3 border border-[#e3e4e8] p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-light text-[#1b1c1e] truncate" title={accessFound.displayName}>
+                    {accessFound.displayName}
+                  </p>
+                  <p className="mt-1 text-[11px] text-[#9b9ea4] font-mono">{accessFound.code}</p>
+                </div>
+                {renderLevelBadge(accessFound.level)}
               </div>
-            </div>
+              <div className="flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-[#9b9ea4]">
+                <span>大小：{formatSize(accessFound.size)}</span>
+                <span>上传者：{accessFound.uploaderName}</span>
+                <span>上传于：{new Date(accessFound.uploadedAt).toLocaleString('zh-CN')}</span>
+              </div>
 
-            {accessFound && (
-              <div className="space-y-3 border border-[#e3e4e8] p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-light text-[#1b1c1e] truncate" title={accessFound.displayName}>
-                      {accessFound.displayName}
+              {(() => {
+                const user = {
+                  userId: me?.member?.user_id ?? '',
+                  name: me?.member?.name ?? '',
+                  memberNo: me?.member?.member_no ?? '',
+                  email: me?.email ?? '',
+                };
+
+                if (hasFileAccess(accessFound, user, myInvites)) {
+                  return <p className="text-xs text-[#e8704a]">你已拥有访问权限，无需再次申请。</p>;
+                }
+
+                const lv = accessFound.level ?? 'internal';
+                if (lv === 'public' || lv === 'internal') {
+                  return (
+                    <p className="text-xs text-[#e8704a]">
+                      该文件等级为「{lv === 'public' ? '公开' : '内部'}」，无需申请。
                     </p>
-                    <p className="mt-1 text-[11px] text-[#9b9ea4] font-mono">{accessFound.code}</p>
-                  </div>
-                  {renderLevelBadge(accessFound.level)}
-                </div>
-                <div className="flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-[#9b9ea4]">
-                  <span>大小：{formatSize(accessFound.size)}</span>
-                  <span>上传者：{accessFound.uploaderName}</span>
-                  <span>上传于：{new Date(accessFound.uploadedAt).toLocaleString('zh-CN')}</span>
-                </div>
+                  );
+                }
 
-                {(() => {
-                  const user = {
-                    userId: me?.member?.user_id ?? '',
-                    name: me?.member?.name ?? '',
-                    memberNo: me?.member?.member_no ?? '',
-                    email: me?.email ?? '',
-                  };
-
-                  if (hasFileAccess(accessFound, user, myInvites)) {
-                    return <p className="text-xs text-[#e8704a]">你已拥有访问权限，无需再次申请。</p>;
+                if (myRequestForFound) {
+                  const st = myRequestForFound.status;
+                  if (st === 'pending') {
+                    return <p className="text-xs text-[#b45309]">申请已提交，等待管理员处理。</p>;
                   }
-
-                  const lv = accessFound.level ?? 'internal';
-                  if (lv === 'public' || lv === 'internal') {
+                  if (st === 'approved') {
+                    return <p className="text-xs text-[#16a34a]">申请已通过，请到「可访问文件」查看。</p>;
+                  }
+                  if (st === 'rejected') {
                     return (
-                      <p className="text-xs text-[#e8704a]">
-                        该文件等级为「{lv === 'public' ? '公开' : '内部'}」，无需申请。
-                      </p>
+                      <div className="space-y-2">
+                        <p className="text-xs text-red-500">上次申请已被拒绝，你可以重新提交。</p>
+                        <Label className="text-xs text-[#85888e]">申请理由（可选）</Label>
+                        <Input
+                          value={accessReason}
+                          onChange={(e) => setAccessReason(e.target.value)}
+                          placeholder="简单说明为什么需要访问该文件"
+                          className={fieldCls}
+                        />
+                        <Button onClick={submitAccessRequest} disabled={accessLoading} className={`${btnSolid} w-full`}>
+                          {accessLoading ? '提交中…' : '重新申请访问权限'}
+                        </Button>
+                      </div>
                     );
                   }
+                }
 
-                  if (myRequestForFound) {
-                    const st = myRequestForFound.status;
-                    if (st === 'pending') {
-                      return <p className="text-xs text-[#b45309]">申请已提交，等待管理员处理。</p>;
-                    }
-                    if (st === 'approved') {
-                      return <p className="text-xs text-[#16a34a]">申请已通过，请到「可访问文件」查看。</p>;
-                    }
-                    if (st === 'rejected') {
-                      return (
-                        <div className="space-y-2">
-                          <p className="text-xs text-red-500">上次申请已被拒绝，你可以重新提交。</p>
-                          <Label className="text-xs text-[#85888e]">申请理由（可选）</Label>
-                          <Input
-                            value={accessReason}
-                            onChange={(e) => setAccessReason(e.target.value)}
-                            placeholder="简单说明为什么需要访问该文件"
-                            className={fieldCls}
-                          />
-                          <Button onClick={submitAccessRequest} disabled={accessLoading} className={`${btnSolid} w-full`}>
-                            {accessLoading ? '提交中…' : '重新申请访问权限'}
-                          </Button>
-                        </div>
-                      );
-                    }
-                  }
-
-                  return (
-                    <div className="space-y-2">
-                      <Label className="text-xs text-[#85888e]">申请理由（可选）</Label>
-                      <Input
-                        value={accessReason}
-                        onChange={(e) => setAccessReason(e.target.value)}
-                        placeholder="简单说明为什么需要访问该文件"
-                        className={fieldCls}
-                      />
-                      <Button onClick={submitAccessRequest} disabled={accessLoading} className={`${btnSolid} w-full`}>
-                        {accessLoading ? '提交中…' : '申请访问权限'}
-                      </Button>
-                    </div>
-                  );
-                })()}
-              </div>
-            )}
-
-            {accessMsg && (
-              <p className={`text-xs font-light ${accessMsg.type === 'ok' ? 'text-[#e8704a]' : 'text-red-500'}`}>
-                {accessMsg.text}
-              </p>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" className={btnGhost} onClick={() => setAccessOpen(false)} disabled={accessLoading}>关闭</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={actionDialogOpen} onOpenChange={(v) => { if (!actionSaving) setActionDialogOpen(v); }}>
-        <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-xl">
-          <DialogHeader>
-            <DialogTitle className="text-base font-light tracking-[0.15em]">添加行动档案</DialogTitle>
-            <DialogDescription className="text-xs text-[#9b9ea4]">
-              档案编号将根据行动时间自动生成，格式 DEC+YYYYMMDD+6位随机数。
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label className="text-xs text-[#85888e]">行动代号 *</Label>
-                <Input
-                  value={aCodename}
-                  onChange={(e) => setACodename(e.target.value)}
-                  placeholder="例如：晨曦行动"
-                  className={fieldCls}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-[#85888e]">时间 *</Label>
-                <Input
-                  type="datetime-local"
-                  value={aTime}
-                  onChange={(e) => setATime(e.target.value)}
-                  className={fieldCls}
-                />
-              </div>
+                return (
+                  <div className="space-y-2">
+                    <Label className="text-xs text-[#85888e]">申请理由（可选）</Label>
+                    <Input
+                      value={accessReason}
+                      onChange={(e) => setAccessReason(e.target.value)}
+                      placeholder="简单说明为什么需要访问该文件"
+                      className={fieldCls}
+                    />
+                    <Button onClick={submitAccessRequest} disabled={accessLoading} className={`${btnSolid} w-full`}>
+                      {accessLoading ? '提交中…' : '申请访问权限'}
+                    </Button>
+                  </div>
+                );
+              })()}
             </div>
+          )}
 
-            <div className="space-y-2">
-              <Label className="text-xs text-[#85888e]">小组 *（仅大写英文字母）</Label>
-              <Input
-                value={aTeam}
-                onChange={(e) => setATeam(e.target.value.toUpperCase().replace(/[^A-Z]/g, ''))}
-                placeholder="例如：ALPHA"
-                className={`${fieldCls} font-mono`}
-              />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label className="text-xs text-[#85888e]">空中支援</Label>
-                <div className="flex items-center gap-2 h-9">
-                  <button
-                    type="button"
-                    onClick={() => setAAirSupport(!aAirSupport)}
-                    className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${aAirSupport ? 'bg-[#1b1c1e]' : 'bg-[#d4d6da]'}`}
-                  >
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all duration-200 ${aAirSupport ? 'left-[18px]' : 'left-0.5'}`} />
-                  </button>
-                  <span className="text-xs text-[#55585e]">{aAirSupport ? '有' : '无'}</span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-[#85888e]">信息支援</Label>
-                <div className="flex items-center gap-2 h-9">
-                  <button
-                    type="button"
-                    onClick={() => setAInfoSupport(!aInfoSupport)}
-                    className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${aInfoSupport ? 'bg-[#1b1c1e]' : 'bg-[#d4d6da]'}`}
-                  >
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all duration-200 ${aInfoSupport ? 'left-[18px]' : 'left-0.5'}`} />
-                  </button>
-                  <span className="text-xs text-[#55585e]">{aInfoSupport ? '有' : '无'}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-xs text-[#85888e]">简介</Label>
-              <textarea
-                value={aDesc}
-                onChange={(e) => setADesc(e.target.value)}
-                placeholder="简要描述行动目标、背景等"
-                rows={4}
-                className="w-full rounded-none border border-[#e3e4e8] bg-white px-3 py-2 text-xs font-light text-[#1b1c1e] placeholder:text-[#b9bcc2] focus:border-[#1b1c1e] focus:outline-none"
-              />
-            </div>
-
-            <p className="text-[10px] text-[#9b9ea4]">
-              新档案默认等级为「绝密」，仅管理员可修改。若需邀请他人查看，请联系管理员。
+          {accessMsg && (
+            <p className={`text-xs font-light ${accessMsg.type === 'ok' ? 'text-[#e8704a]' : 'text-red-500'}`}>
+              {accessMsg.text}
             </p>
+          )}
+        </div>
 
-            {aMsg && <p className="text-xs text-red-500">{aMsg}</p>}
+        <DialogFooter>
+          <Button variant="outline" className={btnGhost} onClick={() => setAccessOpen(false)} disabled={accessLoading}>关闭</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <Dialog open={actionDialogOpen} onOpenChange={(v) => { if (!actionSaving) setActionDialogOpen(v); }}>
+      <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-xl">
+        <DialogHeader>
+          <DialogTitle className="text-base font-light tracking-[0.15em]">添加行动档案</DialogTitle>
+          <DialogDescription className="text-xs text-[#9b9ea4]">
+            档案编号将根据行动时间自动生成，格式 DEC+YYYYMMDD+6位随机数。
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="text-xs text-[#85888e]">行动代号 *</Label>
+              <Input
+                value={aCodename}
+                onChange={(e) => setACodename(e.target.value)}
+                placeholder="例如：晨曦行动"
+                className={fieldCls}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-[#85888e]">时间 *</Label>
+              <Input
+                type="datetime-local"
+                value={aTime}
+                onChange={(e) => setATime(e.target.value)}
+                className={fieldCls}
+              />
+            </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" className={btnGhost} onClick={() => setActionDialogOpen(false)} disabled={actionSaving}>
-              取消
-            </Button>
-            <Button onClick={handleSaveAction} disabled={actionSaving} className={btnSolid}>
-              {actionSaving ? '保存中…' : '保存档案'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="space-y-2">
+            <Label className="text-xs text-[#85888e]">小组 *（仅大写英文字母）</Label>
+            <Input
+              value={aTeam}
+              onChange={(e) => setATeam(e.target.value.toUpperCase().replace(/[^A-Z]/g, ''))}
+              placeholder="例如：ALPHA"
+              className={`${fieldCls} font-mono`}
+            />
+          </div>
 
-      <Dialog open={actionAccessOpen} onOpenChange={(v) => { if (!actionAccessLoading) setActionAccessOpen(v); }}>
-        <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-base font-light tracking-[0.15em]">申请档案查看权限</DialogTitle>
-            <DialogDescription className="text-xs text-[#9b9ea4]">
-              输入档案编号查找档案。提交后等待管理员审核，通过后你会在「行动档案」列表中看到该档案。
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label className="text-xs text-[#85888e]">档案编号</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={actionAccessCode}
-                  onChange={(e) => setActionAccessCode(e.target.value)}
-                  placeholder="例如：DEC20260922XXXXXX"
-                  className={`${fieldCls} flex-1 font-mono text-xs`}
-                  onKeyDown={(e) => { if (e.key === 'Enter') findActionByCode(); }}
-                />
-                <Button onClick={findActionByCode} className={`${btnSolid} shrink-0`}>查找</Button>
+              <Label className="text-xs text-[#85888e]">空中支援</Label>
+              <div className="flex items-center gap-2 h-9">
+                <button
+                  type="button"
+                  onClick={() => setAAirSupport(!aAirSupport)}
+                  className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${aAirSupport ? 'bg-[#1b1c1e]' : 'bg-[#d4d6da]'}`}
+                >
+                  <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all duration-200 ${aAirSupport ? 'left-[18px]' : 'left-0.5'}`} />
+                </button>
+                <span className="text-xs text-[#55585e]">{aAirSupport ? '有' : '无'}</span>
               </div>
             </div>
-
-            {actionAccessFound && (
-              <div className="space-y-3 border border-[#e3e4e8] p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-light text-[#1b1c1e] truncate" title={actionAccessFound.codename}>
-                      {actionAccessFound.codename}
-                    </p>
-                    <p className="mt-1 text-[11px] text-[#9b9ea4] font-mono">{actionAccessFound.code}</p>
-                  </div>
-                  {renderActionLevelBadge(actionAccessFound.level)}
-                </div>
-                {actionAccessFound.actionTime > 0 && (
-                  <div className="flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-[#9b9ea4]">
-                    <span>时间：{new Date(actionAccessFound.actionTime).toLocaleString('zh-CN')}</span>
-                    {actionAccessFound.team && <span>小组：{actionAccessFound.team}</span>}
-                  </div>
-                )}
-
-                {(() => {
-                  const user = {
-                    userId: me?.member?.user_id ?? '',
-                    name: me?.member?.name ?? '',
-                    memberNo: me?.member?.member_no ?? '',
-                    email: me?.email ?? '',
-                  };
-
-                  if (actionAccessFound.id && hasActionAccess(actionAccessFound, user, myActionInvites)) {
-                    return <p className="text-xs text-[#e8704a]">你已拥有查看权限，无需再次申请。</p>;
-                  }
-
-                  if (myActionRequestForFound) {
-                    const st = myActionRequestForFound.status;
-                    if (st === 'pending') return <p className="text-xs text-[#b45309]">申请已提交，等待管理员处理。</p>;
-                    if (st === 'approved') return <p className="text-xs text-[#16a34a]">申请已通过，请到「行动档案」查看。</p>;
-                    if (st === 'rejected') {
-                      return (
-                        <div className="space-y-2">
-                          <p className="text-xs text-red-500">上次申请已被拒绝，你可以重新提交。</p>
-                          <Label className="text-xs text-[#85888e]">申请理由（可选）</Label>
-                          <Input
-                            value={actionAccessReason}
-                            onChange={(e) => setActionAccessReason(e.target.value)}
-                            placeholder="简单说明为什么需要查看该档案"
-                            className={fieldCls}
-                          />
-                          <Button onClick={submitActionAccessRequest} disabled={actionAccessLoading} className={`${btnSolid} w-full`}>
-                            {actionAccessLoading ? '提交中…' : '重新申请查看权限'}
-                          </Button>
-                        </div>
-                      );
-                    }
-                  }
-
-                  return (
-                    <div className="space-y-2">
-                      <Label className="text-xs text-[#85888e]">申请理由（可选）</Label>
-                      <Input
-                        value={actionAccessReason}
-                        onChange={(e) => setActionAccessReason(e.target.value)}
-                        placeholder="简单说明为什么需要查看该档案"
-                        className={fieldCls}
-                      />
-                      <Button onClick={submitActionAccessRequest} disabled={actionAccessLoading} className={`${btnSolid} w-full`}>
-                        {actionAccessLoading ? '提交中…' : '申请查看权限'}
-                      </Button>
-                    </div>
-                  );
-                })()}
+            <div className="space-y-2">
+              <Label className="text-xs text-[#85888e]">信息支援</Label>
+              <div className="flex items-center gap-2 h-9">
+                <button
+                  type="button"
+                  onClick={() => setAInfoSupport(!aInfoSupport)}
+                  className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${aInfoSupport ? 'bg-[#1b1c1e]' : 'bg-[#d4d6da]'}`}
+                >
+                  <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all duration-200 ${aInfoSupport ? 'left-[18px]' : 'left-0.5'}`} />
+                </button>
+                <span className="text-xs text-[#55585e]">{aInfoSupport ? '有' : '无'}</span>
               </div>
-            )}
-
-            {actionAccessMsg && (
-              <p className={`text-xs font-light ${actionAccessMsg.type === 'ok' ? 'text-[#e8704a]' : 'text-red-500'}`}>
-                {actionAccessMsg.text}
-              </p>
-            )}
+            </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" className={btnGhost} onClick={() => setActionAccessOpen(false)} disabled={actionAccessLoading}>关闭</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={pwOpen} onOpenChange={setPwOpen}>
-        <DialogContent className="rounded-none border-[#e3e4e8] bg-white text-[#1b1c1e] sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-base font-light tracking-[0.15em]">修改登录密码</DialogTitle>
-            <DialogDescription className="text-xs font-light text-[#9b9ea4]">修改后请使用新密码重新登录</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label className="text-xs font-light tracking-[0.15em] text-[#85888e]">新密码</Label><Input type="password" value={pwNew} onChange={(e) => setPwNew(e.target.value)} className={fieldCls} placeholder="至少 6 位" /></div>
-            <div className="space-y-2"><Label className="text-xs font-light tracking-[0.15em] text-[#85888e]">确认新密码</Label><Input type="password" value={pwConfirm} onChange={(e) => setPwConfirm(e.target.value)} className={fieldCls} /></div>
-            {pwMsg && <p className="text-xs font-light text-[#c2410c]">{pwMsg}</p>}
+          <div className="space-y-2">
+            <Label className="text-xs text-[#85888e]">简介</Label>
+            <textarea
+              value={aDesc}
+              onChange={(e) => setADesc(e.target.value)}
+              placeholder="简要描述行动目标、背景等"
+              rows={4}
+              className="w-full rounded-none border border-[#e3e4e8] bg-white px-3 py-2 text-xs font-light text-[#1b1c1e] placeholder:text-[#b9bcc2] focus:border-[#1b1c1e] focus:outline-none"
+            />
           </div>
-          <DialogFooter>
-            <Button variant="outline" className={btnGhost} onClick={() => setPwOpen(false)}>取消</Button>
-            <Button disabled={pwSaving} onClick={handlePasswordChange} className={btnSolid}>{pwSaving ? '保存中…' : '确认修改'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+
+          <p className="text-[10px] text-[#9b9ea4]">
+            新档案默认等级为「绝密」，仅管理员可修改。若需邀请他人查看，请联系管理员。
+          </p>
+
+          {aMsg && <p className="text-xs text-red-500">{aMsg}</p>}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" className={btnGhost} onClick={() => setActionDialogOpen(false)} disabled={actionSaving}>
+            取消
+          </Button>
+          <Button onClick={handleSaveAction} disabled={actionSaving} className={btnSolid}>
+            {actionSaving ? '保存中…' : '保存档案'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <Dialog open={actionAccessOpen} onOpenChange={(v) => { if (!actionAccessLoading) setActionAccessOpen(v); }}>
+      <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-base font-light tracking-[0.15em]">申请档案查看权限</DialogTitle>
+          <DialogDescription className="text-xs text-[#9b9ea4]">
+            输入档案编号查找档案。提交后等待管理员审核，通过后你会在「行动档案」列表中看到该档案。
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-xs text-[#85888e]">档案编号</Label>
+            <div className="flex gap-2">
+              <Input
+                value={actionAccessCode}
+                onChange={(e) => setActionAccessCode(e.target.value)}
+                placeholder="例如：DEC20260922XXXXXX"
+                className={`${fieldCls} flex-1 font-mono text-xs`}
+                onKeyDown={(e) => { if (e.key === 'Enter') findActionByCode(); }}
+              />
+              <Button onClick={findActionByCode} className={`${btnSolid} shrink-0`}>查找</Button>
+            </div>
+          </div>
+
+          {actionAccessFound && (
+            <div className="space-y-3 border border-[#e3e4e8] p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-light text-[#1b1c1e] truncate" title={actionAccessFound.codename}>
+                    {actionAccessFound.codename}
+                  </p>
+                  <p className="mt-1 text-[11px] text-[#9b9ea4] font-mono">{actionAccessFound.code}</p>
+                </div>
+                {renderActionLevelBadge(actionAccessFound.level)}
+              </div>
+              {actionAccessFound.actionTime > 0 && (
+                <div className="flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-[#9b9ea4]">
+                  <span>时间：{new Date(actionAccessFound.actionTime).toLocaleString('zh-CN')}</span>
+                  {actionAccessFound.team && <span>小组：{actionAccessFound.team}</span>}
+                </div>
+              )}
+
+              {(() => {
+                const user = {
+                  userId: me?.member?.user_id ?? '',
+                  name: me?.member?.name ?? '',
+                  memberNo: me?.member?.member_no ?? '',
+                  email: me?.email ?? '',
+                };
+
+                if (actionAccessFound.id && hasActionAccess(actionAccessFound, user, myActionInvites)) {
+                  return <p className="text-xs text-[#e8704a]">你已拥有查看权限，无需再次申请。</p>;
+                }
+
+                if (myActionRequestForFound) {
+                  const st = myActionRequestForFound.status;
+                  if (st === 'pending') return <p className="text-xs text-[#b45309]">申请已提交，等待管理员处理。</p>;
+                  if (st === 'approved') return <p className="text-xs text-[#16a34a]">申请已通过，请到「行动档案」查看。</p>;
+                  if (st === 'rejected') {
+                    return (
+                      <div className="space-y-2">
+                        <p className="text-xs text-red-500">上次申请已被拒绝，你可以重新提交。</p>
+                        <Label className="text-xs text-[#85888e]">申请理由（可选）</Label>
+                        <Input
+                          value={actionAccessReason}
+                          onChange={(e) => setActionAccessReason(e.target.value)}
+                          placeholder="简单说明为什么需要查看该档案"
+                          className={fieldCls}
+                        />
+                        <Button onClick={submitActionAccessRequest} disabled={actionAccessLoading} className={`${btnSolid} w-full`}>
+                          {actionAccessLoading ? '提交中…' : '重新申请查看权限'}
+                        </Button>
+                      </div>
+                    );
+                  }
+                }
+
+                return (
+                  <div className="space-y-2">
+                    <Label className="text-xs text-[#85888e]">申请理由（可选）</Label>
+                    <Input
+                      value={actionAccessReason}
+                      onChange={(e) => setActionAccessReason(e.target.value)}
+                      placeholder="简单说明为什么需要查看该档案"
+                      className={fieldCls}
+                    />
+                    <Button onClick={submitActionAccessRequest} disabled={actionAccessLoading} className={`${btnSolid} w-full`}>
+                      {actionAccessLoading ? '提交中…' : '申请查看权限'}
+                    </Button>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {actionAccessMsg && (
+            <p className={`text-xs font-light ${actionAccessMsg.type === 'ok' ? 'text-[#e8704a]' : 'text-red-500'}`}>
+              {actionAccessMsg.text}
+            </p>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" className={btnGhost} onClick={() => setActionAccessOpen(false)} disabled={actionAccessLoading}>关闭</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <Dialog open={pwOpen} onOpenChange={setPwOpen}>
+      <DialogContent className="rounded-none border-[#e3e4e8] bg-white text-[#1b1c1e] sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-base font-light tracking-[0.15em]">修改登录密码</DialogTitle>
+          <DialogDescription className="text-xs font-light text-[#9b9ea4]">修改后请使用新密码重新登录</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2"><Label className="text-xs font-light tracking-[0.15em] text-[#85888e]">新密码</Label><Input type="password" value={pwNew} onChange={(e) => setPwNew(e.target.value)} className={fieldCls} placeholder="至少 6 位" /></div>
+          <div className="space-y-2"><Label className="text-xs font-light tracking-[0.15em] text-[#85888e]">确认新密码</Label><Input type="password" value={pwConfirm} onChange={(e) => setPwConfirm(e.target.value)} className={fieldCls} /></div>
+          {pwMsg && <p className="text-xs font-light text-[#c2410c]">{pwMsg}</p>}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" className={btnGhost} onClick={() => setPwOpen(false)}>取消</Button>
+          <Button disabled={pwSaving} onClick={handlePasswordChange} className={btnSolid}>{pwSaving ? '保存中…' : '确认修改'}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  </div>
+);
 }
