@@ -109,6 +109,20 @@ interface AccessCode {
   used_by_member_no?: string | null;
   used_at?: string | null;
 }
+interface FeedbackRecord {
+  id: string;
+  user_id: string | null;
+  visitor_id: string | null;
+  name: string | null;
+  email: string | null;
+  category: string;
+  content: string;
+  status: string;
+  admin_reply: string | null;
+  created_at: string;
+  replied_at: string | null;
+  replied_by: string | null;
+}
 function formatSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -137,6 +151,19 @@ const FILE_LEVEL_OPTIONS: { value: FileLevel; label: string }[] = [
   { value: 'secret', label: '绝密' },
 ];
 const FILE_DEFAULT_LIMIT = 5;
+
+const FEEDBACK_CATEGORIES = [
+  { value: 'bug', label: 'Bug 反馈' },
+  { value: 'suggestion', label: '功能建议' },
+  { value: 'content', label: '内容问题' },
+  { value: 'other', label: '其它' },
+];
+const FEEDBACK_STATUS_OPTIONS = [
+  { value: 'pending', label: '待处理' },
+  { value: 'processing', label: '处理中' },
+  { value: 'resolved', label: '已解决' },
+  { value: 'rejected', label: '已关闭' },
+];
 
 type PreviewKind = 'image' | 'pdf' | 'video' | 'audio' | 'text' | null;
 function getFileExt(name: string): string {
@@ -167,7 +194,7 @@ const parseError = async (res: Response | undefined): Promise<string> => {
   return text || `HTTP ${res.status}`;
 };
 
-type SectionKey = 'members' | 'notices' | 'files' | 'inquiries' | 'visitors' | 'actions' | 'chat' | 'platform';
+type SectionKey = 'members' | 'notices' | 'files' | 'inquiries' | 'visitors' | 'feedback' | 'actions' | 'chat' | 'platform';
 
 const SECTIONS: { key: SectionKey; label: string; icon: React.ReactNode }[] = [
   { key: 'members', label: '成员', icon: (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3" /><path d="M3 20c0-3 3-5 6-5s6 2 6 5" /><path d="M16 6a3 3 0 0 1 0 6" /><path d="M18 20c0-2-1-3.5-2.5-4" /></svg>) },
@@ -175,6 +202,7 @@ const SECTIONS: { key: SectionKey; label: string; icon: React.ReactNode }[] = [
   { key: 'files', label: '文件', icon: (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5a2 2 0 0 1 2-2h6l2 2h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" /></svg>) },
   { key: 'inquiries', label: '意向', icon: (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 1 1-3.3-6.4" /><path d="M22 4l-10 10-3-3" /></svg>) },
   { key: 'visitors', label: '访客', icon: (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="3" /><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" /></svg>) },
+  { key: 'feedback', label: '反馈', icon: (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" /></svg>) },
   { key: 'actions', label: '行动', icon: (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /><path d="M12 3v3M12 18v3M3 12h3M18 12h3" /></svg>) },
   { key: 'chat', label: '聊天', icon: (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" /></svg>) },
   { key: 'platform', label: '平台', icon: (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="1" /><path d="M3 10h18" /><path d="M8 4v6M16 4v6" /></svg>) },
@@ -294,6 +322,17 @@ export default function AdminConsolePage() {
   const [chatError, setChatError] = useState<string | null>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const chatFileInputRef = useRef<HTMLInputElement>(null);
+
+  /* ===== 反馈 ===== */
+  const [feedbacks, setFeedbacks] = useState<FeedbackRecord[]>([]);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackFilter, setFeedbackFilter] = useState<'all' | 'pending' | 'processing' | 'resolved' | 'rejected'>('all');
+  const [replyingFeedback, setReplyingFeedback] = useState<FeedbackRecord | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [replySaving, setReplySaving] = useState(false);
+
+  /* ===== 访客搜索 ===== */
+  const [visitorSearch, setVisitorSearch] = useState('');
 
   const [activeSection, setActiveSection] = useState<SectionKey>('members');
   const [refreshing, setRefreshing] = useState(false);
@@ -418,6 +457,28 @@ export default function AdminConsolePage() {
       .sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
   }, [members, myUserId]);
 
+  // 访客搜索过滤
+  const filteredVisitors = useMemo(() => {
+    const kw = visitorSearch.trim().toLowerCase();
+    if (!kw) return visitors;
+    return visitors.filter((v) => {
+      const name = (v.name ?? '').toLowerCase();
+      const email = (v.email ?? '').toLowerCase();
+      return name.includes(kw) || email.includes(kw);
+    });
+  }, [visitors, visitorSearch]);
+
+  // 反馈过滤
+  const filteredFeedbacks = useMemo(() => {
+    if (feedbackFilter === 'all') return feedbacks;
+    return feedbacks.filter((f) => f.status === feedbackFilter);
+  }, [feedbacks, feedbackFilter]);
+
+  const pendingFeedbackCount = useMemo(
+    () => feedbacks.filter((f) => f.status === 'pending').length,
+    [feedbacks],
+  );
+
   const loadFiles = useCallback(async () => {
     setFileLoading(true);
     try {
@@ -474,6 +535,7 @@ export default function AdminConsolePage() {
     } catch { /* ignore */ }
     finally { setAccessCodesLoading(false); }
   }, []);
+
   const loadActions = useCallback(async () => {
     setActionLoading(true);
     try {
@@ -489,7 +551,66 @@ export default function AdminConsolePage() {
     }
   }, []);
 
-  /* ===== 聊天：加载 / 发送 ===== */
+  const loadFeedbacks = useCallback(async () => {
+    setFeedbackLoading(true);
+    try {
+      const res = await callAuthenticatedApi('/api/feedback');
+      if (res?.ok) {
+        const data = await res.json();
+        setFeedbacks(data.feedbacks ?? []);
+      }
+    } catch (e) {
+      console.error('加载反馈失败', e);
+    } finally {
+      setFeedbackLoading(false);
+    }
+  }, []);
+
+  const handleFeedbackStatus = async (id: string, status: string) => {
+    try {
+      const res = await callAuthenticatedApi('/api/feedback', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status }),
+      });
+      if (!res || !res.ok) {
+        const d = await res?.json().catch(() => ({}));
+        throw new Error(d.error || '更新失败');
+      }
+      await loadFeedbacks();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '更新失败');
+    }
+  };
+
+  const openReplyFeedback = (f: FeedbackRecord) => {
+    setReplyingFeedback(f);
+    setReplyText(f.admin_reply ?? '');
+  };
+
+  const handleSubmitReply = async () => {
+    if (!replyingFeedback) return;
+    setReplySaving(true);
+    try {
+      const res = await callAuthenticatedApi('/api/feedback', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: replyingFeedback.id, reply: replyText }),
+      });
+      if (!res || !res.ok) {
+        const d = await res?.json().catch(() => ({}));
+        throw new Error(d.error || '回复失败');
+      }
+      setReplyingFeedback(null);
+      setReplyText('');
+      await loadFeedbacks();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '回复失败');
+    } finally {
+      setReplySaving(false);
+    }
+  };
+
   const loadChatMessages = useCallback(async (receiverId: string) => {
     setChatLoading(true);
     setChatError(null);
@@ -1076,12 +1197,11 @@ export default function AdminConsolePage() {
     await loadActionAccessRequests();
     await loadActionInvites();
     await loadAccessCodes();
-  }, [loadAccessRequests, loadActions, loadActionAccessRequests, loadActionInvites, loadAccessCodes]);
+    await loadFeedbacks();
+  }, [loadAccessRequests, loadActions, loadActionAccessRequests, loadActionInvites, loadAccessCodes, loadFeedbacks]);
 
-  /** 刷新指定分区的数据 */
   const refreshSection = useCallback(async (key: SectionKey) => {
     if (key === 'members' || key === 'notices' || key === 'inquiries' || key === 'visitors') {
-      // 这几个分区共用 loadAll 里的成员/访客/意向/通知数据
       await loadAll();
     } else if (key === 'files') {
       await Promise.all([loadFiles(), loadAccessRequests()]);
@@ -1090,6 +1210,8 @@ export default function AdminConsolePage() {
     } else if (key === 'chat') {
       await loadAll();
       if (chatTarget?.user_id) await loadChatMessages(chatTarget.user_id);
+    } else if (key === 'feedback') {
+      await loadFeedbacks();
     } else if (key === 'platform') {
       await loadAccessCodes();
     }
@@ -1101,11 +1223,11 @@ export default function AdminConsolePage() {
     loadActionInvites,
     loadActionAccessRequests,
     loadAccessCodes,
+    loadFeedbacks,
     chatTarget?.user_id,
     loadChatMessages,
   ]);
 
-  /** 刷新按钮：刷新当前分区 */
   const handleManualRefresh = useCallback(async () => {
     if (refreshing) return;
     setRefreshing(true);
@@ -1116,7 +1238,6 @@ export default function AdminConsolePage() {
     }
   }, [refreshing, activeSection, refreshSection]);
 
-  /** 切换分区：切过去 + 自动刷新该分区 */
   const handleSectionChange = useCallback(async (key: SectionKey) => {
     setActiveSection(key);
     try {
@@ -1334,6 +1455,7 @@ export default function AdminConsolePage() {
       </section>
     </div>
   );
+
   const renderNotices = () => (
     <div className="space-y-4">
       <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">通知管理</h2>
@@ -1701,14 +1823,34 @@ const renderInquiries = () => (
 
 const renderVisitors = () => (
   <section className="space-y-4">
-    <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">注册访客（{visitors.length}）</h2>
+    <div className="flex items-center justify-between">
+      <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">注册访客（{visitors.length}）</h2>
+    </div>
+    <div className="flex flex-wrap items-center gap-2">
+      <Input
+        value={visitorSearch}
+        onChange={(e) => setVisitorSearch(e.target.value)}
+        placeholder="按名称或邮箱搜索…"
+        className={`${fieldCls} max-w-xs text-xs`}
+      />
+      {visitorSearch && (
+        <button onClick={() => setVisitorSearch('')} className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]">清空</button>
+      )}
+      {visitorSearch && (
+        <span className="text-[11px] text-[#9b9ea4]">找到 {filteredVisitors.length} 条</span>
+      )}
+    </div>
     <div className={`${panelCls} overflow-x-auto`}>
       <table className="w-full min-w-[680px] text-sm font-light">
         <thead><tr className="border-b border-[#e3e4e8] text-left text-[11px] text-[#9b9ea4]">
           <th className="px-5 py-3">称呼</th><th className="px-5 py-3">邮箱</th><th className="px-5 py-3">公司</th><th className="px-5 py-3">电话</th><th className="px-5 py-3">兴趣</th><th className="px-5 py-3">注册时间</th>
         </tr></thead>
         <tbody>
-          {visitors.map((v) => (
+          {filteredVisitors.length === 0 ? (
+            <tr><td colSpan={6} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">
+              {visitorSearch ? '没有匹配的访客' : '暂无注册访客'}
+            </td></tr>
+          ) : filteredVisitors.map((v) => (
             <tr key={v.id} className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
               <td className="px-5 py-3 text-[#1b1c1e]">{v.name}</td>
               <td className="px-5 py-3 text-[#85888e]">{v.email || '—'}</td>
@@ -1724,891 +1866,916 @@ const renderVisitors = () => (
   </section>
 );
 
-const renderActions = () => (
-  <section className="space-y-4">
-    {pendingActionAccessRequests.length > 0 && (
+const renderFeedback = () => (
+  <div className="space-y-4">
+    <div className="flex items-center justify-between">
+      <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">问题反馈（{feedbacks.length}）</h2>
+      {pendingFeedbackCount > 0 && (
+        <span className="text-[11px] text-[#b45309]">{pendingFeedbackCount} 条待处理</span>
+      )}
+    </div>
+
+    <div className="flex flex-wrap items-center gap-2">
+      {([
+        { key: 'all', label: '全部' },
+        { key: 'pending', label: '待处理' },
+        { key: 'processing', label: '处理中' },
+        { key: 'resolved', label: '已解决' },
+        { key: 'rejected', label: '已关闭' },
+      ] as const).map((item) => {
+        const active = feedbackFilter === item.key;
+        return (
+          <button
+            key={item.key}
+            onClick={() => setFeedbackFilter(item.key)}
+            className={`px-3 py-1.5 text-xs font-light tracking-wider transition-colors ${
+              active ? 'bg-[#1b1c1e] text-white' : 'bg-[#f5f6f7] text-[#85888e] hover:text-[#1b1c1e]'
+            }`}
+          >
+            {item.label}
+          </button>
+        );
+      })}
+    </div>
+
+    {feedbackLoading ? (
+      <p className={`${panelCls} p-8 text-center text-xs text-[#9b9ea4]`}>加载中…</p>
+    ) : filteredFeedbacks.length === 0 ? (
+      <p className={`${panelCls} p-8 text-center text-xs text-[#9b9ea4]`}>
+        {feedbackFilter === 'all' ? '暂无反馈' : '该状态下暂无反馈'}
+      </p>
+    ) : (
+      <div className="space-y-3">
+        {filteredFeedbacks.map((f) => {
+          const stMap: Record<string, { text: string; cls: string }> = {
+            pending: { text: '待处理', cls: 'bg-[#fef3c7] text-[#b45309]' },
+            processing: { text: '处理中', cls: 'bg-[#cffafe] text-[#0e7490]' },
+            resolved: { text: '已解决', cls: 'bg-[#dcfce7] text-[#166534]' },
+            rejected: { text: '已关闭', cls: 'bg-[#eef0f2] text-[#85888e]' },
+          };
+          const st = stMap[f.status] ?? { text: f.status, cls: 'bg-[#eef0f2] text-[#85888e]' };
+          const catLabel = FEEDBACK_CATEGORIES.find((c) => c.value === f.category)?.label ?? f.category;
+          return (
+            <div key={f.id} className={`${panelCls} p-5`}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" className="rounded-none border-0 bg-[#f0f9ff] text-[10px] font-light text-[#0369a1]">{catLabel}</Badge>
+                    <Badge variant="outline" className={`rounded-none border-0 text-[10px] font-light ${st.cls}`}>{st.text}</Badge>
+                    <span className="text-[11px] text-[#9b9ea4]">{f.name || f.email || '匿名用户'}</span>
+                    <span className="text-[10px] text-[#b9bcc2] font-mono">{new Date(f.created_at).toLocaleString('zh-CN')}</span>
+                  </div>
+                  <p className="mt-3 whitespace-pre-wrap break-words text-xs leading-6 text-[#1b1c1e]">{f.content}</p>
+                  {f.admin_reply && (
+                    <div className="mt-3 border-l-2 border-[#e8704a] bg-[#fafbfc] p-3">
+                      <p className="text-[10px] tracking-[0.2em] text-[#9b9ea4]">回复</p>
+                      <p className="mt-1 whitespace-pre-wrap break-words text-xs leading-6 text-[#1b1c1e]">{f.admin_reply}</p>
+                      {f.replied_at && (
+                        <p className="mt-1 text-[10px] text-[#b9bcc2]">{new Date(f.replied_at).toLocaleString('zh-CN')}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-2">
+                  <button
+                    onClick={() => openReplyFeedback(f)}
+                    className="text-xs text-[#1b1c1e] hover:text-[#e8704a] hover:underline"
+                  >
+                    {f.admin_reply ? '编辑回复' : '回复'}
+                  </button>
+                  <select
+                    value={f.status}
+                    onChange={(e) => handleFeedbackStatus(f.id, e.target.value)}
+                    className="rounded-none border border-[#e3e4e8] bg-white px-2 py-1 text-[11px] font-light text-[#55585e] focus:border-[#1b1c1e] focus:outline-none"
+                  >
+                    {FEEDBACK_STATUS_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    )}
+  </div>
+);
+
+const renderActions = () => (    <section className="space-y-4">
+  {pendingActionAccessRequests.length > 0 && (
+    <section className="space-y-3">
+      <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">
+        档案权限申请（{pendingActionAccessRequests.length}）
+      </h2>
+      <div className={`${panelCls} divide-y divide-[#f0f1f3]`}>
+        {pendingActionAccessRequests.map((r) => (
+          <div key={r.id} className="flex items-start justify-between gap-3 p-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="outline" className="rounded-none border-0 bg-[#fdecea] text-[10px] font-light text-[#c62828]">
+                  绝密
+                </Badge>
+                <p className="text-xs font-light text-[#1b1c1e] break-words">
+                  {resolveDisplayName(r.requesterName)} 申请查看「{r.actionCodename}」
+                </p>
+              </div>
+              <p className="mt-1 text-[10px] text-[#9b9ea4] font-mono">
+                编号：{r.actionCode} · {new Date(r.createdAt).toLocaleString('zh-CN')}
+              </p>
+              {r.reason && (
+                <p className="mt-1 text-[11px] text-[#55585e]">理由：{r.reason}</p>
+              )}
+            </div>
+            <div className="flex shrink-0 gap-1">
+              <Button size="sm" className={btnSolid} onClick={() => handleActionAccessReview(r.id, 'approve')}>通过</Button>
+              <Button size="sm" variant="outline" className={btnGhost} onClick={() => handleActionAccessReview(r.id, 'reject')}>拒绝</Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {(() => {
+    const handled = actionAccessRequests.filter((r) => r.status !== 'pending');
+    if (handled.length === 0) return null;
+    const displayed = actionAccessExpanded ? handled : handled.slice(0, 5);
+    return (
       <section className="space-y-3">
-        <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">
-          档案权限申请（{pendingActionAccessRequests.length}）
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">
+            已处理档案申请（{handled.length}）
+          </h2>
+          {handled.length > 5 && (
+            <Button size="sm" variant="outline" className={btnGhost} onClick={() => setActionAccessExpanded((v) => !v)}>
+              {actionAccessExpanded ? '收起' : `展开全部（共 ${handled.length} 条）`}
+            </Button>
+          )}
+        </div>
         <div className={`${panelCls} divide-y divide-[#f0f1f3]`}>
-          {pendingActionAccessRequests.map((r) => (
-            <div key={r.id} className="flex items-start justify-between gap-3 p-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="outline" className="rounded-none border-0 bg-[#fdecea] text-[10px] font-light text-[#c62828]">
-                    绝密
-                  </Badge>
+          {displayed.map((r) => {
+            const st = r.status === 'approved'
+              ? { text: '已通过', cls: 'bg-[#dcfce7] text-[#166534]' }
+              : { text: '已拒绝', cls: 'bg-[#fdecea] text-[#c62828]' };
+            return (
+              <div key={r.id} className="flex items-start justify-between gap-3 p-4">
+                <div className="flex-1 min-w-0">
                   <p className="text-xs font-light text-[#1b1c1e] break-words">
                     {resolveDisplayName(r.requesterName)} 申请查看「{r.actionCodename}」
                   </p>
+                  <p className="mt-1 text-[10px] text-[#9b9ea4] font-mono">
+                    编号：{r.actionCode} · {new Date(r.createdAt).toLocaleString('zh-CN')}
+                  </p>
+                  {r.reason && <p className="mt-1 text-[11px] text-[#55585e]">理由：{r.reason}</p>}
                 </div>
-                <p className="mt-1 text-[10px] text-[#9b9ea4] font-mono">
-                  编号：{r.actionCode} · {new Date(r.createdAt).toLocaleString('zh-CN')}
-                </p>
-                {r.reason && (
-                  <p className="mt-1 text-[11px] text-[#55585e]">理由：{r.reason}</p>
-                )}
+                <Badge variant="outline" className={`rounded-none border-0 text-[10px] font-light shrink-0 ${st.cls}`}>{st.text}</Badge>
               </div>
-              <div className="flex shrink-0 gap-1">
-                <Button size="sm" className={btnSolid} onClick={() => handleActionAccessReview(r.id, 'approve')}>通过</Button>
-                <Button size="sm" variant="outline" className={btnGhost} onClick={() => handleActionAccessReview(r.id, 'reject')}>拒绝</Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-    )}
-
-    {(() => {
-      const handled = actionAccessRequests.filter((r) => r.status !== 'pending');
-      if (handled.length === 0) return null;
-      const displayed = actionAccessExpanded ? handled : handled.slice(0, 5);
-      return (
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">
-              已处理档案申请（{handled.length}）
-            </h2>
-            {handled.length > 5 && (
-              <Button size="sm" variant="outline" className={btnGhost} onClick={() => setActionAccessExpanded((v) => !v)}>
-                {actionAccessExpanded ? '收起' : `展开全部（共 ${handled.length} 条）`}
-              </Button>
-            )}
-          </div>
-          <div className={`${panelCls} divide-y divide-[#f0f1f3]`}>
-            {displayed.map((r) => {
-              const st = r.status === 'approved'
-                ? { text: '已通过', cls: 'bg-[#dcfce7] text-[#166534]' }
-                : { text: '已拒绝', cls: 'bg-[#fdecea] text-[#c62828]' };
-              return (
-                <div key={r.id} className="flex items-start justify-between gap-3 p-4">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-light text-[#1b1c1e] break-words">
-                      {resolveDisplayName(r.requesterName)} 申请查看「{r.actionCodename}」
-                    </p>
-                    <p className="mt-1 text-[10px] text-[#9b9ea4] font-mono">
-                      编号：{r.actionCode} · {new Date(r.createdAt).toLocaleString('zh-CN')}
-                    </p>
-                    {r.reason && <p className="mt-1 text-[11px] text-[#55585e]">理由：{r.reason}</p>}
-                  </div>
-                  <Badge variant="outline" className={`rounded-none border-0 text-[10px] font-light shrink-0 ${st.cls}`}>{st.text}</Badge>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      );
-    })()}
-
-    <div>
-      <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">行动档案（{actionList.length}）</h2>
-      <p className="mt-1 text-[11px] font-light text-[#9b9ea4]">管理员可查看并修改所有档案</p>
-    </div>
-
-    <div className={`${panelCls} overflow-x-auto`}>
-      <table className="w-full min-w-[1100px] text-sm font-light">
-        <thead>
-          <tr className="border-b border-[#e3e4e8] text-left text-[11px] tracking-[0.15em] text-[#9b9ea4]">
-            <th className="px-5 py-3 font-light">档案编号</th>
-            <th className="px-5 py-3 font-light">行动代号</th>
-            <th className="px-5 py-3 font-light">时间</th>
-            <th className="px-5 py-3 font-light">小组</th>
-            <th className="px-5 py-3 font-light">空中支援</th>
-            <th className="px-5 py-3 font-light">信息支援</th>
-            <th className="px-5 py-3 font-light">等级</th>
-            <th className="px-5 py-3 font-light">可查看人员</th>
-            <th className="px-5 py-3 font-light">创建者</th>
-            <th className="px-5 py-3 font-light text-right">操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {actionLoading ? (
-            <tr><td colSpan={10} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">加载中…</td></tr>
-          ) : actionList.length === 0 ? (
-            <tr><td colSpan={10} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">暂无行动档案</td></tr>
-          ) : actionList.map((a) => {
-            const lv = ACTION_LEVEL_MAP[a.level] ?? ACTION_LEVEL_MAP.secret;
-            const isExpanded = expandedActionId === a.id;
-            return (
-              <Fragment key={a.id}>
-                <tr className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
-                  <td className="px-5 py-3.5 font-mono text-[11px] text-[#1b1c1e]">{a.code}</td>
-                  <td className="px-5 py-3.5 text-[#1b1c1e]">{a.codename}</td>
-                  <td className="px-5 py-3.5 text-[#85888e]">{new Date(a.actionTime).toLocaleString('zh-CN')}</td>
-                  <td className="px-5 py-3.5 font-mono">{a.team}</td>
-                  <td className="px-5 py-3.5">
-                    <Badge variant="outline" className={`rounded-none border-0 font-light ${a.airSupport ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#eef0f2] text-[#9b9ea4]'}`}>
-                      {a.airSupport ? '有' : '无'}
-                    </Badge>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <Badge variant="outline" className={`rounded-none border-0 font-light ${a.infoSupport ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#eef0f2] text-[#9b9ea4]'}`}>
-                      {a.infoSupport ? '有' : '无'}
-                    </Badge>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <Badge variant="outline" className={`rounded-none border-0 font-light ${lv.cls}`}>{lv.text}</Badge>
-                  </td>
-                  <td className="max-w-[240px] px-5 py-3.5">
-                    {(() => {
-                      const accessors = getActionAccessors(a);
-                      if (accessors.length === 0) {
-                        return <span className="text-xs text-[#9b9ea4]">不限</span>;
-                      }
-                      return (
-                        <div className="flex flex-wrap gap-1">
-                          {accessors.map((uid) => (
-                            <span
-                              key={uid}
-                              className="inline-flex items-center gap-1 border border-[#e3e4e8] bg-[#f5f6f7] px-1.5 py-0.5 text-[11px] text-[#55585e]"
-                            >
-                              {resolveDisplayName(uid)}
-                              <button
-                                type="button"
-                                onClick={() => handleRevokeActionAccess(a, uid)}
-                                className="text-[#9b9ea4] hover:text-red-500"
-                                title="撤回查看权限"
-                              >
-                                ×
-                              </button>
-                            </span>
-                          ))}
-                        </div>
-                      );
-                    })()}
-                  </td>
-                  <td className="px-5 py-3.5 text-[#85888e] text-xs">{resolveDisplayName(a.creatorName)}</td>
-                  <td className="whitespace-nowrap px-5 py-3.5 text-right">
-                    <button
-                      onClick={() => setExpandedActionId((prev) => (prev === a.id ? null : a.id))}
-                      className="mr-3 text-xs text-[#1b1c1e] hover:text-[#e8704a] hover:underline"
-                    >
-                      {isExpanded ? '收起' : '展开'}
-                    </button>
-                    <button
-                      onClick={() => { setInviteActionFile(a); setInviteActionSelected([]); }}
-                      className="mr-3 text-xs text-[#c62828] hover:text-[#e8704a] hover:underline"
-                    >
-                      邀请查看
-                    </button>
-                    <button onClick={() => openEditAction(a)} className="mr-3 text-xs text-[#1b1c1e] hover:text-[#e8704a] hover:underline">编辑</button>
-                    <button onClick={() => handleDeleteAction(a.id)} className="text-xs text-[#9b9ea4] hover:text-red-500">删除</button>
-                  </td>
-                </tr>
-
-                {isExpanded && (
-                  <tr className="border-b border-[#f0f1f3] bg-[#fafbfc] last:border-0">
-                    <td colSpan={10} className="px-5 py-5">
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div>
-                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">档案编号</p>
-                          <p className="mt-1 font-mono text-xs text-[#1b1c1e]">{a.code}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">行动代号</p>
-                          <p className="mt-1 text-xs text-[#1b1c1e]">{a.codename}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">行动时间</p>
-                          <p className="mt-1 text-xs text-[#1b1c1e]">{new Date(a.actionTime).toLocaleString('zh-CN')}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">小组</p>
-                          <p className="mt-1 font-mono text-xs text-[#1b1c1e]">{a.team}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">空中支援</p>
-                          <p className="mt-1 text-xs text-[#1b1c1e]">{a.airSupport ? '有' : '无'}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">信息支援</p>
-                          <p className="mt-1 text-xs text-[#1b1c1e]">{a.infoSupport ? '有' : '无'}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">档案等级</p>
-                          <p className="mt-1"><Badge variant="outline" className={`rounded-none border-0 font-light ${lv.cls}`}>{lv.text}</Badge></p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">创建者</p>
-                          <p className="mt-1 text-xs text-[#1b1c1e]">{resolveDisplayName(a.creatorName)}</p>
-                        </div>
-                        <div className="sm:col-span-2">
-                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">可查看人员</p>
-                          <p className="mt-1 text-xs text-[#1b1c1e]">
-                            {(() => {
-                              const accessors = getActionAccessors(a);
-                              return accessors.length === 0 ? '不限' : accessors.map((uid) => resolveDisplayName(uid)).join('、');
-                            })()}
-                          </p>
-                        </div>
-                        <div className="sm:col-span-2">
-                          <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">完整简介</p>
-                          <p className="mt-1 whitespace-pre-wrap break-words text-xs leading-6 text-[#55585e]">
-                            {a.description?.trim() ? a.description : '（无简介）'}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </Fragment>
             );
           })}
-        </tbody>
-      </table>
-    </div>
-    <p className="text-[11px] font-light tracking-wider text-[#b9bcc2]">共 {actionList.length} 条档案</p>
-  </section>
+        </div>
+      </section>
+    );
+  })()}
+
+  <div>
+    <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">行动档案（{actionList.length}）</h2>
+    <p className="mt-1 text-[11px] font-light text-[#9b9ea4]">管理员可查看并修改所有档案</p>
+  </div>
+
+  <div className={`${panelCls} overflow-x-auto`}>
+    <table className="w-full min-w-[1100px] text-sm font-light">
+      <thead>
+        <tr className="border-b border-[#e3e4e8] text-left text-[11px] tracking-[0.15em] text-[#9b9ea4]">
+          <th className="px-5 py-3 font-light">档案编号</th>
+          <th className="px-5 py-3 font-light">行动代号</th>
+          <th className="px-5 py-3 font-light">时间</th>
+          <th className="px-5 py-3 font-light">小组</th>
+          <th className="px-5 py-3 font-light">空中支援</th>
+          <th className="px-5 py-3 font-light">信息支援</th>
+          <th className="px-5 py-3 font-light">等级</th>
+          <th className="px-5 py-3 font-light">可查看人员</th>
+          <th className="px-5 py-3 font-light">创建者</th>
+          <th className="px-5 py-3 font-light text-right">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        {actionLoading ? (
+          <tr><td colSpan={10} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">加载中…</td></tr>
+        ) : actionList.length === 0 ? (
+          <tr><td colSpan={10} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">暂无行动档案</td></tr>
+        ) : actionList.map((a) => {
+          const lv = ACTION_LEVEL_MAP[a.level] ?? ACTION_LEVEL_MAP.secret;
+          const isExpanded = expandedActionId === a.id;
+          return (
+            <Fragment key={a.id}>
+              <tr className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
+                <td className="px-5 py-3.5 font-mono text-[11px] text-[#1b1c1e]">{a.code}</td>
+                <td className="px-5 py-3.5 text-[#1b1c1e]">{a.codename}</td>
+                <td className="px-5 py-3.5 text-[#85888e]">{new Date(a.actionTime).toLocaleString('zh-CN')}</td>
+                <td className="px-5 py-3.5 font-mono">{a.team}</td>
+                <td className="px-5 py-3.5">
+                  <Badge variant="outline" className={`rounded-none border-0 font-light ${a.airSupport ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#eef0f2] text-[#9b9ea4]'}`}>
+                    {a.airSupport ? '有' : '无'}
+                  </Badge>
+                </td>
+                <td className="px-5 py-3.5">
+                  <Badge variant="outline" className={`rounded-none border-0 font-light ${a.infoSupport ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#eef0f2] text-[#9b9ea4]'}`}>
+                    {a.infoSupport ? '有' : '无'}
+                  </Badge>
+                </td>
+                <td className="px-5 py-3.5">
+                  <Badge variant="outline" className={`rounded-none border-0 font-light ${lv.cls}`}>{lv.text}</Badge>
+                </td>
+                <td className="max-w-[240px] px-5 py-3.5">
+                  {(() => {
+                    const accessors = getActionAccessors(a);
+                    if (accessors.length === 0) {
+                      return <span className="text-xs text-[#9b9ea4]">不限</span>;
+                    }
+                    return (
+                      <div className="flex flex-wrap gap-1">
+                        {accessors.map((uid) => (
+                          <span
+                            key={uid}
+                            className="inline-flex items-center gap-1 border border-[#e3e4e8] bg-[#f5f6f7] px-1.5 py-0.5 text-[11px] text-[#55585e]"
+                          >
+                            {resolveDisplayName(uid)}
+                            <button
+                              type="button"
+                              onClick={() => handleRevokeActionAccess(a, uid)}
+                              className="text-[#9b9ea4] hover:text-red-500"
+                              title="撤回查看权限"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </td>
+                <td className="px-5 py-3.5 text-[#85888e] text-xs">{resolveDisplayName(a.creatorName)}</td>
+                <td className="whitespace-nowrap px-5 py-3.5 text-right">
+                  <button
+                    onClick={() => setExpandedActionId((prev) => (prev === a.id ? null : a.id))}
+                    className="mr-3 text-xs text-[#1b1c1e] hover:text-[#e8704a] hover:underline"
+                  >
+                    {isExpanded ? '收起' : '展开'}
+                  </button>
+                  <button
+                    onClick={() => { setInviteActionFile(a); setInviteActionSelected([]); }}
+                    className="mr-3 text-xs text-[#c62828] hover:text-[#e8704a] hover:underline"
+                  >
+                    邀请查看
+                  </button>
+                  <button onClick={() => openEditAction(a)} className="mr-3 text-xs text-[#1b1c1e] hover:text-[#e8704a] hover:underline">编辑</button>
+                  <button onClick={() => handleDeleteAction(a.id)} className="text-xs text-[#9b9ea4] hover:text-red-500">删除</button>
+                </td>
+              </tr>
+
+              {isExpanded && (
+                <tr className="border-b border-[#f0f1f3] bg-[#fafbfc] last:border-0">
+                  <td colSpan={10} className="px-5 py-5">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">档案编号</p>
+                        <p className="mt-1 font-mono text-xs text-[#1b1c1e]">{a.code}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">行动代号</p>
+                        <p className="mt-1 text-xs text-[#1b1c1e]">{a.codename}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">行动时间</p>
+                        <p className="mt-1 text-xs text-[#1b1c1e]">{new Date(a.actionTime).toLocaleString('zh-CN')}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">小组</p>
+                        <p className="mt-1 font-mono text-xs text-[#1b1c1e]">{a.team}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">空中支援</p>
+                        <p className="mt-1 text-xs text-[#1b1c1e]">{a.airSupport ? '有' : '无'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">信息支援</p>
+                        <p className="mt-1 text-xs text-[#1b1c1e]">{a.infoSupport ? '有' : '无'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">档案等级</p>
+                        <p className="mt-1"><Badge variant="outline" className={`rounded-none border-0 font-light ${lv.cls}`}>{lv.text}</Badge></p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">创建者</p>
+                        <p className="mt-1 text-xs text-[#1b1c1e]">{resolveDisplayName(a.creatorName)}</p>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">可查看人员</p>
+                        <p className="mt-1 text-xs text-[#1b1c1e]">
+                          {(() => {
+                            const accessors = getActionAccessors(a);
+                            return accessors.length === 0 ? '不限' : accessors.map((uid) => resolveDisplayName(uid)).join('、');
+                          })()}
+                        </p>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <p className="text-[10px] font-light tracking-[0.15em] text-[#9b9ea4]">完整简介</p>
+                        <p className="mt-1 whitespace-pre-wrap break-words text-xs leading-6 text-[#55585e]">
+                          {a.description?.trim() ? a.description : '（无简介）'}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </Fragment>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+  <p className="text-[11px] font-light tracking-wider text-[#b9bcc2]">共 {actionList.length} 条档案</p>
+</section>
 );
 
 /* ===== 聊天 ===== */
 const renderChat = () => (
-  <div className="flex h-[calc(100vh-9rem)] flex-col">
-    <h2 className="mb-4 text-sm font-light tracking-[0.25em] text-[#1b1c1e]">内部聊天</h2>
+<div className="flex h-[calc(100vh-9rem)] flex-col">
+  <h2 className="mb-4 text-sm font-light tracking-[0.25em] text-[#1b1c1e]">内部聊天</h2>
 
-    <div className={`${panelCls} flex flex-1 overflow-hidden`}>
-      <aside className="flex w-[220px] shrink-0 flex-col border-r border-[#e3e4e8]">
-        <div className="border-b border-[#e3e4e8] px-4 py-3">
-          <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">
-            联系人（{chatContacts.length}）
-          </p>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {chatContacts.length === 0 ? (
-            <p className="p-4 text-xs text-[#9b9ea4]">暂无联系人</p>
-          ) : chatContacts.map((m) => {
-            const active = chatTarget?.id === m.id;
-            const pairs = parseDeptTitles(m.department, m.title);
-            return (
-              <button
-                key={m.id}
-                onClick={() => openChat(m)}
-                className={`flex w-full items-center gap-3 border-b border-[#f0f1f3] px-4 py-3 text-left transition-colors ${
-                  active ? 'bg-[#1b1c1e] text-white' : 'hover:bg-[#f5f6f7]'
-                }`}
-              >
-                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-light ${
-                  active ? 'bg-white/15 text-white' : 'bg-[#eef0f2] text-[#55585e]'
-                }`}>
-                  {m.name.slice(0, 1)}
+  <div className={`${panelCls} flex flex-1 overflow-hidden`}>
+    <aside className="flex w-[220px] shrink-0 flex-col border-r border-[#e3e4e8]">
+      <div className="border-b border-[#e3e4e8] px-4 py-3">
+        <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">
+          联系人（{chatContacts.length}）
+        </p>
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        {chatContacts.length === 0 ? (
+          <p className="p-4 text-xs text-[#9b9ea4]">暂无联系人</p>
+        ) : chatContacts.map((m) => {
+          const active = chatTarget?.id === m.id;
+          const pairs = parseDeptTitles(m.department, m.title);
+          return (
+            <button
+              key={m.id}
+              onClick={() => openChat(m)}
+              className={`flex w-full items-center gap-3 border-b border-[#f0f1f3] px-4 py-3 text-left transition-colors ${
+                active ? 'bg-[#1b1c1e] text-white' : 'hover:bg-[#f5f6f7]'
+              }`}
+            >
+              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-light ${
+                active ? 'bg-white/15 text-white' : 'bg-[#eef0f2] text-[#55585e]'
+              }`}>
+                {m.name.slice(0, 1)}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className={`block truncate text-sm font-light ${active ? 'text-white' : 'text-[#1b1c1e]'}`}>
+                  {m.name}
                 </span>
-                <span className="min-w-0 flex-1">
-                  <span className={`block truncate text-sm font-light ${active ? 'text-white' : 'text-[#1b1c1e]'}`}>
-                    {m.name}
-                  </span>
-                  <span className={`mt-0.5 block truncate text-[10px] ${active ? 'text-white/60' : 'text-[#9b9ea4]'}`}>
-                    {pairs.map((p) => `${p.dept}：${p.title || '成员'}`).join(' / ') || '—'}
-                  </span>
+                <span className={`mt-0.5 block truncate text-[10px] ${active ? 'text-white/60' : 'text-[#9b9ea4]'}`}>
+                  {pairs.map((p) => `${p.dept}：${p.title || '成员'}`).join(' / ') || '—'}
                 </span>
-              </button>
-            );
-          })}
-        </div>
-      </aside>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </aside>
 
-      <section className="flex min-w-0 flex-1 flex-col">
-        {!chatTarget ? (
-          <div className="flex flex-1 items-center justify-center">
-            <p className="text-xs font-light text-[#b9bcc2]">点击左侧联系人开始对话</p>
+    <section className="flex min-w-0 flex-1 flex-col">
+      {!chatTarget ? (
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-xs font-light text-[#b9bcc2]">点击左侧联系人开始对话</p>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center justify-between border-b border-[#e3e4e8] px-5 py-3">
+            <div>
+              <p className="text-sm font-light text-[#1b1c1e]">{chatTarget.name}</p>
+              <p className="mt-0.5 text-[10px] text-[#9b9ea4]">{chatTarget.member_no || '—'}</p>
+            </div>
           </div>
-        ) : (
-          <>
-            <div className="flex items-center justify-between border-b border-[#e3e4e8] px-5 py-3">
-              <div>
-                <p className="text-sm font-light text-[#1b1c1e]">{chatTarget.name}</p>
-                <p className="mt-0.5 text-[10px] text-[#9b9ea4]">{chatTarget.member_no || '—'}</p>
-              </div>
-            </div>
 
-            <div className="flex-1 space-y-3 overflow-y-auto bg-[#fafbfc] p-5">
-              {chatLoading ? (
-                <p className="text-center text-xs text-[#9b9ea4]">加载中…</p>
-              ) : chatMessages.length === 0 ? (
-                <p className="text-center text-xs text-[#b9bcc2]">还没有消息，打个招呼吧</p>
-              ) : chatMessages.map((msg) => {
-                const mine = msg.sender_id === myUserId;
-                return (
-                  <div key={msg.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`flex max-w-[70%] flex-col gap-1 ${mine ? 'items-end' : 'items-start'}`}>
-                      {msg.content && (
-                        <div className={`whitespace-pre-wrap break-words px-3 py-2 text-xs font-light leading-5 ${
+          <div className="flex-1 space-y-3 overflow-y-auto bg-[#fafbfc] p-5">
+            {chatLoading ? (
+              <p className="text-center text-xs text-[#9b9ea4]">加载中…</p>
+            ) : chatMessages.length === 0 ? (
+              <p className="text-center text-xs text-[#b9bcc2]">还没有消息，打个招呼吧</p>
+            ) : chatMessages.map((msg) => {
+              const mine = msg.sender_id === myUserId;
+              return (
+                <div key={msg.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`flex max-w-[70%] flex-col gap-1 ${mine ? 'items-end' : 'items-start'}`}>
+                    {msg.content && (
+                      <div className={`whitespace-pre-wrap break-words px-3 py-2 text-xs font-light leading-5 ${
+                        mine ? 'bg-[#1b1c1e] text-white' : 'border border-[#e3e4e8] bg-white text-[#1b1c1e]'
+                      }`}>
+                        {msg.content}
+                      </div>
+                    )}
+                    {msg.file_url && (
+                      <a
+                        href={msg.file_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs ${
                           mine ? 'bg-[#1b1c1e] text-white' : 'border border-[#e3e4e8] bg-white text-[#1b1c1e]'
-                        }`}>
-                          {msg.content}
-                        </div>
-                      )}
-                      {msg.file_url && (
-                        <a
-                          href={msg.file_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs ${
-                            mine ? 'bg-[#1b1c1e] text-white' : 'border border-[#e3e4e8] bg-white text-[#1b1c1e]'
-                          }`}
-                        >
-                          📎 {msg.file_name || '附件'}
-                          {msg.file_size ? <span className="opacity-60">（{formatSize(msg.file_size)}）</span> : null}
-                        </a>
-                      )}
-                      <span className="px-1 text-[10px] text-[#b9bcc2]">
-                        {new Date(msg.created_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-              <div ref={chatBottomRef} />
-            </div>
-
-            <div className="border-t border-[#e3e4e8] p-3">
-              {chatError && (
-                <p className="mb-2 text-[11px] text-red-500">{chatError}</p>
-              )}
-              {chatFile && (
-                <div className="mb-2 flex items-center justify-between border border-[#e3e4e8] bg-[#f5f6f7] px-3 py-1.5">
-                  <span className="truncate text-[11px] text-[#55585e]">📎 {chatFile.name}</span>
-                  <button
-                    onClick={() => { setChatFile(null); if (chatFileInputRef.current) chatFileInputRef.current.value = ''; }}
-                    className="ml-2 text-[#9b9ea4] hover:text-red-500"
-                  >×</button>
-                </div>
-              )}
-              <div className="flex items-end gap-2">
-                <input
-                  ref={chatFileInputRef}
-                  type="file"
-                  className="hidden"
-                  onChange={(e) => setChatFile(e.target.files?.[0] ?? null)}
-                />
-                <button
-                  type="button"
-                  onClick={() => chatFileInputRef.current?.click()}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#e3e4e8] text-[#85888e] hover:border-[#1b1c1e] hover:text-[#1b1c1e]"
-                  title="添加附件（≤10MB）"
-                >
-                  📎
-                </button>
-                <textarea
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendChat(); }
-                  }}
-                  rows={1}
-                  placeholder="输入消息，回车发送（Shift+Enter 换行）"
-                  className="min-h-[36px] flex-1 resize-none rounded-none border border-[#e3e4e8] bg-white px-3 py-2 text-xs font-light text-[#1b1c1e] placeholder:text-[#b9bcc2] focus:border-[#1b1c1e] focus:outline-none"
-                />
-                <Button
-                  onClick={handleSendChat}
-                  disabled={chatSending || (!chatInput.trim() && !chatFile)}
-                  className={`${btnSolid} h-9 shrink-0`}
-                >
-                  {chatUploading ? '上传中…' : chatSending ? '发送中…' : '发送'}
-                </Button>
-              </div>
-            </div>
-          </>
-        )}
-      </section>
-
-      <aside className="hidden w-[240px] shrink-0 flex-col border-l border-[#e3e4e8] xl:flex">
-        <div className="border-b border-[#e3e4e8] px-4 py-3">
-          <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">
-            全部成员（{members.length}）
-          </p>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {members.length === 0 ? (
-            <p className="p-4 text-xs text-[#9b9ea4]">暂无成员</p>
-          ) : members.map((m) => {
-            const pairs = parseDeptTitles(m.department, m.title);
-            const isMe = m.user_id === myUserId;
-            return (
-              <button
-                key={m.id}
-                disabled={isMe}
-                onClick={() => openChat(m)}
-                className={`flex w-full items-start gap-2.5 border-b border-[#f0f1f3] px-4 py-3 text-left transition-colors ${
-                  isMe ? 'cursor-default opacity-60' : 'hover:bg-[#f5f6f7]'
-                }`}
-              >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eef0f2] text-[11px] font-light text-[#55585e]">
-                  {m.name.slice(0, 1)}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-xs font-light text-[#1b1c1e]">
-                    {m.name}{isMe && <span className="ml-1 text-[10px] text-[#9b9ea4]">（我）</span>}
-                  </span>
-                  {pairs.map((p, i) => (
-                    <span key={i} className="mt-0.5 block truncate text-[10px] text-[#9b9ea4]">
-                      {p.dept}：{p.title || '成员'}
+                        }`}
+                      >
+                        📎 {msg.file_name || '附件'}
+                        {msg.file_size ? <span className="opacity-60">（{formatSize(msg.file_size)}）</span> : null}
+                      </a>
+                    )}
+                    <span className="px-1 text-[10px] text-[#b9bcc2]">
+                      {new Date(msg.created_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                     </span>
-                  ))}
-                </span>
+                  </div>
+                </div>
+              );
+            })}
+            <div ref={chatBottomRef} />
+          </div>
+
+          <div className="border-t border-[#e3e4e8] p-3">
+            {chatError && (
+              <p className="mb-2 text-[11px] text-red-500">{chatError}</p>
+            )}
+            {chatFile && (
+              <div className="mb-2 flex items-center justify-between border border-[#e3e4e8] bg-[#f5f6f7] px-3 py-1.5">
+                <span className="truncate text-[11px] text-[#55585e]">📎 {chatFile.name}</span>
+                <button
+                  onClick={() => { setChatFile(null); if (chatFileInputRef.current) chatFileInputRef.current.value = ''; }}
+                  className="ml-2 text-[#9b9ea4] hover:text-red-500"
+                >×</button>
+              </div>
+            )}
+            <div className="flex items-end gap-2">
+              <input
+                ref={chatFileInputRef}
+                type="file"
+                className="hidden"
+                onChange={(e) => setChatFile(e.target.files?.[0] ?? null)}
+              />
+              <button
+                type="button"
+                onClick={() => chatFileInputRef.current?.click()}
+                className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#e3e4e8] text-[#85888e] hover:border-[#1b1c1e] hover:text-[#1b1c1e]"
+                title="添加附件（≤10MB）"
+              >
+                📎
               </button>
-            );
-          })}
-        </div>
-      </aside>
-    </div>
+              <textarea
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendChat(); }
+                }}
+                rows={1}
+                placeholder="输入消息，回车发送（Shift+Enter 换行）"
+                className="min-h-[36px] flex-1 resize-none rounded-none border border-[#e3e4e8] bg-white px-3 py-2 text-xs font-light text-[#1b1c1e] placeholder:text-[#b9bcc2] focus:border-[#1b1c1e] focus:outline-none"
+              />
+              <Button
+                onClick={handleSendChat}
+                disabled={chatSending || (!chatInput.trim() && !chatFile)}
+                className={`${btnSolid} h-9 shrink-0`}
+              >
+                {chatUploading ? '上传中…' : chatSending ? '发送中…' : '发送'}
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+    </section>
+
+    <aside className="hidden w-[240px] shrink-0 flex-col border-l border-[#e3e4e8] xl:flex">
+      <div className="border-b border-[#e3e4e8] px-4 py-3">
+        <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">
+          全部成员（{members.length}）
+        </p>
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        {members.length === 0 ? (
+          <p className="p-4 text-xs text-[#9b9ea4]">暂无成员</p>
+        ) : members.map((m) => {
+          const pairs = parseDeptTitles(m.department, m.title);
+          const isMe = m.user_id === myUserId;
+          return (
+            <button
+              key={m.id}
+              disabled={isMe}
+              onClick={() => openChat(m)}
+              className={`flex w-full items-start gap-2.5 border-b border-[#f0f1f3] px-4 py-3 text-left transition-colors ${
+                isMe ? 'cursor-default opacity-60' : 'hover:bg-[#f5f6f7]'
+              }`}
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eef0f2] text-[11px] font-light text-[#55585e]">
+                {m.name.slice(0, 1)}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-xs font-light text-[#1b1c1e]">
+                  {m.name}{isMe && <span className="ml-1 text-[10px] text-[#9b9ea4]">（我）</span>}
+                </span>
+                {pairs.map((p, i) => (
+                  <span key={i} className="mt-0.5 block truncate text-[10px] text-[#9b9ea4]">
+                    {p.dept}：{p.title || '成员'}
+                  </span>
+                ))}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </aside>
   </div>
+</div>
 );
 
 const renderPlatform = () => (
-  <div className="space-y-6">
-    <div>
-      <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">平台 · 验证码</h2>
-      <p className="mt-1 text-[11px] font-light text-[#9b9ea4]">
-        64 位十六进制验证码，用于 MAGIC SE Beta 登入。
-      </p>
-    </div>
-
-    <section className={`${panelCls} space-y-4 p-5`}>
-      <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">创建验证码</p>
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setNewCodeMode('single')}
-            className={`px-3 py-1.5 text-xs font-light tracking-wider transition-colors ${
-              newCodeMode === 'single' ? 'bg-[#1b1c1e] text-white' : 'bg-[#f5f6f7] text-[#85888e] hover:text-[#1b1c1e]'
-            }`}
-          >
-            同一成员使用
-          </button>
-          <button
-            type="button"
-            onClick={() => setNewCodeMode('unlimited')}
-            className={`px-3 py-1.5 text-xs font-light tracking-wider transition-colors ${
-              newCodeMode === 'unlimited' ? 'bg-[#1b1c1e] text-white' : 'bg-[#f5f6f7] text-[#85888e] hover:text-[#1b1c1e]'
-            }`}
-          >
-            无限使用
-          </button>
-        </div>
-        <Input
-          value={newCodeNote}
-          onChange={(e) => setNewCodeNote(e.target.value)}
-          placeholder="备注（可选）"
-          className={`${fieldCls} max-w-xs text-xs`}
-        />
-        <Button onClick={handleCreateCode} disabled={creatingCode} className={btnSolid}>
-          {creatingCode ? '创建中…' : '创建'}
-        </Button>
-      </div>
-      {codeMsg && (
-        <p className={`text-xs font-light ${codeMsg === '创建成功' ? 'text-[#e8704a]' : 'text-red-500'}`}>
-          {codeMsg}
-        </p>
-      )}
-      {revealedCode && (
-        <div className="border border-[#e3e4e8] bg-[#f5f6f7] p-3">
-          <p className="text-[10px] font-light tracking-wider text-[#9b9ea4]">新验证码（请立即保存）</p>
-          <p className="mt-1 break-all font-mono text-xs text-[#1b1c1e]">{revealedCode}</p>
-          <button
-            type="button"
-            onClick={() => { navigator.clipboard.writeText(revealedCode); }}
-            className="mt-2 text-[11px] text-[#85888e] hover:text-[#1b1c1e]"
-          >
-            复制
-          </button>
-        </div>
-      )}
-    </section>
-
-    <section className="space-y-3">
-      <h3 className="text-xs font-light tracking-[0.25em] text-[#85888e]">
-        已创建的验证码（{accessCodes.length}）
-      </h3>
-      <div className={`${panelCls} overflow-x-auto`}>
-        <table className="w-full min-w-[1100px] text-sm font-light">
-          <thead>
-            <tr className="border-b border-[#e3e4e8] text-left text-[11px] tracking-[0.15em] text-[#9b9ea4]">
-              <th className="px-5 py-3 font-light">验证码</th>
-              <th className="px-5 py-3 font-light">类型</th>
-              <th className="px-5 py-3 font-light">备注</th>
-              <th className="px-5 py-3 font-light">使用者</th>
-              <th className="px-5 py-3 font-light">使用时间</th>
-              <th className="px-5 py-3 font-light">创建时间</th>
-              <th className="px-5 py-3 font-light text-right">操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            {accessCodesLoading ? (
-              <tr><td colSpan={7} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">加载中…</td></tr>
-            ) : accessCodes.length === 0 ? (
-              <tr><td colSpan={7} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">暂无验证码</td></tr>
-            ) : accessCodes.map((c) => (
-              <tr key={c.id} className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
-                <td className="max-w-[280px] px-5 py-3.5">
-                  <span className="block truncate font-mono text-[11px] text-[#1b1c1e]" title={c.code}>
-                    {c.code}
-                  </span>
-                </td>
-                <td className="px-5 py-3.5">
-                  <Badge variant="outline" className={`rounded-none border-0 font-light ${c.mode === 'unlimited' ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#eef0f2] text-[#55585e]'}`}>
-                    {c.mode === 'unlimited' ? '无限使用' : '同一成员'}
-                  </Badge>
-                </td>
-                <td className="px-5 py-3.5 text-[#85888e]">{c.note || '—'}</td>
-                <td className="px-5 py-3.5">
-                  {c.used_by_name ? (
-                    <span className="text-[#1b1c1e]">{c.used_by_name}</span>
-                  ) : (
-                    <span className="text-[#b9bcc2]">未使用</span>
-                  )}
-                </td>
-                <td className="px-5 py-3.5 text-[#85888e]">
-                  {c.used_at ? new Date(c.used_at).toLocaleString('zh-CN') : '—'}
-                </td>
-                <td className="px-5 py-3.5 text-[#85888e]">
-                  {new Date(c.created_at).toLocaleString('zh-CN')}
-                </td>
-                <td className="whitespace-nowrap px-5 py-3.5 text-right">
-                  <button onClick={() => handleDeleteCode(c.id)} className="text-xs text-[#9b9ea4] hover:text-red-500">删除</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
+<div className="space-y-6">
+  <div>
+    <h2 className="text-sm font-light tracking-[0.25em] text-[#1b1c1e]">平台 · 验证码</h2>
+    <p className="mt-1 text-[11px] font-light text-[#9b9ea4]">
+      64 位十六进制验证码，用于 MAGIC SE Beta 登入。
+    </p>
   </div>
+
+  <section className={`${panelCls} space-y-4 p-5`}>
+    <p className="text-xs font-light tracking-[0.15em] text-[#85888e]">创建验证码</p>
+    <div className="flex flex-wrap items-center gap-3">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setNewCodeMode('single')}
+          className={`px-3 py-1.5 text-xs font-light tracking-wider transition-colors ${
+            newCodeMode === 'single' ? 'bg-[#1b1c1e] text-white' : 'bg-[#f5f6f7] text-[#85888e] hover:text-[#1b1c1e]'
+          }`}
+        >
+          同一成员使用
+        </button>
+        <button
+          type="button"
+          onClick={() => setNewCodeMode('unlimited')}
+          className={`px-3 py-1.5 text-xs font-light tracking-wider transition-colors ${
+            newCodeMode === 'unlimited' ? 'bg-[#1b1c1e] text-white' : 'bg-[#f5f6f7] text-[#85888e] hover:text-[#1b1c1e]'
+          }`}
+        >
+          无限使用
+        </button>
+      </div>
+      <Input
+        value={newCodeNote}
+        onChange={(e) => setNewCodeNote(e.target.value)}
+        placeholder="备注（可选）"
+        className={`${fieldCls} max-w-xs text-xs`}
+      />
+      <Button onClick={handleCreateCode} disabled={creatingCode} className={btnSolid}>
+        {creatingCode ? '创建中…' : '创建'}
+      </Button>
+    </div>
+    {codeMsg && (
+      <p className={`text-xs font-light ${codeMsg === '创建成功' ? 'text-[#e8704a]' : 'text-red-500'}`}>
+        {codeMsg}
+      </p>
+    )}
+    {revealedCode && (
+      <div className="border border-[#e3e4e8] bg-[#f5f6f7] p-3">
+        <p className="text-[10px] font-light tracking-wider text-[#9b9ea4]">新验证码（请立即保存）</p>
+        <p className="mt-1 break-all font-mono text-xs text-[#1b1c1e]">{revealedCode}</p>
+        <button
+          type="button"
+          onClick={() => { navigator.clipboard.writeText(revealedCode); }}
+          className="mt-2 text-[11px] text-[#85888e] hover:text-[#1b1c1e]"
+        >
+          复制
+        </button>
+      </div>
+    )}
+  </section>
+
+  <section className="space-y-3">
+    <h3 className="text-xs font-light tracking-[0.25em] text-[#85888e]">
+      已创建的验证码（{accessCodes.length}）
+    </h3>
+    <div className={`${panelCls} overflow-x-auto`}>
+      <table className="w-full min-w-[1100px] text-sm font-light">
+        <thead>
+          <tr className="border-b border-[#e3e4e8] text-left text-[11px] tracking-[0.15em] text-[#9b9ea4]">
+            <th className="px-5 py-3 font-light">验证码</th>
+            <th className="px-5 py-3 font-light">类型</th>
+            <th className="px-5 py-3 font-light">备注</th>
+            <th className="px-5 py-3 font-light">使用者</th>
+            <th className="px-5 py-3 font-light">使用时间</th>
+            <th className="px-5 py-3 font-light">创建时间</th>
+            <th className="px-5 py-3 font-light text-right">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {accessCodesLoading ? (
+            <tr><td colSpan={7} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">加载中…</td></tr>
+          ) : accessCodes.length === 0 ? (
+            <tr><td colSpan={7} className="px-5 py-8 text-center text-xs text-[#9b9ea4]">暂无验证码</td></tr>
+          ) : accessCodes.map((c) => (
+            <tr key={c.id} className="border-b border-[#f0f1f3] text-[#55585e] last:border-0">
+              <td className="max-w-[280px] px-5 py-3.5">
+                <span className="block truncate font-mono text-[11px] text-[#1b1c1e]" title={c.code}>
+                  {c.code}
+                </span>
+              </td>
+              <td className="px-5 py-3.5">
+                <Badge variant="outline" className={`rounded-none border-0 font-light ${c.mode === 'unlimited' ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#eef0f2] text-[#55585e]'}`}>
+                  {c.mode === 'unlimited' ? '无限使用' : '同一成员'}
+                </Badge>
+              </td>
+              <td className="px-5 py-3.5 text-[#85888e]">{c.note || '—'}</td>
+              <td className="px-5 py-3.5">
+                {c.used_by_name ? (
+                  <span className="text-[#1b1c1e]">{c.used_by_name}</span>
+                ) : (
+                  <span className="text-[#b9bcc2]">未使用</span>
+                )}
+              </td>
+              <td className="px-5 py-3.5 text-[#85888e]">
+                {c.used_at ? new Date(c.used_at).toLocaleString('zh-CN') : '—'}
+              </td>
+              <td className="px-5 py-3.5 text-[#85888e]">
+                {new Date(c.created_at).toLocaleString('zh-CN')}
+              </td>
+              <td className="whitespace-nowrap px-5 py-3.5 text-right">
+                <button onClick={() => handleDeleteCode(c.id)} className="text-xs text-[#9b9ea4] hover:text-red-500">删除</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
 );
 
 const SECTION_RENDER: Record<SectionKey, () => React.ReactNode> = {
-  members: renderMembers,
-  notices: renderNotices,
-  files: renderFiles,
-  inquiries: renderInquiries,
-  visitors: renderVisitors,
-  actions: renderActions,
-  chat: renderChat,
-  platform: renderPlatform,
+members: renderMembers,
+notices: renderNotices,
+files: renderFiles,
+inquiries: renderInquiries,
+visitors: renderVisitors,
+feedback: renderFeedback,
+actions: renderActions,
+chat: renderChat,
+platform: renderPlatform,
 };
 
 return (
-  <div className="min-h-screen bg-[#f2f3f5]">
-    <header className="border-b border-[#e3e4e8] bg-white">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#e8704a]" />
-          <span className="text-sm font-light tracking-[0.35em] text-[#1b1c1e]">番茄鱼工作室</span>
-          <Badge variant="outline" className="ml-2 rounded-none border-0 bg-[#1b1c1e] px-2 py-0.5 text-[10px] font-light text-white">管理员控制台</Badge>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="hidden text-xs font-light text-[#85888e] sm:inline">{me.email}</span>
-          <Button
-            size="sm"
-            variant="outline"
-            className={btnGhost}
-            onClick={handleManualRefresh}
-            disabled={refreshing}
-          >
-            {refreshing ? '刷新中…' : '刷新'}
-          </Button>
-          <Button size="sm" variant="outline" className={btnGhost} onClick={() => { setPwMsg(null); setPwNew(''); setPwConfirm(''); setPwOpen(true); }}>修改密码</Button>
-          <Button size="sm" variant="outline" className={btnGhost} onClick={handleLogout}>退出登录</Button>
-        </div>
+<div className="min-h-screen bg-[#f2f3f5]">
+  <header className="border-b border-[#e3e4e8] bg-white">
+    <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+      <div className="flex items-center gap-2">
+        <span className="h-1.5 w-1.5 rounded-full bg-[#e8704a]" />
+        <span className="text-sm font-light tracking-[0.35em] text-[#1b1c1e]">番茄鱼工作室</span>
+        <Badge variant="outline" className="ml-2 rounded-none border-0 bg-[#1b1c1e] px-2 py-0.5 text-[10px] font-light text-white">管理员控制台</Badge>
       </div>
-    </header>
-
-    <div className="mx-auto flex max-w-7xl gap-6 px-6 py-8">
-      <aside className="sticky top-8 h-fit w-[88px] shrink-0 border border-[#e3e4e8] bg-white">
-        <nav className="flex flex-col">
-          {SECTIONS.map((s) => {
-            const active = activeSection === s.key;
-            return (
-              <button
-                key={s.key}
-                onClick={() => handleSectionChange(s.key)}
-                className={`flex flex-col items-center gap-1.5 py-4 transition-colors ${
-                  active ? 'bg-[#1b1c1e] text-white' : 'text-[#85888e] hover:bg-[#f5f6f7] hover:text-[#1b1c1e]'
-                }`}
-              >
-                <span className="flex h-5 w-5 items-center justify-center">{s.icon}</span>
-                <span className="text-[11px] font-light tracking-wider">{s.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-      </aside>
-
-      <main className="min-w-0 flex-1">
-        {SECTION_RENDER[activeSection]()}
-      </main>
+      <div className="flex items-center gap-4">
+        <span className="hidden text-xs font-light text-[#85888e] sm:inline">{me.email}</span>
+        <Button
+          size="sm"
+          variant="outline"
+          className={btnGhost}
+          onClick={handleManualRefresh}
+          disabled={refreshing}
+        >
+          {refreshing ? '刷新中…' : '刷新'}
+        </Button>
+        <Button size="sm" variant="outline" className={btnGhost} onClick={() => { setPwMsg(null); setPwNew(''); setPwConfirm(''); setPwOpen(true); }}>修改密码</Button>
+        <Button size="sm" variant="outline" className={btnGhost} onClick={handleLogout}>退出登录</Button>
+      </div>
     </div>
+  </header>
 
-    {/* 成员编辑 Dialog */}
-    <Dialog open={memberDialogOpen} onOpenChange={(v) => { if (!fSaving) { setMemberDialogOpen(v); if (!v) resetMemberForm(); } }}>
-      <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-base font-light tracking-[0.15em]">{editingMember ? '编辑成员' : '添加成员'}</DialogTitle>
-          <DialogDescription className="text-xs text-[#9b9ea4]">部门与职务一一对应，可添加多行</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 max-h-[70vh] overflow-y-auto">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2"><Label className="text-xs text-[#85888e]">姓名 *</Label><Input value={fName} onChange={(e) => setFName(e.target.value)} className={fieldCls} /></div>
-            <div className="space-y-2"><Label className="text-xs text-[#85888e]">工号 {editingMember ? '' : '*'}</Label><Input value={fMemberNo} onChange={(e) => setFMemberNo(e.target.value)} disabled={!!editingMember} className={`${fieldCls} ${editingMember ? 'opacity-60' : ''}`} /></div>
-          </div>
-          {!editingMember && (
-            <div className="space-y-2"><Label className="text-xs text-[#85888e]">初始密码 *</Label><Input type="text" value={fInitialPw} onChange={(e) => setFInitialPw(e.target.value)} className={fieldCls} placeholder="至少6位" /></div>
-          )}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs text-[#85888e]">部门 / 职务 *</Label>
-              <Button size="sm" variant="outline" className={btnGhost} onClick={addDeptRow}>+ 添加一行</Button>
-            </div>
-            <div className="space-y-2">
-              {fDeptTitles.map((row, idx) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <Input value={row.dept} onChange={(e) => updateDeptRow(idx, 'dept', e.target.value)} placeholder="部门名称" className={`${fieldCls} flex-1`} list="dept-options" />
-                  <Select value={row.title} onValueChange={(v) => updateDeptRow(idx, 'title', v)}>
-                    <SelectTrigger className="w-[130px] rounded-none border-[#e3e4e8] bg-white text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>{TITLE_OPTIONS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-                  </Select>
-                  {fDeptTitles.length > 1 && (
-                    <Button size="sm" variant="outline" className="rounded-none border-[#fecaca] text-[#dc2626] hover:bg-[#fef2f2] shrink-0" onClick={() => removeDeptRow(idx)}>删</Button>
-                  )}
-                </div>
-              ))}
-            </div>
-            <datalist id="dept-options">{allDepts.map((d) => <option key={d} value={d} />)}</datalist>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2"><Label className="text-xs text-[#85888e]">邮箱</Label><Input value={fEmail} onChange={(e) => setFEmail(e.target.value)} className={fieldCls} /></div>
-            <div className="space-y-2"><Label className="text-xs text-[#85888e]">简介</Label><Input value={fBio} onChange={(e) => setFBio(e.target.value)} className={fieldCls} /></div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-2"><Label className="text-xs text-[#85888e]">角色</Label>
-              <Select value={fRole} onValueChange={setFRole}><SelectTrigger className={`${fieldCls} text-xs`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="staff">成员</SelectItem><SelectItem value="admin">管理员</SelectItem></SelectContent></Select>
-            </div>
-            <div className="space-y-2"><Label className="text-xs text-[#85888e]">状态</Label>
-              <Select value={fStatus} onValueChange={setFStatus}><SelectTrigger className={`${fieldCls} text-xs`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">在职</SelectItem><SelectItem value="inactive">停用</SelectItem></SelectContent></Select>
-            </div>
-            <div className="space-y-2"><Label className="text-xs text-[#85888e]">首页展示</Label>
-              <div className="flex items-center gap-2 h-9">
-                <button
-                  type="button"
-                  onClick={() => setFShowHome(!fShowHome)}
-                  className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${fShowHome ? 'bg-[#1b1c1e]' : 'bg-[#d4d6da]'}`}
-                >
-                  <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all duration-200 ${fShowHome ? 'left-[18px]' : 'left-0.5'}`} />
-                </button>
-                <span className="text-xs text-[#55585e]">{fShowHome ? '展示' : '隐藏'}</span>
-              </div>
-            </div>
-          </div>
-          {fMsg && <p className="text-xs text-[#c2410c] break-all">{fMsg}</p>}
+  <div className="mx-auto flex max-w-7xl gap-6 px-6 py-8">
+    <aside className="sticky top-8 h-fit w-[88px] shrink-0 border border-[#e3e4e8] bg-white">
+      <nav className="flex flex-col">
+        {SECTIONS.map((s) => {
+          const active = activeSection === s.key;
+          return (
+            <button
+              key={s.key}
+              onClick={() => handleSectionChange(s.key)}
+              className={`flex flex-col items-center gap-1.5 py-4 transition-colors ${
+                active ? 'bg-[#1b1c1e] text-white' : 'text-[#85888e] hover:bg-[#f5f6f7] hover:text-[#1b1c1e]'
+              }`}
+            >
+              <span className="flex h-5 w-5 items-center justify-center">{s.icon}</span>
+              <span className="text-[11px] font-light tracking-wider">{s.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+    </aside>
+
+    <main className="min-w-0 flex-1">
+      {SECTION_RENDER[activeSection]()}
+    </main>
+  </div>
+
+  {/* 成员编辑 Dialog */}
+  <Dialog open={memberDialogOpen} onOpenChange={(v) => { if (!fSaving) { setMemberDialogOpen(v); if (!v) resetMemberForm(); } }}>
+    <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-2xl">
+      <DialogHeader>
+        <DialogTitle className="text-base font-light tracking-[0.15em]">{editingMember ? '编辑成员' : '添加成员'}</DialogTitle>
+        <DialogDescription className="text-xs text-[#9b9ea4]">部门与职务一一对应，可添加多行</DialogDescription>
+      </DialogHeader>
+      <div className="space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2"><Label className="text-xs text-[#85888e]">姓名 *</Label><Input value={fName} onChange={(e) => setFName(e.target.value)} className={fieldCls} /></div>
+          <div className="space-y-2"><Label className="text-xs text-[#85888e]">工号 {editingMember ? '' : '*'}</Label><Input value={fMemberNo} onChange={(e) => setFMemberNo(e.target.value)} disabled={!!editingMember} className={`${fieldCls} ${editingMember ? 'opacity-60' : ''}`} /></div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" className={btnGhost} onClick={() => { setMemberDialogOpen(false); resetMemberForm(); }} disabled={fSaving}>取消</Button>
-          <Button onClick={handleSaveMember} disabled={fSaving} className={btnSolid}>{fSaving ? '保存中…' : '保存'}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        {!editingMember && (
+          <div className="space-y-2"><Label className="text-xs text-[#85888e]">初始密码 *</Label><Input type="text" value={fInitialPw} onChange={(e) => setFInitialPw(e.target.value)} className={fieldCls} placeholder="至少6位" /></div>
+        )}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs text-[#85888e]">部门 / 职务 *</Label>
+            <Button size="sm" variant="outline" className={btnGhost} onClick={addDeptRow}>+ 添加一行</Button>
+          </div>
+          <div className="space-y-2">
+            {fDeptTitles.map((row, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <Input value={row.dept} onChange={(e) => updateDeptRow(idx, 'dept', e.target.value)} placeholder="部门名称" className={`${fieldCls} flex-1`} list="dept-options" />
+                <Select value={row.title} onValueChange={(v) => updateDeptRow(idx, 'title', v)}>
+                  <SelectTrigger className="w-[130px] rounded-none border-[#e3e4e8] bg-white text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>{TITLE_OPTIONS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                </Select>
+                {fDeptTitles.length > 1 && (
+                  <Button size="sm" variant="outline" className="rounded-none border-[#fecaca] text-[#dc2626] hover:bg-[#fef2f2] shrink-0" onClick={() => removeDeptRow(idx)}>删</Button>
+                )}
+              </div>
+            ))}
+          </div>
+          <datalist id="dept-options">{allDepts.map((d) => <option key={d} value={d} />)}</datalist>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2"><Label className="text-xs text-[#85888e]">邮箱</Label><Input value={fEmail} onChange={(e) => setFEmail(e.target.value)} className={fieldCls} /></div>
+          <div className="space-y-2"><Label className="text-xs text-[#85888e]">简介</Label><Input value={fBio} onChange={(e) => setFBio(e.target.value)} className={fieldCls} /></div>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="space-y-2"><Label className="text-xs text-[#85888e]">角色</Label>
+            <Select value={fRole} onValueChange={setFRole}><SelectTrigger className={`${fieldCls} text-xs`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="staff">成员</SelectItem><SelectItem value="admin">管理员</SelectItem></SelectContent></Select>
+          </div>
+          <div className="space-y-2"><Label className="text-xs text-[#85888e]">状态</Label>
+            <Select value={fStatus} onValueChange={setFStatus}><SelectTrigger className={`${fieldCls} text-xs`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">在职</SelectItem><SelectItem value="inactive">停用</SelectItem></SelectContent></Select>
+          </div>
+          <div className="space-y-2"><Label className="text-xs text-[#85888e]">首页展示</Label>
+            <div className="flex items-center gap-2 h-9">
+              <button
+                type="button"
+                onClick={() => setFShowHome(!fShowHome)}
+                className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${fShowHome ? 'bg-[#1b1c1e]' : 'bg-[#d4d6da]'}`}
+              >
+                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all duration-200 ${fShowHome ? 'left-[18px]' : 'left-0.5'}`} />
+              </button>
+              <span className="text-xs text-[#55585e]">{fShowHome ? '展示' : '隐藏'}</span>
+            </div>
+          </div>
+        </div>
+        {fMsg && <p className="text-xs text-[#c2410c] break-all">{fMsg}</p>}
+      </div>
+      <DialogFooter>
+        <Button variant="outline" className={btnGhost} onClick={() => { setMemberDialogOpen(false); resetMemberForm(); }} disabled={fSaving}>取消</Button>
+        <Button onClick={handleSaveMember} disabled={fSaving} className={btnSolid}>{fSaving ? '保存中…' : '保存'}</Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 
-    {/* 部门管理 Dialog */}
-    <Dialog open={deptDialogOpen} onOpenChange={(v) => { if (!renameSaving) { setDeptDialogOpen(v); if (!v) { cancelRenameDept(); setExpandedDept(null); } } }}>
-      <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="text-base font-light tracking-[0.15em]">部门管理</DialogTitle>
-          <DialogDescription className="text-xs text-[#9b9ea4]">重命名会同步更新所有拥有该部门的成员；删除仅限没有成员的部门</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-          {allDepts.length === 0 ? (
-            <p className="py-6 text-center text-xs text-[#9b9ea4]">暂无部门</p>
-          ) : (
-            <div className="divide-y divide-[#f0f1f3] border border-[#e3e4e8]">
-              {allDepts.map((d) => {
-                const isRenaming = renamingDept === d;
-                const isExpanded = expandedDept === d;
-                const deptMembers = deptMembersMap[d] ?? [];
-                return (
-                  <div key={d} className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      {isRenaming ? (
-                        <>
-                          <Input
-                            value={renameValue}
-                            onChange={(e) => setRenameValue(e.target.value)}
-                            className={`${fieldCls} flex-1 text-xs`}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') confirmRenameDept();
-                              if (e.key === 'Escape') cancelRenameDept();
-                            }}
-                            autoFocus
-                          />
-                          <Button size="sm" className={btnSolid} onClick={confirmRenameDept} disabled={renameSaving}>{renameSaving ? '保存中…' : '保存'}</Button>
-                          <Button size="sm" variant="outline" className={btnGhost} onClick={cancelRenameDept} disabled={renameSaving}>取消</Button>
-                        </>
-                      ) : (
-                        <>
-                          <div className="flex-1">
-                            <p className="text-sm font-light text-[#1b1c1e]">{d}</p>
-                            <p className="mt-0.5 text-[10px] text-[#9b9ea4]">{deptMembers.length} 位成员</p>
-                          </div>
-                          <Button size="sm" variant="outline" className={btnGhost} onClick={() => toggleExpandDept(d)}>
-                            {isExpanded ? '收起' : '展开'}
-                          </Button>
-                          <Button size="sm" variant="outline" className={btnGhost} onClick={() => startRenameDept(d)}>重命名</Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="rounded-none border-[#fecaca] text-[#dc2626] hover:bg-[#fef2f2] hover:text-[#dc2626]"
-                            onClick={() => handleDeleteDept(d)}
-                          >
-                            删除
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                    {isExpanded && !isRenaming && (
-                      <div className="mt-3 border-t border-[#f0f1f3] pt-3">
-                        {deptMembers.length === 0 ? (
-                          <p className="text-xs text-[#9b9ea4]">该部门暂无成员</p>
-                        ) : (
-                          <div className="space-y-1.5">
-                            {deptMembers.map((m) => {
-                              const pairs = parseDeptTitles(m.department, m.title);
-                              const thisPair = pairs.find((p) => p.dept === d);
-                              return (
-                                <div key={m.id} className="flex items-center justify-between text-xs">
-                                  <span className="text-[#55585e]">
-                                    {m.name}
-                                    <span className="ml-2 text-[10px] text-[#9b9ea4]">{m.member_no || '—'}</span>
-                                  </span>
-                                  <span className="text-[10px] text-[#9b9ea4]">{thisPair?.title || '成员'}</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
+  {/* 部门管理 Dialog */}
+  <Dialog open={deptDialogOpen} onOpenChange={(v) => { if (!renameSaving) { setDeptDialogOpen(v); if (!v) { cancelRenameDept(); setExpandedDept(null); } } }}>
+    <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-lg">
+      <DialogHeader>
+        <DialogTitle className="text-base font-light tracking-[0.15em]">部门管理</DialogTitle>
+        <DialogDescription className="text-xs text-[#9b9ea4]">重命名会同步更新所有拥有该部门的成员；删除仅限没有成员的部门</DialogDescription>
+      </DialogHeader>
+      <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+        {allDepts.length === 0 ? (
+          <p className="py-6 text-center text-xs text-[#9b9ea4]">暂无部门</p>
+        ) : (
+          <div className="divide-y divide-[#f0f1f3] border border-[#e3e4e8]">
+            {allDepts.map((d) => {
+              const isRenaming = renamingDept === d;
+              const isExpanded = expandedDept === d;
+              const deptMembers = deptMembersMap[d] ?? [];
+              return (
+                <div key={d} className="px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    {isRenaming ? (
+                      <>
+                        <Input
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          className={`${fieldCls} flex-1 text-xs`}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') confirmRenameDept();
+                            if (e.key === 'Escape') cancelRenameDept();
+                          }}
+                          autoFocus
+                        />
+                        <Button size="sm" className={btnSolid} onClick={confirmRenameDept} disabled={renameSaving}>{renameSaving ? '保存中…' : '保存'}</Button>
+                        <Button size="sm" variant="outline" className={btnGhost} onClick={cancelRenameDept} disabled={renameSaving}>取消</Button>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex-1">
+                          <p className="text-sm font-light text-[#1b1c1e]">{d}</p>
+                          <p className="mt-0.5 text-[10px] text-[#9b9ea4]">{deptMembers.length} 位成员</p>
+                        </div>
+                        <Button size="sm" variant="outline" className={btnGhost} onClick={() => toggleExpandDept(d)}>
+                          {isExpanded ? '收起' : '展开'}
+                        </Button>
+                        <Button size="sm" variant="outline" className={btnGhost} onClick={() => startRenameDept(d)}>重命名</Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-none border-[#fecaca] text-[#dc2626] hover:bg-[#fef2f2] hover:text-[#dc2626]"
+                          onClick={() => handleDeleteDept(d)}
+                        >
+                          删除
+                        </Button>
+                      </>
                     )}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-        <DialogFooter>
-          <Button variant="outline" className={btnGhost} onClick={() => { setDeptDialogOpen(false); cancelRenameDept(); setExpandedDept(null); }} disabled={renameSaving}>关闭</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    {/* 文件元数据编辑 Dialog */}
-    <Dialog open={!!metaFile} onOpenChange={(v) => { if (!v && !metaSaving) closeMetaEdit(); }}>
-      <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="text-base font-light tracking-[0.15em]">编辑文件权限</DialogTitle>
-          <DialogDescription className="text-xs text-[#9b9ea4] truncate">{metaFile?.displayName}</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-5">
-          <div className="space-y-2">
-            <Label className="text-xs font-light tracking-[0.15em] text-[#85888e]">文件等级</Label>
-            <Select value={metaLevel} onValueChange={(v) => setMetaLevel(v as FileLevel)}>
-              <SelectTrigger className={`${fieldCls} text-xs`}><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {FILE_LEVEL_OPTIONS.map((o) => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs font-light tracking-[0.15em] text-[#85888e]">可查看人员</Label>
-              <div className="flex gap-2">
-                <button type="button" onClick={() => setMetaVisibleTo(members.map((m) => m.name))} className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]">全选</button>
-                <span className="text-[#e3e4e8]">|</span>
-                <button type="button" onClick={() => setMetaVisibleTo([])} className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]">清空</button>
-              </div>
-            </div>
-            <div className="max-h-64 overflow-y-auto border border-[#e3e4e8] bg-white p-3">
-              {members.length === 0 ? (
-                <p className="text-xs text-[#9b9ea4]">暂无成员</p>
-              ) : (
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {members.map((m) => {
-                    const checked = metaVisibleTo.includes(m.name);
-                    return (
-                      <label key={m.id} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => toggleMetaMember(m.name)}
-                          className="h-3.5 w-3.5 accent-[#1b1c1e]"
-                        />
-                        <span className="text-xs text-[#55585e]">
-                          {m.name}
-                          {m.department && <span className="ml-1 text-[10px] text-[#9b9ea4]">（{m.department}）</span>}
-                        </span>
-                      </label>
-                    );
-                  })}
+                  {isExpanded && !isRenaming && (
+                    <div className="mt-3 border-t border-[#f0f1f3] pt-3">
+                      {deptMembers.length === 0 ? (
+                        <p className="text-xs text-[#9b9ea4]">该部门暂无成员</p>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {deptMembers.map((m) => {
+                            const pairs = parseDeptTitles(m.department, m.title);
+                            const thisPair = pairs.find((p) => p.dept === d);
+                            return (
+                              <div key={m.id} className="flex items-center justify-between text-xs">
+                                <span className="text-[#55585e]">
+                                  {m.name}
+                                  <span className="ml-2 text-[10px] text-[#9b9ea4]">{m.member_no || '—'}</span>
+                                </span>
+                                <span className="text-[10px] text-[#9b9ea4]">{thisPair?.title || '成员'}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            <p className="text-[10px] text-[#9b9ea4]">留空表示不限；勾选后仅选中成员可查看该文件</p>
+              );
+            })}
           </div>
+        )}
+      </div>
+      <DialogFooter>
+        <Button variant="outline" className={btnGhost} onClick={() => { setDeptDialogOpen(false); cancelRenameDept(); setExpandedDept(null); }} disabled={renameSaving}>关闭</Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+
+  {/* 文件元数据编辑 Dialog */}
+  <Dialog open={!!metaFile} onOpenChange={(v) => { if (!v && !metaSaving) closeMetaEdit(); }}>
+    <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-lg">
+      <DialogHeader>
+        <DialogTitle className="text-base font-light tracking-[0.15em]">编辑文件权限</DialogTitle>
+        <DialogDescription className="text-xs text-[#9b9ea4] truncate">{metaFile?.displayName}</DialogDescription>
+      </DialogHeader>
+      <div className="space-y-5">
+        <div className="space-y-2">
+          <Label className="text-xs font-light tracking-[0.15em] text-[#85888e]">文件等级</Label>
+          <Select value={metaLevel} onValueChange={(v) => setMetaLevel(v as FileLevel)}>
+            <SelectTrigger className={`${fieldCls} text-xs`}><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {FILE_LEVEL_OPTIONS.map((o) => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}
+            </SelectContent>
+          </Select>
         </div>
-        <DialogFooter>
-          <Button variant="outline" className={btnGhost} onClick={closeMetaEdit} disabled={metaSaving}>取消</Button>
-          <Button onClick={handleSaveMeta} disabled={metaSaving} className={btnSolid}>{metaSaving ? '保存中…' : '保存'}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    {/* 邀请查看文件 Dialog */}
-    <Dialog open={!!inviteFile} onOpenChange={(v) => { if (!inviteSaving && !v) { setInviteFile(null); setInviteSelected([]); } }}>
-      <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="text-base font-light tracking-[0.15em]">邀请查看</DialogTitle>
-          <DialogDescription className="text-xs text-[#9b9ea4] truncate">
-            {inviteFile?.displayName}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4">
+        <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-xs text-[#85888e]">选择要邀请的成员</Label>
+            <Label className="text-xs font-light tracking-[0.15em] text-[#85888e]">可查看人员</Label>
             <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setInviteSelected(members.map((m) => m.name))}
-                className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]"
-              >
-                全选
-              </button>
+              <button type="button" onClick={() => setMetaVisibleTo(members.map((m) => m.name))} className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]">全选</button>
               <span className="text-[#e3e4e8]">|</span>
-              <button
-                type="button"
-                onClick={() => setInviteSelected([])}
-                className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]"
-              >
-                清空
-              </button>
+              <button type="button" onClick={() => setMetaVisibleTo([])} className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]">清空</button>
             </div>
           </div>
-
           <div className="max-h-64 overflow-y-auto border border-[#e3e4e8] bg-white p-3">
             {members.length === 0 ? (
               <p className="text-xs text-[#9b9ea4]">暂无成员</p>
             ) : (
               <div className="grid gap-2 sm:grid-cols-2">
                 {members.map((m) => {
-                  const checked = inviteSelected.includes(m.name);
+                  const checked = metaVisibleTo.includes(m.name);
                   return (
                     <label key={m.id} className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={checked}
-                        onChange={() =>
-                          setInviteSelected((prev) =>
-                            prev.includes(m.name) ? prev.filter((x) => x !== m.name) : [...prev, m.name]
-                          )
-                        }
+                        onChange={() => toggleMetaMember(m.name)}
                         className="h-3.5 w-3.5 accent-[#1b1c1e]"
                       />
                       <span className="text-xs text-[#55585e]">
@@ -2621,133 +2788,286 @@ return (
               </div>
             )}
           </div>
-          <p className="text-[10px] text-[#9b9ea4]">
-            被邀请成员会收到一条邀请通知，选择接受后即可查看该文件。
-          </p>
+          <p className="text-[10px] text-[#9b9ea4]">留空表示不限；勾选后仅选中成员可查看该文件</p>
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" className={btnGhost} onClick={closeMetaEdit} disabled={metaSaving}>取消</Button>
+        <Button onClick={handleSaveMeta} disabled={metaSaving} className={btnSolid}>{metaSaving ? '保存中…' : '保存'}</Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+
+  {/* 邀请查看文件 Dialog */}
+  <Dialog open={!!inviteFile} onOpenChange={(v) => { if (!inviteSaving && !v) { setInviteFile(null); setInviteSelected([]); } }}>
+    <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-lg">
+      <DialogHeader>
+        <DialogTitle className="text-base font-light tracking-[0.15em]">邀请查看</DialogTitle>
+        <DialogDescription className="text-xs text-[#9b9ea4] truncate">
+          {inviteFile?.displayName}
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs text-[#85888e]">选择要邀请的成员</Label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setInviteSelected(members.map((m) => m.name))}
+              className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]"
+            >
+              全选
+            </button>
+            <span className="text-[#e3e4e8]">|</span>
+            <button
+              type="button"
+              onClick={() => setInviteSelected([])}
+              className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]"
+            >
+              清空
+            </button>
+          </div>
         </div>
 
-        <DialogFooter>
-          <Button
-            variant="outline"
-            className={btnGhost}
-            onClick={() => { setInviteFile(null); setInviteSelected([]); }}
-            disabled={inviteSaving}
-          >
-            取消
-          </Button>
-          <Button
-            className={btnSolid}
-            disabled={inviteSaving || inviteSelected.length === 0}
-            onClick={handleSendInvites}
-          >
-            {inviteSaving ? '发送中…' : `发送邀请（${inviteSelected.length}）`}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    {/* 编辑行动档案 Dialog */}
-    <Dialog open={editActionOpen} onOpenChange={(v) => { if (!eaSaving) { setEditActionOpen(v); if (!v) setEditingAction(null); } }}>
-      <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-xl">
-        <DialogHeader>
-          <DialogTitle className="text-base font-light tracking-[0.15em]">编辑行动档案</DialogTitle>
-          <DialogDescription className="text-xs text-[#9b9ea4]">
-            编号 {editingAction?.code}（不可修改）
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 max-h-[70vh] overflow-y-auto">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label className="text-xs text-[#85888e]">行动代号 *</Label>
-              <Input value={eaCodename} onChange={(e) => setEaCodename(e.target.value)} className={fieldCls} />
+        <div className="max-h-64 overflow-y-auto border border-[#e3e4e8] bg-white p-3">
+          {members.length === 0 ? (
+            <p className="text-xs text-[#9b9ea4]">暂无成员</p>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {members.map((m) => {
+                const checked = inviteSelected.includes(m.name);
+                return (
+                  <label key={m.id} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() =>
+                        setInviteSelected((prev) =>
+                          prev.includes(m.name) ? prev.filter((x) => x !== m.name) : [...prev, m.name]
+                        )
+                      }
+                      className="h-3.5 w-3.5 accent-[#1b1c1e]"
+                    />
+                    <span className="text-xs text-[#55585e]">
+                      {m.name}
+                      {m.department && <span className="ml-1 text-[10px] text-[#9b9ea4]">（{m.department}）</span>}
+                    </span>
+                  </label>
+                );
+              })}
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs text-[#85888e]">时间 *</Label>
-              <Input type="datetime-local" value={eaTime} onChange={(e) => setEaTime(e.target.value)} className={fieldCls} />
-            </div>
-          </div>
+          )}
+        </div>
+        <p className="text-[10px] text-[#9b9ea4]">
+          被邀请成员会收到一条邀请通知，选择接受后即可查看该文件。
+        </p>
+      </div>
 
+      <DialogFooter>
+        <Button
+          variant="outline"
+          className={btnGhost}
+          onClick={() => { setInviteFile(null); setInviteSelected([]); }}
+          disabled={inviteSaving}
+        >
+          取消
+        </Button>
+        <Button
+          className={btnSolid}
+          disabled={inviteSaving || inviteSelected.length === 0}
+          onClick={handleSendInvites}
+        >
+          {inviteSaving ? '发送中…' : `发送邀请（${inviteSelected.length}）`}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+
+  {/* 编辑行动档案 Dialog */}
+  <Dialog open={editActionOpen} onOpenChange={(v) => { if (!eaSaving) { setEditActionOpen(v); if (!v) setEditingAction(null); } }}>
+    <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-xl">
+      <DialogHeader>
+        <DialogTitle className="text-base font-light tracking-[0.15em]">编辑行动档案</DialogTitle>
+        <DialogDescription className="text-xs text-[#9b9ea4]">
+          编号 {editingAction?.code}（不可修改）
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label className="text-xs text-[#85888e]">小组 *</Label>
-            <Input
-              value={eaTeam}
-              onChange={(e) => setEaTeam(e.target.value.toUpperCase().replace(/[^A-Z]/g, ''))}
-              className={`${fieldCls} font-mono`}
-            />
+            <Label className="text-xs text-[#85888e]">行动代号 *</Label>
+            <Input value={eaCodename} onChange={(e) => setEaCodename(e.target.value)} className={fieldCls} />
           </div>
+          <div className="space-y-2">
+            <Label className="text-xs text-[#85888e]">时间 *</Label>
+            <Input type="datetime-local" value={eaTime} onChange={(e) => setEaTime(e.target.value)} className={fieldCls} />
+          </div>
+        </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label className="text-xs text-[#85888e]">空中支援</Label>
-              <div className="flex items-center gap-2 h-9">
-                <button
-                  type="button"
-                  onClick={() => setEaAir(!eaAir)}
-                  className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${eaAir ? 'bg-[#1b1c1e]' : 'bg-[#d4d6da]'}`}
-                >
-                  <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all duration-200 ${eaAir ? 'left-[18px]' : 'left-0.5'}`} />
-                </button>
-                <span className="text-xs text-[#55585e]">{eaAir ? '有' : '无'}</span>
+        <div className="space-y-2">
+          <Label className="text-xs text-[#85888e]">小组 *</Label>
+          <Input
+            value={eaTeam}
+            onChange={(e) => setEaTeam(e.target.value.toUpperCase().replace(/[^A-Z]/g, ''))}
+            className={`${fieldCls} font-mono`}
+          />
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label className="text-xs text-[#85888e]">空中支援</Label>
+            <div className="flex items-center gap-2 h-9">
+              <button
+                type="button"
+                onClick={() => setEaAir(!eaAir)}
+                className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${eaAir ? 'bg-[#1b1c1e]' : 'bg-[#d4d6da]'}`}
+              >
+                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all duration-200 ${eaAir ? 'left-[18px]' : 'left-0.5'}`} />
+              </button>
+              <span className="text-xs text-[#55585e]">{eaAir ? '有' : '无'}</span>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs text-[#85888e]">信息支援</Label>
+            <div className="flex items-center gap-2 h-9">
+              <button
+                type="button"
+                onClick={() => setEaInfo(!eaInfo)}
+                className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${eaInfo ? 'bg-[#1b1c1e]' : 'bg-[#d4d6da]'}`}
+              >
+                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all duration-200 ${eaInfo ? 'left-[18px]' : 'left-0.5'}`} />
+              </button>
+              <span className="text-xs text-[#55585e]">{eaInfo ? '有' : '无'}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs text-[#85888e]">简介</Label>
+          <textarea
+            value={eaDesc}
+            onChange={(e) => setEaDesc(e.target.value)}
+            rows={4}
+            className="w-full rounded-none border border-[#e3e4e8] bg-white px-3 py-2 text-xs font-light text-[#1b1c1e] placeholder:text-[#b9bcc2] focus:border-[#1b1c1e] focus:outline-none"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs text-[#85888e]">档案等级</Label>
+          <Select value={eaLevel} onValueChange={(v) => setEaLevel(v as ActionLevel)}>
+            <SelectTrigger className={`${fieldCls} text-xs`}><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="public">公开 - 所有综合防务部成员可见</SelectItem>
+              <SelectItem value="confidential">机密 - 仅指定人员可见</SelectItem>
+              <SelectItem value="secret">绝密 - 仅管理员可见</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {eaLevel === 'confidential' && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs text-[#85888e]">可查看人员</Label>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setEaVisibleTo(members.map((m) => m.user_id))} className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]">全选</button>
+                <span className="text-[#e3e4e8]">|</span>
+                <button type="button" onClick={() => setEaVisibleTo([])} className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]">清空</button>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs text-[#85888e]">信息支援</Label>
-              <div className="flex items-center gap-2 h-9">
-                <button
-                  type="button"
-                  onClick={() => setEaInfo(!eaInfo)}
-                  className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${eaInfo ? 'bg-[#1b1c1e]' : 'bg-[#d4d6da]'}`}
-                >
-                  <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all duration-200 ${eaInfo ? 'left-[18px]' : 'left-0.5'}`} />
-                </button>
-                <span className="text-xs text-[#55585e]">{eaInfo ? '有' : '无'}</span>
-              </div>
+            <div className="max-h-64 overflow-y-auto border border-[#e3e4e8] bg-white p-3">
+              {members.map((m) => {
+                const checked = eaVisibleTo.includes(m.user_id);
+                return (
+                  <label key={m.id} className="flex items-center gap-2 cursor-pointer py-1">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() =>
+                        setEaVisibleTo((prev) =>
+                          prev.includes(m.user_id) ? prev.filter((x) => x !== m.user_id) : [...prev, m.user_id]
+                        )
+                      }
+                      className="h-3.5 w-3.5 accent-[#1b1c1e]"
+                    />
+                    <span className="text-xs text-[#55585e]">
+                      {m.name}
+                      {m.department && <span className="ml-1 text-[10px] text-[#9b9ea4]">（{m.department}）</span>}
+                    </span>
+                  </label>
+                );
+              })}
             </div>
           </div>
+        )}
 
-          <div className="space-y-2">
-            <Label className="text-xs text-[#85888e]">简介</Label>
-            <textarea
-              value={eaDesc}
-              onChange={(e) => setEaDesc(e.target.value)}
-              rows={4}
-              className="w-full rounded-none border border-[#e3e4e8] bg-white px-3 py-2 text-xs font-light text-[#1b1c1e] placeholder:text-[#b9bcc2] focus:border-[#1b1c1e] focus:outline-none"
-            />
+        {eaMsg && <p className="text-xs text-red-500">{eaMsg}</p>}
+      </div>
+
+      <DialogFooter>
+        <Button variant="outline" className={btnGhost} onClick={() => setEditActionOpen(false)} disabled={eaSaving}>取消</Button>
+        <Button onClick={handleSaveActionEdit} disabled={eaSaving} className={btnSolid}>
+          {eaSaving ? '保存中…' : '保存'}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+
+  {/* 邀请查看行动档案 Dialog */}
+  <Dialog
+    open={!!inviteActionFile}
+    onOpenChange={(v) => { if (!inviteActionSaving && !v) { setInviteActionFile(null); setInviteActionSelected([]); } }}
+  >
+    <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-lg">
+      <DialogHeader>
+        <DialogTitle className="text-base font-light tracking-[0.15em]">邀请查看行动档案</DialogTitle>
+        <DialogDescription className="text-xs text-[#9b9ea4] truncate">
+          {inviteActionFile?.code} · {inviteActionFile?.codename}
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs text-[#85888e]">选择要邀请的成员</Label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setInviteActionSelected(members.map((m) => m.user_id))}
+              className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]"
+            >
+              全选
+            </button>
+            <span className="text-[#e3e4e8]">|</span>
+            <button
+              type="button"
+              onClick={() => setInviteActionSelected([])}
+              className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]"
+            >
+              清空
+            </button>
           </div>
+        </div>
 
-          <div className="space-y-2">
-            <Label className="text-xs text-[#85888e]">档案等级</Label>
-            <Select value={eaLevel} onValueChange={(v) => setEaLevel(v as ActionLevel)}>
-              <SelectTrigger className={`${fieldCls} text-xs`}><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="public">公开 - 所有综合防务部成员可见</SelectItem>
-                <SelectItem value="confidential">机密 - 仅指定人员可见</SelectItem>
-                <SelectItem value="secret">绝密 - 仅管理员可见</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {eaLevel === 'confidential' && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-[#85888e]">可查看人员</Label>
-                <div className="flex gap-2">
-                  <button type="button" onClick={() => setEaVisibleTo(members.map((m) => m.user_id))} className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]">全选</button>
-                  <span className="text-[#e3e4e8]">|</span>
-                  <button type="button" onClick={() => setEaVisibleTo([])} className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]">清空</button>
-                </div>
-              </div>
-              <div className="max-h-64 overflow-y-auto border border-[#e3e4e8] bg-white p-3">
-                {members.map((m) => {
-                  const checked = eaVisibleTo.includes(m.user_id);
+        <div className="max-h-64 overflow-y-auto border border-[#e3e4e8] bg-white p-3">
+          {members.length === 0 ? (
+            <p className="text-xs text-[#9b9ea4]">暂无成员</p>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {members
+                .filter((m) => {
+                  const depts = (m.department ?? '').split(/[,，;；]/).map((s) => s.trim()).filter(Boolean);
+                  return depts.includes('综合防务部');
+                })
+                .map((m) => {
+                  const checked = inviteActionSelected.includes(m.user_id);
                   return (
-                    <label key={m.id} className="flex items-center gap-2 cursor-pointer py-1">
+                    <label key={m.id} className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={checked}
                         onChange={() =>
-                          setEaVisibleTo((prev) =>
+                          setInviteActionSelected((prev) =>
                             prev.includes(m.user_id) ? prev.filter((x) => x !== m.user_id) : [...prev, m.user_id]
                           )
                         }
@@ -2760,186 +3080,137 @@ return (
                     </label>
                   );
                 })}
-              </div>
             </div>
           )}
-
-          {eaMsg && <p className="text-xs text-red-500">{eaMsg}</p>}
         </div>
+        <p className="text-[10px] text-[#9b9ea4]">
+          仅列出综合防务部成员。被邀请成员会收到邀请通知，接受后即可查看该档案。
+        </p>
+      </div>
 
-        <DialogFooter>
-          <Button variant="outline" className={btnGhost} onClick={() => setEditActionOpen(false)} disabled={eaSaving}>取消</Button>
-          <Button onClick={handleSaveActionEdit} disabled={eaSaving} className={btnSolid}>
-            {eaSaving ? '保存中…' : '保存'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <DialogFooter>
+        <Button
+          variant="outline"
+          className={btnGhost}
+          onClick={() => { setInviteActionFile(null); setInviteActionSelected([]); }}
+          disabled={inviteActionSaving}
+        >
+          取消
+        </Button>
+        <Button
+          className={btnSolid}
+          disabled={inviteActionSaving || inviteActionSelected.length === 0}
+          onClick={async () => {
+            if (!inviteActionFile) return;
+            const invitees = members
+              .filter((m) => inviteActionSelected.includes(m.user_id))
+              .map((m) => ({ userId: m.user_id, name: m.name }));
+            if (invitees.length === 0) { alert('请至少选择一位邀请对象'); return; }
+            setInviteActionSaving(true);
+            try {
+              const res = await callAuthenticatedApi('/api/actions/invite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ actionId: inviteActionFile.id, invitees }),
+              });
+              if (!res || !res.ok) {
+                const d = await res?.json().catch(() => ({}));
+                throw new Error(d.error || '邀请失败');
+              }
+              alert(`已向 ${invitees.length} 位成员发送邀请`);
+              setInviteActionFile(null);
+              setInviteActionSelected([]);
+              await loadActionInvites();
+            } catch (err) {
+              alert(err instanceof Error ? err.message : '邀请失败');
+            } finally {
+              setInviteActionSaving(false);
+            }
+          }}
+        >
+          {inviteActionSaving ? '发送中…' : `发送邀请（${inviteActionSelected.length}）`}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 
-    {/* 邀请查看行动档案 Dialog */}
-    <Dialog
-      open={!!inviteActionFile}
-      onOpenChange={(v) => { if (!inviteActionSaving && !v) { setInviteActionFile(null); setInviteActionSelected([]); } }}
-    >
-      <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="text-base font-light tracking-[0.15em]">邀请查看行动档案</DialogTitle>
-          <DialogDescription className="text-xs text-[#9b9ea4] truncate">
-            {inviteActionFile?.code} · {inviteActionFile?.codename}
-          </DialogDescription>
-        </DialogHeader>
+  {/* 回复反馈 Dialog */}
+  <Dialog open={!!replyingFeedback} onOpenChange={(v) => { if (!replySaving && !v) { setReplyingFeedback(null); setReplyText(''); } }}>
+    <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-lg">
+      <DialogHeader>
+        <DialogTitle className="text-base font-light tracking-[0.15em]">回复反馈</DialogTitle>
+        <DialogDescription className="text-xs text-[#9b9ea4] truncate">
+          {replyingFeedback?.name || replyingFeedback?.email || '匿名用户'} · {replyingFeedback ? new Date(replyingFeedback.created_at).toLocaleString('zh-CN') : ''}
+        </DialogDescription>
+      </DialogHeader>
+      <div className="space-y-4">
+        <div className="border border-[#e3e4e8] bg-[#fafbfc] p-4">
+          <p className="text-[10px] tracking-[0.2em] text-[#9b9ea4]">反馈内容</p>
+          <p className="mt-2 whitespace-pre-wrap break-words text-xs leading-6 text-[#1b1c1e]">{replyingFeedback?.content}</p>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs text-[#85888e]">回复内容</Label>
+          <textarea
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            rows={5}
+            placeholder="输入回复内容…"
+            className="w-full rounded-none border border-[#e3e4e8] bg-white px-3 py-2 text-xs font-light text-[#1b1c1e] focus:border-[#1b1c1e] focus:outline-none"
+          />
+          <p className="text-[10px] text-[#9b9ea4]">回复后，反馈状态会自动变为「已解决」</p>
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" className={btnGhost} onClick={() => { setReplyingFeedback(null); setReplyText(''); }} disabled={replySaving}>取消</Button>
+        <Button onClick={handleSubmitReply} disabled={replySaving} className={btnSolid}>{replySaving ? '发送中…' : '发送回复'}</Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs text-[#85888e]">选择要邀请的成员</Label>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setInviteActionSelected(members.map((m) => m.user_id))}
-                className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]"
-              >
-                全选
-              </button>
-              <span className="text-[#e3e4e8]">|</span>
-              <button
-                type="button"
-                onClick={() => setInviteActionSelected([])}
-                className="text-[11px] text-[#85888e] hover:text-[#1b1c1e]"
-              >
-                清空
-              </button>
-            </div>
+  {/* 文件预览 Dialog */}
+  <Dialog open={!!previewFile} onOpenChange={(v) => { if (!v) closePreview(); }}>
+    <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-4xl">
+      <DialogHeader>
+        <DialogTitle className="text-base font-light tracking-[0.15em] truncate pr-6">{previewFile?.displayName}</DialogTitle>
+        <DialogDescription className="text-xs text-[#9b9ea4]">
+          {previewFile ? `${formatSize(previewFile.size)} · 上传者 ${resolveDisplayName(previewFile.uploaderName)}` : ''}
+        </DialogDescription>
+      </DialogHeader>
+      <div className="max-h-[70vh] overflow-auto bg-[#f5f6f7] border border-[#e3e4e8] flex items-center justify-center">
+        {previewFile && previewKind === 'image' && (
+          <img src={`/api/files/download?id=${previewFile.id}`} alt={previewFile.displayName} className="max-w-full max-h-[70vh] object-contain" />
+        )}
+        {previewFile && previewKind === 'pdf' && (
+          <iframe src={`/api/files/download?id=${previewFile.id}`} className="w-full h-[70vh] bg-white" title={previewFile.displayName} />
+        )}
+        {previewFile && previewKind === 'video' && (
+          <video src={`/api/files/download?id=${previewFile.id}`} controls className="max-w-full max-h-[70vh]" />
+        )}
+        {previewFile && previewKind === 'audio' && (
+          <div className="w-full p-8">
+            <audio src={`/api/files/download?id=${previewFile.id}`} controls className="w-full" />
           </div>
-
-          <div className="max-h-64 overflow-y-auto border border-[#e3e4e8] bg-white p-3">
-            {members.length === 0 ? (
-              <p className="text-xs text-[#9b9ea4]">暂无成员</p>
+        )}
+        {previewFile && previewKind === 'text' && (
+          <div className="w-full bg-white p-5">
+            {previewTextLoading ? (
+              <p className="text-xs text-[#9b9ea4]">加载中…</p>
             ) : (
-              <div className="grid gap-2 sm:grid-cols-2">
-                {members
-                  .filter((m) => {
-                    const depts = (m.department ?? '').split(/[,，;；]/).map((s) => s.trim()).filter(Boolean);
-                    return depts.includes('综合防务部');
-                  })
-                  .map((m) => {
-                    const checked = inviteActionSelected.includes(m.user_id);
-                    return (
-                      <label key={m.id} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() =>
-                            setInviteActionSelected((prev) =>
-                              prev.includes(m.user_id) ? prev.filter((x) => x !== m.user_id) : [...prev, m.user_id]
-                            )
-                          }
-                          className="h-3.5 w-3.5 accent-[#1b1c1e]"
-                        />
-                        <span className="text-xs text-[#55585e]">
-                          {m.name}
-                          {m.department && <span className="ml-1 text-[10px] text-[#9b9ea4]">（{m.department}）</span>}
-                        </span>
-                      </label>
-                    );
-                  })}
-              </div>
+              <pre className="whitespace-pre-wrap break-words text-xs leading-6 text-[#1b1c1e] font-mono">
+                {previewText || '（空文件）'}
+              </pre>
             )}
           </div>
-          <p className="text-[10px] text-[#9b9ea4]">
-            仅列出综合防务部成员。被邀请成员会收到邀请通知，接受后即可查看该档案。
-          </p>
-        </div>
-
-        <DialogFooter>
-          <Button
-            variant="outline"
-            className={btnGhost}
-            onClick={() => { setInviteActionFile(null); setInviteActionSelected([]); }}
-            disabled={inviteActionSaving}
-          >
-            取消
-          </Button>
-          <Button
-            className={btnSolid}
-            disabled={inviteActionSaving || inviteActionSelected.length === 0}
-            onClick={async () => {
-              if (!inviteActionFile) return;
-              const invitees = members
-                .filter((m) => inviteActionSelected.includes(m.user_id))
-                .map((m) => ({ userId: m.user_id, name: m.name }));
-              if (invitees.length === 0) { alert('请至少选择一位邀请对象'); return; }
-              setInviteActionSaving(true);
-              try {
-                const res = await callAuthenticatedApi('/api/actions/invite', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ actionId: inviteActionFile.id, invitees }),
-                });
-                if (!res || !res.ok) {
-                  const d = await res?.json().catch(() => ({}));
-                  throw new Error(d.error || '邀请失败');
-                }
-                alert(`已向 ${invitees.length} 位成员发送邀请`);
-                setInviteActionFile(null);
-                setInviteActionSelected([]);
-                await loadActionInvites();
-              } catch (err) {
-                alert(err instanceof Error ? err.message : '邀请失败');
-              } finally {
-                setInviteActionSaving(false);
-              }
-            }}
-          >
-            {inviteActionSaving ? '发送中…' : `发送邀请（${inviteActionSelected.length}）`}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    {/* 文件预览 Dialog */}
-    <Dialog open={!!previewFile} onOpenChange={(v) => { if (!v) closePreview(); }}>
-      <DialogContent className="rounded-none border-[#e3e4e8] bg-white max-w-4xl">
-        <DialogHeader>
-          <DialogTitle className="text-base font-light tracking-[0.15em] truncate pr-6">{previewFile?.displayName}</DialogTitle>
-          <DialogDescription className="text-xs text-[#9b9ea4]">
-            {previewFile ? `${formatSize(previewFile.size)} · 上传者 ${resolveDisplayName(previewFile.uploaderName)}` : ''}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="max-h-[70vh] overflow-auto bg-[#f5f6f7] border border-[#e3e4e8] flex items-center justify-center">
-          {previewFile && previewKind === 'image' && (
-            <img src={`/api/files/download?id=${previewFile.id}`} alt={previewFile.displayName} className="max-w-full max-h-[70vh] object-contain" />
-          )}
-          {previewFile && previewKind === 'pdf' && (
-            <iframe src={`/api/files/download?id=${previewFile.id}`} className="w-full h-[70vh] bg-white" title={previewFile.displayName} />
-          )}
-          {previewFile && previewKind === 'video' && (
-            <video src={`/api/files/download?id=${previewFile.id}`} controls className="max-w-full max-h-[70vh]" />
-          )}
-          {previewFile && previewKind === 'audio' && (
-            <div className="w-full p-8">
-              <audio src={`/api/files/download?id=${previewFile.id}`} controls className="w-full" />
-            </div>
-          )}
-          {previewFile && previewKind === 'text' && (
-            <div className="w-full bg-white p-5">
-              {previewTextLoading ? (
-                <p className="text-xs text-[#9b9ea4]">加载中…</p>
-              ) : (
-                <pre className="whitespace-pre-wrap break-words text-xs leading-6 text-[#1b1c1e] font-mono">
-                  {previewText || '（空文件）'}
-                </pre>
-              )}
-            </div>
-          )}
-        </div>
-        <DialogFooter>
-          <button onClick={() => previewFile && handleDownload(previewFile)} className={`${btnGhost} inline-flex items-center border px-3 py-1.5`}>
-            下载原文件
-          </button>
-          <Button variant="outline" className={btnGhost} onClick={closePreview}>关闭</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  </div>
+        )}
+      </div>
+      <DialogFooter>
+        <button onClick={() => previewFile && handleDownload(previewFile)} className={`${btnGhost} inline-flex items-center border px-3 py-1.5`}>
+          下载原文件
+        </button>
+        <Button variant="outline" className={btnGhost} onClick={closePreview}>关闭</Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+</div>
 );
 }
