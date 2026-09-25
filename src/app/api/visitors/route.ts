@@ -2,13 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/server-auth';
 import { getSupabaseClient } from '@/storage/database/supabase-client';
 
-// GET /api/visitors —— 内部成员（管理员 / 工作人员）可查看访客列表
+// GET /api/visitors —— 内部成员可查看访客列表
 export async function GET(req: NextRequest) {
   const auth = await requireAuth(req);
   if (!auth.ok) return auth.response;
-  const { userId, isInternal } = auth.ctx;
+  const { isInternal } = auth.ctx;
 
-  // 只要不是访客（内部成员）就能看
   if (!isInternal) {
     return NextResponse.json({ error: '仅内部成员可查看访客列表' }, { status: 403 });
   }
@@ -53,7 +52,7 @@ async function findMyVisitor(adminClient: any, userId: string, email: string) {
   return null;
 }
 
-// POST /api/visitors —— 建档（有则更新）
+// POST /api/visitors —— 建档（有则更新），email 必写
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
   if (!auth.ok) return auth.response;
@@ -72,10 +71,10 @@ export async function POST(req: NextRequest) {
   const payload = {
     user_id: userId,
     name,
+    email: email ?? null,
     company: (body?.company ?? '').trim() || null,
     phone: (body?.phone ?? '').trim() || null,
     interest: (body?.interest ?? '').trim() || null,
-    email: email ?? null,
   };
 
   if (existing?.id) {
@@ -98,7 +97,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ visitor: data });
 }
 
-// PATCH /api/visitors —— 更新（没有就建）
+// PATCH /api/visitors —— 更新（没有就建），email 必写
 export async function PATCH(req: NextRequest) {
   const auth = await requireAuth(req);
   if (!auth.ok) return auth.response;
@@ -117,10 +116,10 @@ export async function PATCH(req: NextRequest) {
   const payload = {
     user_id: userId,
     name,
+    email: email ?? null,
     company: (body?.company ?? '').trim() || null,
     phone: (body?.phone ?? '').trim() || null,
     interest: (body?.interest ?? '').trim() || null,
-    email: email ?? null,
   };
 
   if (existing?.id) {

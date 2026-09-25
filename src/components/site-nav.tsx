@@ -12,14 +12,18 @@ const NAV_LINKS = [
   { href: '/staff-login', label: '管理平台' },
 ];
 
-export function SiteNav() {
+interface SiteNavProps {
+  entered?: boolean;
+  onOpenChangelog?: () => void;
+}
+
+export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
   const [me, setMe] = useState<MeResponse | null>(null);
   const [checked, setChecked] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
-  // 仅"关于我们""合作意向"：平滑滚动
   const handleAnchorClick = (e: React.MouseEvent, href: string) => {
     e.preventDefault();
     const id = href.replace('/#', '');
@@ -31,7 +35,12 @@ export function SiteNav() {
     }
   };
 
-  // 全局鼠标点击：以点击点为圆心生成规则小圆环，沿径向缓慢向外扩散，全程保持圆形
+  const handleChangelogClick = () => {
+    if (!entered) return;
+    if (onOpenChangelog) onOpenChangelog();
+  };
+
+  // 全局鼠标点击：以点击点为圆心生成规则小圆环
   useEffect(() => {
     const canvas = document.createElement('canvas');
     canvas.style.cssText =
@@ -62,7 +71,7 @@ export function SiteNav() {
           cy: e.clientY,
           angle,
           radius: initRadius + (Math.random() - 0.5) * 1.5,
-          radiusSpeed: 0.18 + Math.random() * 0.3, // 大幅减慢：0.18~0.48
+          radiusSpeed: 0.18 + Math.random() * 0.3,
           size: 0.6 + Math.random() * 0.7,
           alpha: 0.6 + Math.random() * 0.3,
           life: 1,
@@ -75,8 +84,8 @@ export function SiteNav() {
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.radius += p.radiusSpeed;
-        p.radiusSpeed *= 0.99;       // 阻尼更弱，扩散更平缓
-        p.life -= 0.007;             // 寿命延长到约 2.4 秒
+        p.radiusSpeed *= 0.99;
+        p.life -= 0.007;
         p.alpha = Math.max(0, p.life);
         p.size *= 0.996;
 
@@ -179,6 +188,28 @@ export function SiteNav() {
               </Component>
             );
           })}
+
+          {/* 更新日志按钮 */}
+          {onOpenChangelog && (
+            <button
+              type="button"
+              onClick={handleChangelogClick}
+              disabled={!entered}
+              className={`group relative text-xs font-light tracking-[0.25em] transition-colors duration-300 ${
+                entered
+                  ? 'text-[#85888e] hover:text-[#1b1c1e]'
+                  : 'cursor-not-allowed text-[#c9ccd1]'
+              }`}
+              title={entered ? '查看更新日志' : '请先进入主页'}
+            >
+              更新日志
+              <span
+                className={`absolute -bottom-1.5 left-1/2 h-px -translate-x-1/2 bg-[#1b1c1e] transition-all duration-300 ${
+                  entered ? 'w-0 group-hover:w-full' : 'w-0'
+                }`}
+              />
+            </button>
+          )}
         </nav>
 
         <div className="flex items-center">
@@ -262,6 +293,25 @@ export function SiteNav() {
               </Component>
             );
           })}
+
+          {/* 移动端更新日志 */}
+          {onOpenChangelog && (
+            <button
+              type="button"
+              onClick={() => {
+                if (!entered) return;
+                setMobileOpen(false);
+                onOpenChangelog();
+              }}
+              disabled={!entered}
+              className={`border-b border-[#e3e4e8]/50 py-4 text-left text-xs font-light tracking-[0.3em] transition-colors ${
+                entered ? 'text-[#55585e] hover:text-[#1b1c1e]' : 'cursor-not-allowed text-[#c9ccd1]'
+              }`}
+            >
+              更新日志
+            </button>
+          )}
+
           {checked && !me && (
             <Link
               href="/register"

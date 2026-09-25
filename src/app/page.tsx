@@ -50,6 +50,38 @@ const PRODUCTS = [
   },
 ];
 
+// ===== 更新日志（直接写在这里，随代码一起上传） =====
+interface ChangelogItem {
+  version: string;
+  date: string;
+  badge?: string;
+  entries: string[];
+}
+const CHANGELOG: ChangelogItem[] = [
+  {
+    version: 'v1.0.1B',
+    date: '2026-09-26',
+    badge: '正式版',
+    entries: [
+      '修复已知问题',
+      '添加日志系统',
+      '优化显示效果和部分界面的操作逻辑',
+    ],
+  },
+  {
+    version: 'v1.0.0',
+    date: '2026-09-24',
+    badge: '正式版',
+    entries: [
+      '官网上线，展示工作室介绍、产品线与团队成员',
+      '访客注册 / 登录系统',
+      '合作意向提交与跟进',
+      '内部文件管理与权限控制',
+    ],
+  },
+  // 后续版本往这里追加，格式照抄即可
+];
+
 const FOOTER_LINKS = [
   { href: '/', label: '官网首页' },
   { href: '/login', label: '访客登录' },
@@ -62,6 +94,8 @@ export default function Home() {
   const [entered, setEntered] = useState(false);
   const [exiting, setExiting] = useState(false);
   const [heroOffset, setHeroOffset] = useState({ x: 0, y: 0 });
+  const [changelogOpen, setChangelogOpen] = useState(false);
+  const [changelogVisible, setChangelogVisible] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
 
   // 首屏滚动锁定
@@ -96,6 +130,32 @@ export default function Home() {
     return () => window.removeEventListener('mousemove', onMove);
   }, [entered]);
 
+  // 更新日志弹窗：禁止背景滚动 + Esc 关闭
+  useEffect(() => {
+    if (!changelogOpen) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeChangelog(); };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = original;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [changelogOpen]);
+
+  const openChangelog = () => {
+    setChangelogOpen(true);
+    setChangelogVisible(false);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setChangelogVisible(true));
+    });
+  };
+
+  const closeChangelog = () => {
+    setChangelogVisible(false);
+    window.setTimeout(() => setChangelogOpen(false), 220);
+  };
+
   // 点击向下箭头：过渡后进入主内容
   const handleEnter = () => {
     if (exiting || entered) return;
@@ -107,7 +167,6 @@ export default function Home() {
     }, 700);
   };
 
-  // 点击产品卡片：离开动画后跳转
   const handleProductClick = (href: string) => {
     if (exiting) return;
     setExiting(true);
@@ -116,7 +175,6 @@ export default function Home() {
     }, 750);
   };
 
-  // 点击页脚链接：离开动画后跳转（"/" 则回到首屏）
   const handleFooterClick = (e: React.MouseEvent, href: string) => {
     e.preventDefault();
     if (exiting) return;
@@ -136,7 +194,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#f2f3f5] font-sans text-[#1b1c1e] antialiased">
-      <SiteNav />
+      <SiteNav entered={entered} onOpenChangelog={openChangelog} />
+
       {/* ===== 首屏：粒子漩涡（刷新默认显示） ===== */}
       {!entered && (
         <section
@@ -177,6 +236,7 @@ export default function Home() {
           </div>
         </section>
       )}
+
       {/* ===== 主内容 ===== */}
       <div
         className={`transition-all duration-700 ${
@@ -338,6 +398,90 @@ export default function Home() {
           </div>
         </footer>
       </div>
+
+      {/* ===== 更新日志弹窗 ===== */}
+      {changelogOpen && (
+        <div
+          onClick={closeChangelog}
+          className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 transition-opacity duration-200 ${
+            changelogVisible ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{ backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className={`relative w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.25)] transition-all duration-200 ${
+              changelogVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+            }`}
+          >
+            {/* 顶部装饰线 */}
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-[#e8704a]/40 to-transparent" />
+
+            {/* 关闭按钮 */}
+            <button
+              type="button"
+              onClick={closeChangelog}
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-[#b9bcc2] transition-all hover:bg-[#f5f6f7] hover:text-[#1b1c1e]"
+              aria-label="关闭"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* 头部 */}
+            <div className="px-8 pt-10 pb-6">
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#e8704a]" />
+                <span className="text-[10px] font-light tracking-[0.4em] text-[#b9bcc2]">CHANGELOG</span>
+              </div>
+              <h2 className="mt-3 text-2xl font-light tracking-[0.2em] text-[#1b1c1e]">更新日志</h2>
+              <p className="mt-2 text-xs font-light text-[#9b9ea4]">记录番茄鱼工作室的每一次进化</p>
+            </div>
+
+            {/* 更新列表 */}
+            <div className="max-h-[60vh] overflow-y-auto px-8 pb-8">
+              {CHANGELOG.length === 0 ? (
+                <p className="py-12 text-center text-xs font-light text-[#9b9ea4]">暂无更新记录</p>
+              ) : (
+                <div className="space-y-8">
+                  {CHANGELOG.map((item, idx) => (
+                    <div key={item.version + item.date} className="relative">
+                      {/* 时间线竖线 */}
+                      {idx < CHANGELOG.length - 1 && (
+                        <span className="absolute left-[3px] top-3 h-full w-px bg-[#e3e4e8]" />
+                      )}
+                      <div className="flex gap-4">
+                        {/* 圆点 */}
+                        <span className="relative z-10 mt-1.5 h-[7px] w-[7px] shrink-0 rounded-full bg-[#e8704a]" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-sm font-light tracking-[0.1em] text-[#1b1c1e]">{item.version}</span>
+                            {item.badge && (
+                              <span className="rounded-sm bg-[#fef3c7] px-1.5 py-0.5 text-[10px] font-light tracking-wider text-[#b45309]">
+                                {item.badge}
+                              </span>
+                            )}
+                            <span className="text-[11px] font-light tracking-wider text-[#9b9ea4]">{item.date}</span>
+                          </div>
+                          <ul className="mt-3 space-y-1.5">
+                            {item.entries.map((entry, i) => (
+                              <li key={i} className="flex gap-2 text-xs font-light leading-6 text-[#55585e]">
+                                <span className="mt-2.5 h-0.5 w-0.5 shrink-0 rounded-full bg-[#b9bcc2]" />
+                                <span>{entry}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
