@@ -303,7 +303,7 @@ export default function Home() {
             </div>
           </div>
         </section>
-        {/* 03 辅助开发平台 MAGIC */}
+        {/* 03 辅助开发平台 MAGIC —— 每个卡片独立粒子框 */}
         <section className="border-t border-[#e3e4e8]">
           <div className="mx-auto max-w-6xl px-6 py-24">
             <div className="grid gap-12 lg:grid-cols-[220px_1fr]">
@@ -316,31 +316,29 @@ export default function Home() {
                   为 UE 引擎与部分开发环境设计的开发辅助系统。
                 </p>
               </div>
-              <ProductParticleBoxes className="w-full">
-                <div className="grid gap-5 md:grid-cols-3">
-                  {PRODUCTS.map((p) => (
-                    <div key={p.name} className="group h-full">
-                      <Link
-                        href={p.href}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleProductClick(p.href);
-                        }}
-                        className="flex h-full w-full flex-col bg-white p-7 text-left"
-                      >
-                        <p className="text-lg font-light tracking-wider text-[#1b1c1e]">{p.name}</p>
-                        <p className="mt-1 text-[11px] font-light tracking-[0.2em] text-[#9b9ea4]">{p.tag}</p>
-                        <p className="mt-5 text-xs font-light text-[#85888e]">{p.audience}</p>
-                        <p className="mt-4 text-sm font-light text-[#1b1c1e]">
-                          {p.price}
-                          <span className="ml-2 text-xs text-[#9b9ea4]">{p.period}</span>
-                        </p>
-                        <p className="mt-5 flex-1 text-xs font-light leading-6 text-[#55585e]">{p.note}</p>
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              </ProductParticleBoxes>
+              <div className="grid gap-5 md:grid-cols-3">
+                {PRODUCTS.map((p) => (
+                  <ProductParticleBoxes key={p.name} className="h-full">
+                    <Link
+                      href={p.href}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleProductClick(p.href);
+                      }}
+                      className="flex h-full w-full flex-col bg-white p-7 text-left"
+                    >
+                      <p className="text-lg font-light tracking-wider text-[#1b1c1e]">{p.name}</p>
+                      <p className="mt-1 text-[11px] font-light tracking-[0.2em] text-[#9b9ea4]">{p.tag}</p>
+                      <p className="mt-5 text-xs font-light text-[#85888e]">{p.audience}</p>
+                      <p className="mt-4 text-sm font-light text-[#1b1c1e]">
+                        {p.price}
+                        <span className="ml-2 text-xs text-[#9b9ea4]">{p.period}</span>
+                      </p>
+                      <p className="mt-5 flex-1 text-xs font-light leading-6 text-[#55585e]">{p.note}</p>
+                    </Link>
+                  </ProductParticleBoxes>
+                ))}
+              </div>
             </div>
           </div>
         </section>
