@@ -28,7 +28,7 @@ function pointOnBorder(w: number, h: number, t: number) {
   return { x: 0, y: h - (t - 2 * w - h) };
 }
 
-function MemberCard({ member }: { member: InternalMember }) {
+function MemberCard({ member, onClick }: { member: InternalMember; onClick: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef(0);
@@ -206,14 +206,17 @@ function MemberCard({ member }: { member: InternalMember }) {
   }, []);
 
   return (
-    <div ref={wrapRef} className="group relative overflow-hidden bg-white p-8">
+    <div
+      ref={wrapRef}
+      onClick={onClick}
+      className="group relative cursor-pointer overflow-hidden bg-white p-8 transition-transform hover:-translate-y-0.5"
+    >
       <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 z-0 h-full w-full" />
       <div className="relative z-10 flex flex-col items-center text-center">
         <div className="flex h-20 w-20 items-center justify-center rounded-full border border-[#eeeff1] bg-white text-lg font-light tracking-wider text-[#1b1c1e]">
           {member.name?.charAt(0) || '?'}
         </div>
         <h3 className="mt-5 text-base font-light tracking-[0.1em] text-[#1b1c1e]">{member.name}</h3>
-        {member.title && <p className="mt-2 text-xs font-light tracking-[0.15em] text-[#9b9ea4]">{member.title}</p>}
       </div>
     </div>
   );
@@ -222,6 +225,7 @@ function MemberCard({ member }: { member: InternalMember }) {
 export function TeamSection() {
   const [members, setMembers] = useState<InternalMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<InternalMember | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -240,14 +244,75 @@ export function TeamSection() {
     return () => { active = false; };
   }, []);
 
+  // 弹窗打开时禁止页面滚动
+  useEffect(() => {
+    if (!selected) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelected(null); };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = original;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [selected]);
+
   if (loading) return <p className="text-sm font-light tracking-[0.2em] text-[#9b9ea4]">加载中…</p>;
   if (members.length === 0) return <p className="text-sm font-light tracking-[0.2em] text-[#9b9ea4]">暂无成员</p>;
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {members.map((m) => (
-        <MemberCard key={m.id} member={m} />
-      ))}
-    </div>
+    <>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {members.map((m) => (
+          <MemberCard key={m.id} member={m} onClick={() => setSelected(m)} />
+        ))}
+      </div>
+
+      {/* 成员详情弹窗 */}
+      {selected && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setSelected(null)}
+        >
+          <div
+            className="relative w-full max-w-md border border-[#e3e4e8] bg-white p-8 shadow-xl animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 关闭按钮 */}
+            <button
+              type="button"
+              onClick={() => setSelected(null)}
+              className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center text-[#9b9ea4] transition-colors hover:text-[#1b1c1e]"
+              aria-label="关闭"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+
+            <div className="flex flex-col items-center text-center">
+              {/* 头像 */}
+              <div className="flex h-24 w-24 items-center justify-center rounded-full border border-[#eeeff1] bg-white text-2xl font-light tracking-wider text-[#1b1c1e]">
+                {selected.name?.charAt(0) || '?'}
+              </div>
+
+              {/* 姓名 */}
+              <h3 className="mt-6 text-xl font-light tracking-[0.1em] text-[#1b1c1e]">
+                {selected.name}
+              </h3>
+
+              {/* 简介 */}
+              {selected.bio ? (
+                <p className="mt-4 whitespace-pre-wrap text-sm font-light leading-7 text-[#55585e]">
+                  {selected.bio}
+                </p>
+              ) : (
+                <p className="mt-4 text-sm font-light text-[#b9bcc2]">暂无简介</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
