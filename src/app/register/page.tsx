@@ -63,17 +63,33 @@ export default function RegisterPage() {
         return;
       }
 
+      // 若开启了邮箱确认，则无 session，跳登录页让用户先确认邮箱
       if (!data.session) {
         router.replace('/login?registered=1');
         return;
       }
 
+      // 有 session：立即创建访客档案
       const profileRes = await callAuthenticatedApi('/api/visitors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: form.name, company: form.company, interest: form.interest }),
+        body: JSON.stringify({
+          name: form.name.trim(),
+          company: form.company.trim(),
+          interest: form.interest.trim(),
+        }),
       });
-      if (!profileRes) return;
+
+      if (!profileRes) {
+        setErrorMsg('创建访客档案失败：无法连接服务');
+        return;
+      }
+
+      if (!profileRes.ok) {
+        const d = (await profileRes.json().catch(() => ({}))) as { error?: string };
+        setErrorMsg(d.error || '创建访客档案失败');
+        return;
+      }
 
       router.replace('/dashboard');
     } catch {

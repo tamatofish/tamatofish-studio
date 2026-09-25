@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { getSupabaseBrowserClientWithRetry } from '@/lib/supabase-browser';
 import type { InternalMember } from '@/lib/types';
 
@@ -120,7 +121,6 @@ function MemberCard({ member, onClick }: { member: InternalMember; onClick: () =
         }
         p.vx *= 0.86; p.vy *= 0.86; p.x += p.vx; p.y += p.vy;
       }
-      // 碰撞
       const grid = new Map<number, number[]>();
       const cellCols = Math.ceil(w / CELL_SIZE) + 1;
       for (let i = 0; i < particles.length; i++) {
@@ -158,7 +158,6 @@ function MemberCard({ member, onClick }: { member: InternalMember; onClick: () =
           }
         }
       }
-      // 绘制
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
         const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
@@ -226,6 +225,10 @@ export function TeamSection() {
   const [members, setMembers] = useState<InternalMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<InternalMember | null>(null);
+  const [visible, setVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     let active = true;
@@ -244,18 +247,35 @@ export function TeamSection() {
     return () => { active = false; };
   }, []);
 
-  // 弹窗打开时禁止页面滚动
   useEffect(() => {
     if (!selected) return;
     const original = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelected(null); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
     window.addEventListener('keydown', onKey);
     return () => {
       document.body.style.overflow = original;
       window.removeEventListener('keydown', onKey);
     };
   }, [selected]);
+
+  /** 打开：挂载 → 下一帧切到 visible，触发入场动画 */
+  const handleOpen = (m: InternalMember) => {
+    setSelected(m);
+    setVisible(false);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setVisible(true));
+    });
+  };
+
+  /** 关闭：先播退场动画，再卸载 */
+  const handleClose = () => {
+    if (!selected) return;
+    setVisible(false);
+    window.setTimeout(() => {
+      setSelected(null);
+    }, 220);
+  };
 
   if (loading) return <p className="text-sm font-light tracking-[0.2em] text-[#9b9ea4]">加载中…</p>;
   if (members.length === 0) return <p className="text-sm font-light tracking-[0.2em] text-[#9b9ea4]">暂无成员</p>;
@@ -264,54 +284,72 @@ export function TeamSection() {
     <>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {members.map((m) => (
-          <MemberCard key={m.id} member={m} onClick={() => setSelected(m)} />
+          <MemberCard key={m.id} member={m} onClick={() => handleOpen(m)} />
         ))}
       </div>
 
-      {/* 成员详情弹窗 */}
-      {selected && (
+      {/* 成员详情弹窗——用 Portal 渲染到 body，避免父容器 transform 影响定位 */}
+      {mounted && selected && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-in fade-in duration-200"
-          onClick={() => setSelected(null)}
+          onClick={handleClose}
+          className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 transition-opacity duration-200 ${
+            visible ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{ backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
         >
           <div
-            className="relative w-full max-w-md border border-[#e3e4e8] bg-white p-8 shadow-xl animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
+            className={`relative w-full max-w-[360px] overflow-hidden rounded-2xl bg-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.25)] transition-all duration-200 ${
+              visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+            }`}
           >
+            {/* 顶部装饰：极细渐变横线 */}
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-[#e8704a]/40 to-transparent" />
+
             {/* 关闭按钮 */}
             <button
               type="button"
-              onClick={() => setSelected(null)}
-              className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center text-[#9b9ea4] transition-colors hover:text-[#1b1c1e]"
+              onClick={handleClose}
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-[#b9bcc2] transition-all hover:bg-[#f5f6f7] hover:text-[#1b1c1e]"
               aria-label="关闭"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                 <path d="M18 6 6 18M6 6l12 12" />
               </svg>
             </button>
 
-            <div className="flex flex-col items-center text-center">
+            <div className="flex flex-col items-center px-8 pb-7 pt-9 text-center">
               {/* 头像 */}
-              <div className="flex h-24 w-24 items-center justify-center rounded-full border border-[#eeeff1] bg-white text-2xl font-light tracking-wider text-[#1b1c1e]">
-                {selected.name?.charAt(0) || '?'}
+              <div className="relative">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full border border-[#eeeff1] bg-gradient-to-b from-white to-[#fafbfc] text-2xl font-light tracking-wider text-[#1b1c1e] shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                  {selected.name?.charAt(0) || '?'}
+                </div>
+                {/* 头像下方的小圆点装饰 */}
+                <span className="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[#e8704a]/60" />
               </div>
 
               {/* 姓名 */}
-              <h3 className="mt-6 text-xl font-light tracking-[0.1em] text-[#1b1c1e]">
+              <h3 className="mt-6 text-lg font-light tracking-[0.15em] text-[#1b1c1e]">
                 {selected.name}
               </h3>
 
+              {/* 分割线 */}
+              <div className="mt-5 mb-4 h-px w-12 bg-[#e3e4e8]" />
+
               {/* 简介 */}
-              {selected.bio ? (
-                <p className="mt-4 whitespace-pre-wrap text-sm font-light leading-7 text-[#55585e]">
-                  {selected.bio}
-                </p>
-              ) : (
-                <p className="mt-4 text-sm font-light text-[#b9bcc2]">暂无简介</p>
-              )}
+              <div className="w-full">
+                {selected.bio ? (
+                  <p className="whitespace-pre-wrap text-[13px] font-light leading-7 text-[#55585e]">
+                    {selected.bio}
+                  </p>
+                ) : (
+                  <p className="text-[13px] font-light tracking-wider text-[#b9bcc2]">暂无简介</p>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
