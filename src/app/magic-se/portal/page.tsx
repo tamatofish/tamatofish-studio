@@ -114,7 +114,6 @@ const SHORTCUTS: { keys: string; desc: string }[] = [
   { keys: '右键拖拽画布',      desc: '平移画布' },
   { keys: '右键单击画布',      desc: '打开节点添加菜单' },
   { keys: '滚轮',             desc: '缩放画布' },
-  { keys: '双击节点标题',      desc: '重命名节点' },
   { keys: 'Ctrl + 拖动变量',   desc: '快速添加 Get 节点' },
   { keys: 'Alt + 拖动变量',    desc: '快速添加 Set 节点' },
 ];
@@ -771,7 +770,7 @@ function PlacedNodeView({
   node, selected, onDrag, onStartConnect, onEndConnect, connecting, highlightedPorts,
   onContextMenu, onPortEnter, onPortLeave, onMouseDownSelect,
   onInlineChange, connections, onPortAltClick, simHighlight,
-  renamingId, renameValue, onRename, setRenamingId, setRenameValue,
+
 }: {
   node: PlacedNode; selected: boolean;
   onDrag: (id: string, dx: number, dy: number) => void;
@@ -786,11 +785,6 @@ function PlacedNodeView({
   connections: Connection[];
   onPortAltClick: (instanceId: string, side: 'in' | 'out', portIndex: number) => void;
   simHighlight?: boolean;
-  renamingId: string | null;
-  renameValue: string;
-  onRename: (instanceId: string, newTitle: string) => void;
-  setRenamingId: (id: string | null) => void;
-  setRenameValue: (v: string) => void;
 }) {
   const [hoverTarget, setHoverTarget] = useState<'node' | 'port' | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -842,47 +836,12 @@ function PlacedNodeView({
           if (related?.closest('[data-port]')) return;
           setHoverTarget(null);
         }}>
-        <div onMouseDown={onMouseDown} className="cursor-grab border-b border-black/40 px-3 py-2 active:cursor-grabbing"
+               <div onMouseDown={onMouseDown} className="cursor-grab border-b border-black/40 px-3 py-2 active:cursor-grabbing"
           style={{ background: `linear-gradient(180deg, ${node.color}, ${node.color}cc)`, height: HEADER_H }}>
           <div className="flex items-start justify-between gap-2">
-            {renamingId === node.instanceId ? (
-              <input
-                autoFocus
-                value={renameValue}
-                onChange={(e) => setRenameValue(e.target.value)}
-                onBlur={() => {
-                  if (renameValue.trim()) onRename(node.instanceId, renameValue.trim());
-                  setRenamingId(null);
-                  setRenameValue('');
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    if (renameValue.trim()) onRename(node.instanceId, renameValue.trim());
-                    setRenamingId(null);
-                    setRenameValue('');
-                  } else if (e.key === 'Escape') {
-                    setRenamingId(null);
-                    setRenameValue('');
-                  }
-                  e.stopPropagation();
-                }}
-                onClick={(e) => e.stopPropagation()}
-                onMouseDown={(e) => e.stopPropagation()}
-                className="w-full truncate rounded-sm border border-white/30 bg-black/40 px-1 text-xs font-light tracking-wider text-white outline-none"
-              />
-            ) : (
-              <p
-                className="truncate text-xs font-light tracking-wider text-white select-none"
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  setRenamingId(node.instanceId);
-                  setRenameValue(node.title);
-                }}
-                title="双击重命名"
-              >
-                {node.title}
-              </p>
-            )}
+            <p className="truncate text-xs font-light tracking-wider text-white select-none">
+              {node.title}
+            </p>
             <span className="shrink-0 rounded-sm bg-black/30 px-1 py-0.5 text-[8px] font-mono uppercase tracking-wider text-white/80">{typeTag}</span>
           </div>
           <p className="mt-0.5 text-[10px] text-white/70">{node.category}</p>
@@ -922,7 +881,7 @@ function PlacedNodeView({
           </div>
         </div>
       </div>
-      {hoverTarget === 'node' && !renamingId && (
+      {hoverTarget === 'node' && (
         <div className="pointer-events-none absolute left-0 top-full z-50 mt-2 w-72 overflow-hidden rounded-md border border-white/10 bg-black/70 p-3 text-left shadow-2xl backdrop-blur-xl">
           <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#e8b04a]/60 to-transparent" />
           <p className="text-xs font-medium text-[#f0f0f0]">{node.title}</p>
@@ -1032,9 +991,6 @@ export default function MagicSEPortalPage() {
   const [docNode, setDocNode] = useState<PlacedNode | null>(null);
   const [marquee, setMarquee] = useState<{ active: boolean; startX: number; startY: number; curX: number; curY: number } | null>(null);
 
-  // 双击重命名
-  const [renamingId, setRenamingId] = useState<string | null>(null);
-  const [renameValue, setRenameValue] = useState('');
 
   // 对齐辅助线
   const [alignGuides, setAlignGuides] = useState<{ vx: number[]; hy: number[] }>({ vx: [], hy: [] });
@@ -1271,13 +1227,7 @@ export default function MagicSEPortalPage() {
     );
   }, []);
 
-  const handleRename = useCallback((instanceId: string, newTitle: string) => {
-    setPlaced((prev) => {
-      const next = prev.map((n) => n.instanceId === instanceId ? { ...n, title: newTitle } : n);
-      pushHistory({ placed: next, connections });
-      return next;
-    });
-  }, [connections, pushHistory]);  const addNode = useCallback((node: NodeData, worldX?: number, worldY?: number) => {
+    const addNode = useCallback((node: NodeData, worldX?: number, worldY?: number) => {
     const instanceId = uid(node.id);
     const x = worldX ?? nextX.current;
     const y = worldY ?? nextY.current;
@@ -2270,11 +2220,7 @@ export default function MagicSEPortalPage() {
                 connections={connections}
                 onPortAltClick={disconnectPort}
                 simHighlight={simHighlight.has(n.instanceId)}
-                renamingId={renamingId}
-                renameValue={renameValue}
-                onRename={handleRename}
-                setRenamingId={setRenamingId}
-                setRenameValue={setRenameValue} />
+                />
             ))}
           </div>
         </div>
