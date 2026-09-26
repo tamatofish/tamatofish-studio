@@ -21,6 +21,241 @@ interface TemplateNode { refId: string; nodeId: string; x: number; y: number; }
 interface TemplateConnection { fromRef: string; fromPort: number; toRef: string; toPort: number; }
 interface Template { id: string; name: string; desc: string; nodes: TemplateNode[]; connections: TemplateConnection[]; }
 
+/* ==================== 教程章节 ==================== */
+interface TutorialChapter {
+  id: string;
+  group: '基础' | '蓝图' | '数学运算' | '蓝图进阶' | '综合实战';
+  title: string;
+  lessonNo: string;           // B 站课号，如 "第 11 课"
+  difficulty: 1 | 2 | 3 | 4 | 5;
+  duration: string;           // 预计时长
+  goal: string;               // 本章目标
+  concepts: string[];         // 涉及概念
+  steps: string[];            // 步骤
+  checks: string[];           // 检查点
+  commonErrors?: string[];    // 常见错误
+  templateId?: string;        // 对应模板
+}
+
+const BILIBILI_URL = 'https://www.bilibili.com/video/BV1qYSvBHELW/';
+
+const TUTORIAL_CHAPTERS: TutorialChapter[] = [
+  {
+    id: 'ch-01', group: '基础', title: '初识蓝图编程',
+    lessonNo: '第 08 课', difficulty: 1, duration: '10 分钟',
+    goal: '理解事件（Event）、执行线、数据线的区别，能完成一条最简单的执行流。',
+    concepts: ['Event', 'Exec 执行线', 'Pure 纯函数'],
+    steps: [
+      '从左侧拖「Event BeginPlay」到画布 —— 它是"游戏开始时"的入口',
+      '再拖一个「Print String」到它右边',
+      '把 BeginPlay 的白色执行引脚拖到 Print String 的白色输入引脚',
+      '黄色数据线上填一段文字，比如 "Hello UE"',
+    ],
+    checks: ['BeginPlay 已连到 Print String', '打印文字已填写'],
+    commonErrors: [
+      '白色执行线只能连白色执行端口',
+      '数据线（彩色的）是单向的，从"输出"拖到"输入"',
+    ],
+    templateId: undefined,
+  },
+  {
+    id: 'ch-02', group: '蓝图', title: '常用流程控制节点',
+    lessonNo: '第 12 课', difficulty: 1, duration: '15 分钟',
+    goal: '学会用 Branch（分支）和 Sequence（顺序）控制执行流。',
+    concepts: ['Branch 分支', 'Sequence 序列', 'Exec 引脚的多路输出'],
+    steps: [
+      '拖「Event BeginPlay」→「Branch」',
+      '拖一个「Get Bool Variable」连到 Branch 的 Condition',
+      'Branch 的 True 和 False 分别连到两个 Print String',
+      '再试一次：把 Branch 换成 Sequence，三个 Then 各连一个 Print',
+    ],
+    checks: ['Branch 的两个分支都已连接', 'Condition 端口已连'],
+    commonErrors: [
+      '条件端口是布尔（红色），别连成别的类型',
+      '分支的两个出口可以都空着，也可以都连',
+    ],
+    templateId: undefined,
+  },
+  {
+    id: 'ch-03', group: '蓝图', title: '实现自动门功能',
+    lessonNo: '第 11 课', difficulty: 2, duration: '20 分钟',
+    goal: '按 E 键，让门旋转 90 度打开；再按一次，反向关闭。',
+    concepts: ['Input Action', 'Branch', 'Set / Get 变量', 'Set Actor Rotation'],
+    steps: [
+      '拖「Input Action」—— 它代表玩家按键',
+      '它的「Pressed」执行引脚 → 「Branch」的输入',
+      '拖「Get Bool Variable」→ Branch 的 Condition',
+      'Branch 的「True」→「Set Bool Variable」+「Set Actor Rotation」',
+      'Branch 的「False」→ 反向旋转',
+    ],
+    checks: ['Input Action 输出已连到 Branch', '两个分支都连到了旋转节点'],
+    commonErrors: [
+      '门不转？确认连的是 Set Actor Rotation，不是 Get',
+      '按 E 没反应？确认 Input Action 的 Pressed 引脚连好了',
+    ],
+    templateId: 'tpl_door',
+  },
+  {
+    id: 'ch-04', group: '蓝图', title: '实现玩家移动功能',
+    lessonNo: '第 09 课', difficulty: 2, duration: '15 分钟',
+    goal: '用事件和方向向量让 Actor 移动。',
+    concepts: ['Event Tick', 'Get Actor Forward Vector', 'Add Movement Input'],
+    steps: [
+      '拖「Event Tick」—— 每帧都会触发',
+      '拖「Get Actor Forward Vector」—— 拿到"朝前的方向"',
+      '把方向向量连到「Add Movement Input」的 World Direction',
+      '把 Tick 的执行输出连到 Add Movement Input 的执行输入',
+      '黄色数据线不要连错：方向 → 方向',
+    ],
+    checks: ['Tick 已连到 Add Movement Input', '方向向量已连到 World Direction'],
+    commonErrors: [
+      'Add Movement Input 有两个黄色输入，一个是方向一个是速度',
+      '想改变速度？调 Scale Value 的数值',
+    ],
+    templateId: 'tpl_fire',
+  },
+  {
+    id: 'ch-05', group: '蓝图', title: '制作场景机关（拾取道具）',
+    lessonNo: '第 19 课', difficulty: 3, duration: '20 分钟',
+    goal: '走进金币范围自动拾取，播放音效并销毁。',
+    concepts: ['Overlap 重叠事件', 'Cast 类型转换', 'Destroy'],
+    steps: [
+      '「Event ActorBeginOverlap」→「Cast To BP_Player」（确认碰到的是玩家）',
+      'Cast 的「成功」执行引脚 →「Play Sound at Location」',
+      '→「Destroy Actor」销毁金币',
+    ],
+    checks: ['Overlap 已连到 Cast', 'Cast 成功分支已连到音效'],
+    commonErrors: [
+      'Cast 有两个执行出口：一个是成功，一个是失败',
+      '失败分支可以空着（碰到别的 Actor 不做处理）',
+    ],
+    templateId: 'tpl_pickup',
+  },
+  {
+    id: 'ch-06', group: '蓝图', title: '制作倒计时',
+    lessonNo: '第 22 课', difficulty: 3, duration: '20 分钟',
+    goal: '限时关卡，每秒扣 1 秒，归零后打开新关卡。',
+    concepts: ['Set Timer by Event', 'Subtract', 'Branch 判断', 'Open Level'],
+    steps: [
+      '「Event BeginPlay」→「Set Timer by Event」（每秒触发一次）',
+      '→「Get Float Variable」→「Subtract」（减 1）→「Set Float Variable」',
+      '→「Branch」（判断是否 <= 0）',
+      'True →「Open Level」；False →「Set Text」更新 UI',
+    ],
+    checks: ['倒计时逻辑完整', '分支两路都有连'],
+    commonErrors: [
+      'Branch 条件是布尔，需要用「Greater」「Less」这类节点做比较',
+      'Open Level 需要填关卡名',
+    ],
+    templateId: 'tpl_timer',
+  },
+  {
+    id: 'ch-07', group: '蓝图', title: '角色朝向玩家',
+    lessonNo: '第 17 课', difficulty: 3, duration: '15 分钟',
+    goal: '让敌人一直朝向玩家（做 AI 转向的基础）。',
+    concepts: ['Find Look at Rotation', 'Set Actor Rotation', 'Get Player Character'],
+    steps: [
+      '「Event Tick」→「Get Player Character」（拿玩家位置）',
+      '→「Find Look at Rotation」（算出朝向玩家的方向）',
+      '→「Set Actor Rotation」（转向）',
+    ],
+    checks: ['Tick 已连到 Set Rotation', 'Find Look at Rotation 的两个输入都连了'],
+    commonErrors: [
+      'Find Look at Rotation 需要"起点"和"终点"两个向量',
+      '只转不移动 → 需要再加 Add Movement Input 才能移动',
+    ],
+    templateId: 'tpl_ai',
+  },
+  {
+    id: 'ch-08', group: '蓝图', title: '钥匙开门',
+    lessonNo: '第 19 课', difficulty: 4, duration: '25 分钟',
+    goal: '只有捡到钥匙后，按 E 才能开门；没钥匙时屏幕提示。',
+    concepts: ['Input Action', 'Branch', 'Set Text', '条件判断'],
+    steps: [
+      '「Input Action」→「Branch」（判断有没有钥匙）',
+      '「Get Bool Variable」→ Branch 的 Condition',
+      'True →「Play Sound」+「Set Actor Rotation」（开门）',
+      'False →「Set Text」（屏幕显示"你需要钥匙"）',
+    ],
+    checks: ['分支条件已连', '两路都有输出'],
+    commonErrors: [
+      '把钥匙状态存成一个布尔变量，在别处"捡到钥匙"时设成 True',
+      '提示文字需要连到 UI 控件，不能凭空显示',
+    ],
+    templateId: 'tpl_keydoor',
+  },
+  {
+    id: 'ch-09', group: '数学运算', title: '四则运算',
+    lessonNo: '第 27 课', difficulty: 2, duration: '10 分钟',
+    goal: '用 Add / Subtract / Multiply 做基础数学运算。',
+    concepts: ['Add', 'Subtract', 'Multiply', '数据类型'],
+    steps: [
+      '拖「Add (Float)」—— 两个数相加',
+      '把两个输入的数值填上（或从别的节点连过来）',
+      '再试试 Multiply 和 Subtract',
+      '结果输出可以连到 Print String 打印出来看',
+    ],
+    checks: ['输入端已填值', '输出已连到 Print'],
+    commonErrors: [
+      'Float 和 Int 是两种类型，不能直接相加',
+      '除法要小心除零',
+    ],
+    templateId: undefined,
+  },
+  {
+    id: 'ch-10', group: '数学运算', title: '向量初步',
+    lessonNo: '第 29 课', difficulty: 3, duration: '15 分钟',
+    goal: '理解向量（Vector）的三个分量 X / Y / Z，会用 Make / Break Vector。',
+    concepts: ['Make Vector', 'Break Vector', '向量分量'],
+    steps: [
+      '拖「Make Vector」—— 把 X / Y / Z 组合成一个向量',
+      '把三个数值分别填上',
+      '拖「Break Vector」—— 反向拆开',
+      '把 Make 的输出连到 Break 的输入，观察数值对应',
+    ],
+    checks: ['Make 输出已连到 Break 输入', '三个分量都能对上'],
+    commonErrors: [
+      'X 是前后，Y 是左右，Z 是上下（UE 的坐标约定）',
+      '向量可以用来表示位置、方向、速度',
+    ],
+    templateId: undefined,
+  },
+  {
+    id: 'ch-11', group: '蓝图进阶', title: '函数与宏的应用',
+    lessonNo: '第 34 课', difficulty: 4, duration: '20 分钟',
+    goal: '理解函数（Function）和宏（Macro）的区别，学会复用逻辑。',
+    concepts: ['Function 函数', 'Macro 宏', '节点复用'],
+    steps: [
+      '把一段常用逻辑（比如"开门"）打包成函数',
+      '在别处调用它 —— 不用重复连线',
+      '宏与函数的区别：宏可以有多个执行出口，函数只有一个',
+    ],
+    checks: ['理解函数和宏的差异', '知道什么时候该用哪个'],
+    commonErrors: [
+      '函数必须有返回值（即使为空）',
+      '宏可以没有执行引脚（当纯函数用）',
+    ],
+    templateId: undefined,
+  },
+  {
+    id: 'ch-12', group: '综合实战', title: '存档读档',
+    lessonNo: '第 25 课', difficulty: 4, duration: '20 分钟',
+    goal: '按 F5 存档，按 F9 读档，验证存档是否有效。',
+    concepts: ['Save Game to Slot', 'Load Game from Slot', 'Is Valid'],
+    steps: [
+      '「Input Action (F5)」→「Save Game to Slot」（存）',
+      '「Input Action (F9)」→「Load Game from Slot」（读）',
+      '→「Is Valid」（检查存档是否存在）',
+    ],
+    checks: ['存档节点已连', '读档节点已连'],
+    commonErrors: [
+      '存档对象需要先创建（SaveGame 类）',
+      '读取时如果存档不存在，Is Valid 会返回 false',
+    ],
+    templateId: 'tpl_save',
+  },
+];
+
 /* ==================== 端口颜色 ==================== */
 const PORT_COLORS: Record<PortType, string> = {
   exec: '#ffffff',
@@ -51,9 +286,7 @@ const HEADER_H = 52;
 const PORT_ROW_H = 22;
 const PORT_AREA_PT = 8;
 const PORT_DOT_OFFSET = 6;
-const DRAG_MIME = 'application/x-magic-node';
-
-/* ==================== 节点库 ==================== */
+const DRAG_MIME = 'application/x-magic-node';/* ==================== 节点库 ==================== */
 const NODE_LIBRARY: NodeData[] = [
   // —— 事件 ——
   { id: 'beginplay', title: 'Event BeginPlay', category: '事件', color: NODE_COLORS.event,
@@ -597,6 +830,7 @@ const TEMPLATES: Template[] = [
     ],
   },
 ];
+
 /* ==================== 工具函数 ==================== */
 function sortPorts(ports: Port[]): Port[] {
   return [...ports].sort((a, b) => {
@@ -795,9 +1029,7 @@ function LibraryItem({ node, onAdd, onDragStart, onContextMenu }: {
       )}
     </div>
   );
-}
-
-/* ==================== 主页面 ==================== */
+}/* ==================== 主页面 ==================== */
 export default function MagicSEPortalPage() {
   const [placed, setPlaced] = useState<PlacedNode[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -815,6 +1047,11 @@ export default function MagicSEPortalPage() {
   const [templateOpen, setTemplateOpen] = useState(false);
   const [librarySearch, setLibrarySearch] = useState('');
 
+  // 教程相关
+  const [tutorialOpen, setTutorialOpen] = useState(true); // 左栏"章节"分组，默认展开
+  const [activeChapter, setActiveChapter] = useState<TutorialChapter | null>(null);
+  const [chaptersCollapsed, setChaptersCollapsed] = useState(false); // 章节组是否收起
+
   const [history, setHistory] = useState<EditorState[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const historyRef = useRef<{ history: EditorState[]; index: number }>({ history: [], index: -1 });
@@ -827,6 +1064,7 @@ export default function MagicSEPortalPage() {
   const nextX = useRef(60);
   const nextY = useRef(60);
 
+  /* ==================== 历史记录 ==================== */
   const pushHistory = useCallback((state: EditorState) => {
     const ref = historyRef.current;
     const trimmed = ref.history.slice(0, ref.index + 1);
@@ -865,6 +1103,7 @@ export default function MagicSEPortalPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /* ==================== 节点操作 ==================== */
   const addNode = useCallback((node: NodeData, worldX?: number, worldY?: number) => {
     const instanceId = uid(node.id);
     const x = worldX ?? nextX.current;
@@ -929,6 +1168,48 @@ export default function MagicSEPortalPage() {
     setTemplateOpen(false);
   }, [pushHistory]);
 
+  /* ==================== 教程：加载章节 ==================== */
+  const openChapter = useCallback((chapter: TutorialChapter) => {
+    setActiveChapter(chapter);
+    // 如果章节有对应模板，加载它
+    if (chapter.templateId) {
+      const tpl = TEMPLATES.find((t) => t.id === chapter.templateId);
+      if (tpl) {
+        // 先清空画布
+        setPlaced([]);
+        setConnections([]);
+        setSelectedIds(new Set());
+        // 再加载模板
+        setTimeout(() => loadTemplate(tpl), 50);
+      }
+    } else {
+      // 无模板 → 清空画布，让用户自己从头做
+      setPlaced([]);
+      setConnections([]);
+      setSelectedIds(new Set());
+      pushHistory({ placed: [], connections: [] });
+    }
+  }, [loadTemplate, pushHistory]);
+
+  const closeChapter = useCallback(() => {
+    setActiveChapter(null);
+  }, []);
+
+  /* ==================== 章节检查点状态（实时判断） ==================== */
+  const chapterChecks = useMemo(() => {
+    if (!activeChapter) return [];
+    // 这里做最简单的检查：对于有模板的章节，只要画布上节点数 > 0 就算通过
+    // 更复杂的检查可以按章节 ID 定制
+    const hasNodes = placed.length > 0;
+    const hasConns = connections.length > 0;
+    return activeChapter.checks.map((text, idx) => {
+      if (idx === 0) return { text, done: hasNodes };
+      if (idx === 1) return { text, done: hasConns };
+      return { text, done: false };
+    });
+  }, [activeChapter, placed.length, connections.length]);
+
+  /* ==================== 其他节点操作 ==================== */
   const deleteSelected = useCallback(() => {
     if (selectedIds.size === 0) return;
     setPlaced((prev) => {
@@ -1030,6 +1311,21 @@ export default function MagicSEPortalPage() {
     return () => window.removeEventListener('mousemove', onMove);
   }, [pendingFrom]);
 
+  // 连线拖拽中，鼠标松开在空白处 → 取消连线
+  useEffect(() => {
+    if (!pendingFrom) return;
+    const onUp = (e: MouseEvent) => {
+      const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+      const portEl = el?.closest('[data-port]');
+      if (!portEl) {
+        setPendingFrom(null);
+        setHoverPort(null);
+      }
+    };
+    window.addEventListener('mouseup', onUp);
+    return () => window.removeEventListener('mouseup', onUp);
+  }, [pendingFrom]);
+
   useEffect(() => {
     const close = () => setMenu(null);
     window.addEventListener('click', close);
@@ -1064,6 +1360,7 @@ export default function MagicSEPortalPage() {
     return { conns, ports };
   }, [hoverConnectionId, connections]);
 
+  /* ==================== 拖拽 / 放置 ==================== */
   const handleLibraryDragStart = (e: React.DragEvent, node: NodeData) => {
     e.dataTransfer.setData(DRAG_MIME, node.id);
     e.dataTransfer.setData('text/plain', node.id);
@@ -1124,6 +1421,7 @@ export default function MagicSEPortalPage() {
     return () => window.removeEventListener('wheel', preventZoom);
   }, []);
 
+  /* ==================== 快捷键 ==================== */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -1221,6 +1519,7 @@ export default function MagicSEPortalPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [selectedIds, placed, connections, pushHistory, undo, redo, deleteSelected]);
 
+  /* ==================== 画布拖动 / 平移 ==================== */
   const onCanvasPointerDown = (e: React.PointerEvent) => {
     if (e.button === 2) {
       e.preventDefault();
@@ -1310,6 +1609,7 @@ export default function MagicSEPortalPage() {
     }
   };
 
+  /* ==================== 渲染路径 ==================== */
   const connectionPaths = useMemo(() => {
     return connections.map((c) => {
       const fromNode = getNodeById(c.fromInstance);
@@ -1346,7 +1646,17 @@ export default function MagicSEPortalPage() {
     );
   }, [librarySearch]);
 
-  return (
+  /* ==================== 教程分组 ==================== */
+  const chaptersByGroup = useMemo(() => {
+    const groups: Record<string, TutorialChapter[]> = {
+      '基础': [], '蓝图': [], '数学运算': [], '蓝图进阶': [], '综合实战': [],
+    };
+    TUTORIAL_CHAPTERS.forEach((ch) => {
+      if (!groups[ch.group]) groups[ch.group] = [];
+      groups[ch.group].push(ch);
+    });
+    return groups;
+  }, []);  return (
     <div className="min-h-screen bg-[#0d0d0f] font-sans text-[#e0e0e0] antialiased">
       <header className="flex h-12 items-center justify-between border-b border-[#1f1f22] bg-[#141416] px-5">
         <div className="flex items-center gap-2">
@@ -1358,6 +1668,19 @@ export default function MagicSEPortalPage() {
             Del 删除 · Ctrl+Z 撤销 · Ctrl+Shift+Z 重做 · Ctrl+C/V 复制/粘贴 · Ctrl+D 复制 · Ctrl+A 全选 · F 聚焦 · Esc 取消 · 右键拖拽平移 · 右键单击菜单 · Alt+左键断线
           </span>
 
+          {/* 教程按钮 */}
+          <button
+            type="button"
+            onClick={() => {
+              setChaptersCollapsed(false);
+              setTutorialOpen(true);
+            }}
+            className="flex h-6 items-center gap-1 border border-[#4a9eff] bg-[#1e1e21] px-2 text-[10px] text-[#4a9eff] transition-colors hover:bg-[#26262a]"
+            title="打开教程章节列表"
+          >
+            教程
+          </button>
+
           <button
             type="button"
             onClick={() => setTemplateOpen((v) => !v)}
@@ -1365,6 +1688,16 @@ export default function MagicSEPortalPage() {
           >
             模板
           </button>
+
+          <a
+            href={BILIBILI_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="flex h-6 items-center gap-1 border border-[#fb7299] bg-[#1e1e21] px-2 text-[10px] text-[#fb7299] transition-colors hover:bg-[#26262a]"
+            title="打开配套视频教程（B站）"
+          >
+            视频教程
+          </a>
 
           <div className="flex items-center gap-1">
             {historyIndex > 0 && (
@@ -1387,6 +1720,61 @@ export default function MagicSEPortalPage() {
 
       <div className="flex h-[calc(100vh-48px)]">
         <aside className="flex w-72 shrink-0 flex-col border-r border-[#1f1f22] bg-[#0f0f11]">
+          {/* ===== 章节列表（顶部） ===== */}
+          {tutorialOpen && (
+            <div className="border-b border-[#1f1f22]">
+              <button
+                type="button"
+                onClick={() => setChaptersCollapsed((v) => !v)}
+                className="flex w-full items-center justify-between border-b border-[#1f1f22] bg-[#141416] px-3 py-2 text-left transition-colors hover:bg-[#1a1a1d]"
+              >
+                <span className="flex items-center gap-2">
+                  <span className="text-[10px] font-light tracking-[0.25em] text-[#4a9eff]">📖 教程章节</span>
+                  <span className="text-[10px] text-[#6b6b70]">（{TUTORIAL_CHAPTERS.length} 章）</span>
+                </span>
+                <span className="text-[10px] text-[#6b6b70]">{chaptersCollapsed ? '展开' : '收起'}</span>
+              </button>
+              {!chaptersCollapsed && (
+                <div className="max-h-[340px] overflow-y-auto py-1">
+                  {Object.entries(chaptersByGroup).map(([groupName, chapters]) => (
+                    <div key={groupName}>
+                      <p className="px-3 py-1.5 text-[10px] font-light tracking-[0.2em] text-[#4a4a4f]">
+                        {groupName}
+                      </p>
+                      {chapters.map((ch) => {
+                        const isActive = activeChapter?.id === ch.id;
+                        return (
+                          <button
+                            key={ch.id}
+                            type="button"
+                            onClick={() => openChapter(ch)}
+                            className={`flex w-full flex-col items-start gap-0.5 border-l-2 px-3 py-2 text-left transition-colors ${
+                              isActive
+                                ? 'border-[#4a9eff] bg-[#1a1f26]'
+                                : 'border-transparent hover:border-[#4a9eff] hover:bg-[#1a1a1d]'
+                            }`}
+                          >
+                            <span className={`text-[11px] font-light ${isActive ? 'text-[#4a9eff]' : 'text-[#e0e0e0]'}`}>
+                              {ch.title}
+                            </span>
+                            <span className="flex items-center gap-2 text-[10px] text-[#6b6b70]">
+                              <span>{ch.lessonNo}</span>
+                              <span>·</span>
+                              <span>{'★'.repeat(ch.difficulty)}{'☆'.repeat(5 - ch.difficulty)}</span>
+                              <span>·</span>
+                              <span>{ch.duration}</span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ===== 节点库搜索 ===== */}
           <div className="border-b border-[#1f1f22] p-3">
             <div className="relative">
               <input
@@ -1409,6 +1797,7 @@ export default function MagicSEPortalPage() {
             </div>
           </div>
 
+          {/* ===== 节点库列表 ===== */}
           <div className="flex-1 overflow-y-auto p-3">
             <p className="mb-3 text-[10px] font-light tracking-[0.25em] text-[#6b6b70]">
               节点库（点击或拖拽到画布）
@@ -1443,6 +1832,7 @@ export default function MagicSEPortalPage() {
           </div>
         </aside>
 
+        {/* ===== 画布区 ===== */}
         <div
           ref={canvasRef}
           className={`relative flex-1 overflow-hidden transition-colors ${dropActive ? 'bg-[#111114]' : ''}`}
@@ -1466,6 +1856,105 @@ export default function MagicSEPortalPage() {
         >
           {dropActive && (
             <div className="pointer-events-none absolute inset-0 z-30 border-2 border-dashed border-[#e8704a]/60" />
+          )}
+
+          {/* 右上角章节目标卡 */}
+          {activeChapter && (
+            <div className="absolute right-4 top-4 z-40 w-[340px] border border-[#4a9eff]/40 bg-[#141922]/95 shadow-2xl backdrop-blur-sm">
+              <div className="flex items-center justify-between border-b border-[#4a9eff]/30 px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-light tracking-[0.2em] text-[#4a9eff]">📖 当前章节</span>
+                  <span className="text-[10px] text-[#6b6b70]">{activeChapter.lessonNo}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeChapter}
+                  className="text-[11px] text-[#6b6b70] hover:text-white"
+                  title="关闭"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="px-3 py-2">
+                <p className="text-[12px] font-light text-[#e0e0e0]">{activeChapter.title}</p>
+                <p className="mt-1 text-[10px] text-[#6b6b70]">
+                  {'★'.repeat(activeChapter.difficulty)}{'☆'.repeat(5 - activeChapter.difficulty)} · {activeChapter.duration}
+                </p>
+                <p className="mt-2 text-[11px] leading-5 text-[#a0a0a5]">
+                  <span className="text-[#4a9eff]">目标：</span>{activeChapter.goal}
+                </p>
+              </div>
+
+              {/* 涉及概念 */}
+              {activeChapter.concepts.length > 0 && (
+                <div className="border-t border-[#1f1f22] px-3 py-2">
+                  <p className="text-[10px] tracking-[0.15em] text-[#6b6b70]">涉及概念</p>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {activeChapter.concepts.map((c, i) => (
+                      <span key={i} className="border border-[#2a2a2e] bg-[#151517] px-1.5 py-0.5 text-[10px] text-[#a0a0a5]">
+                        {c}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 步骤 */}
+              <div className="max-h-[180px] overflow-y-auto border-t border-[#1f1f22] px-3 py-2">
+                <p className="text-[10px] tracking-[0.15em] text-[#6b6b70]">步骤</p>
+                <ol className="mt-1 space-y-1">
+                  {activeChapter.steps.map((s, i) => (
+                    <li key={i} className="flex gap-2 text-[11px] leading-5 text-[#c9c9cd]">
+                      <span className="shrink-0 text-[#4a9eff]">{i + 1}.</span>
+                      <span>{s}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              {/* 检查点（实时勾选） */}
+              {chapterChecks.length > 0 && (
+                <div className="border-t border-[#1f1f22] px-3 py-2">
+                  <p className="text-[10px] tracking-[0.15em] text-[#6b6b70]">检查点</p>
+                  <ul className="mt-1 space-y-1">
+                    {chapterChecks.map((ck, i) => (
+                      <li key={i} className={`flex items-center gap-2 text-[11px] ${ck.done ? 'text-[#4ade80]' : 'text-[#6b6b70]'}`}>
+                        <span className="font-mono">{ck.done ? '✓' : '□'}</span>
+                        <span>{ck.text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* 底部操作 */}
+              <div className="flex items-center justify-between border-t border-[#1f1f22] px-3 py-2">
+                <a
+                  href={BILIBILI_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[10px] text-[#fb7299] hover:underline"
+                  title="打开 B站视频"
+                >
+                  参考视频：{activeChapter.lessonNo} ↗
+                </a>
+                {activeChapter.templateId && (
+                  <span className="text-[10px] text-[#4a9eff]">✓ 已加载示例</span>
+                )}
+              </div>
+
+              {/* 常见错误 */}
+              {activeChapter.commonErrors && activeChapter.commonErrors.length > 0 && (
+                <div className="border-t border-[#1f1f22] px-3 py-2">
+                  <p className="text-[10px] tracking-[0.15em] text-[#e8704a]">⚠ 常见错误</p>
+                  <ul className="mt-1 space-y-0.5">
+                    {activeChapter.commonErrors.map((e, i) => (
+                      <li key={i} className="text-[10px] leading-5 text-[#a0a0a5]">· {e}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           )}
 
           <div
@@ -1531,6 +2020,7 @@ export default function MagicSEPortalPage() {
         </div>
       </div>
 
+      {/* 模板面板 */}
       {templateOpen && (
         <div className="fixed right-4 top-16 z-[120] w-80 border border-[#333] bg-[#1a1a1c] shadow-2xl">
           <div className="flex items-center justify-between border-b border-[#2a2a2e] px-3 py-2">
@@ -1557,6 +2047,7 @@ export default function MagicSEPortalPage() {
         </div>
       )}
 
+      {/* 右键菜单 */}
       {menu && (
         <div className="fixed z-[100] w-48 border border-[#333] bg-[#1a1a1c] py-1 shadow-2xl"
           style={{ left: menu.x, top: menu.y }}
