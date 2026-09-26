@@ -1665,7 +1665,6 @@ export default function MagicSEPortalPage() {
         setMarquee(null);
         setSimResult(null);
         setSimHighlight(new Set());
-        setRenamingId(null);
         return;
       }
       if (e.key.toLowerCase() === 'f' && !isInput && selectedIds.size > 0) {
