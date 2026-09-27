@@ -1,33 +1,53 @@
 /* ==================== 类型 ==================== */
-export type PortType = 'exec' | 'bool' | 'int' | 'float' | 'string' | 'vector' | 'rotator' | 'object' | 'class' | 'actor';
+export type PortType =
+  | 'exec' | 'bool' | 'int' | 'float' | 'string'
+  | 'vector' | 'rotator' | 'object' | 'class' | 'actor';
 
 export interface Port { name: string; type: PortType; desc: string; }
+
 export interface NodeData {
   id: string; title: string; category: string; color: string;
   desc: string; commonScene?: string; source?: string;
   inputs: Port[]; outputs: Port[];
   defaultValues?: Record<number, string>;
 }
+
 export interface PlacedNode extends NodeData { instanceId: string; x: number; y: number; }
-export interface Connection { id: string; fromInstance: string; fromPort: number; toInstance: string; toPort: number; type: PortType; }
+
+export interface Connection {
+  id: string;
+  fromInstance: string; fromPort: number;
+  toInstance: string; toPort: number;
+  type: PortType;
+}
+
 export interface EditorState { placed: PlacedNode[]; connections: Connection[]; }
 
 export interface TemplateNode { refId: string; nodeId: string; x: number; y: number; }
-export interface TemplateConnection { fromRef: string; fromPort: number; toRef: string; toPort: number; }
-export interface Template { id: string; name: string; desc: string; nodes: TemplateNode[]; connections: TemplateConnection[]; }
+export interface TemplateConnection {
+  fromRef: string; fromPort: number;
+  toRef: string; toPort: number;
+}
+export interface Template {
+  id: string; name: string; desc: string;
+  nodes: TemplateNode[];
+  connections: TemplateConnection[];
+}
 
+/* ==================== 颜色表 ==================== */
 export const PORT_COLORS: Record<PortType, string> = {
-  exec:   '#f0f0f0',
-  bool:   '#a01a1a',
-  int:    '#1ad6b8',
-  float:  '#9ce09c',
-  string: '#ff69b4',
-  vector: '#f5c518',
-  rotator:'#a78bfa',
-  object: '#4fb4ff',
-  class:  '#7b68ee',
-  actor:  '#33c9b6',
+  exec:    '#f0f0f0',
+  bool:    '#a01a1a',
+  int:     '#1ad6b8',
+  float:   '#9ce09c',
+  string:  '#ff69b4',
+  vector:  '#f5c518',
+  rotator: '#a78bfa',
+  object:  '#4fb4ff',
+  class:   '#7b68ee',
+  actor:   '#33c9b6',
 };
+
 export const PORT_LABELS: Record<PortType, string> = {
   exec: '执行', bool: '布尔', int: '整数', float: '浮点', string: '字符串',
   vector: '向量', rotator: '旋转', object: '对象', class: '类', actor: 'Actor',
@@ -50,6 +70,7 @@ export const NODE_COLORS = {
   variable:  '#1f7a5a',
 } as const;
 
+/* ==================== 尺寸常量 ==================== */
 export const NODE_WIDTH = 240;
 export const HEADER_H = 52;
 export const PORT_ROW_H = 22;
@@ -57,6 +78,7 @@ export const PORT_AREA_PT = 8;
 export const PORT_DOT_OFFSET = 6;
 export const DRAG_MIME = 'application/x-magic-node';
 
+/* ==================== 类型兼容 ==================== */
 export function isTypeCompatible(fromType: PortType, toType: PortType): boolean {
   if (fromType === toType) return true;
   if (fromType === 'int' && toType === 'float') return true;
@@ -67,7 +89,7 @@ export function isTypeCompatible(fromType: PortType, toType: PortType): boolean 
 
 /* ==================== 节点库 ==================== */
 export const NODE_LIBRARY: NodeData[] = [
-  // —— 事件 ——
+  /* ============ 事件 ============ */
   {
     id: 'beginplay', title: 'Event BeginPlay', category: '事件', color: NODE_COLORS.event,
     desc: 'Actor 进入游戏世界时触发一次。相当于"开机按钮"。',
@@ -117,7 +139,8 @@ export const NODE_LIBRARY: NodeData[] = [
     inputs: [],
     outputs: [{ name: '', type: 'exec', desc: '执行输出。' }],
   },
-  // —— 输入 ——
+
+  /* ============ 输入 ============ */
   {
     id: 'inputaction', title: 'Input Action', category: '输入', color: NODE_COLORS.event,
     desc: '玩家按下或松开指定按键时触发。相当于"遥控器按钮"。',
@@ -129,7 +152,8 @@ export const NODE_LIBRARY: NodeData[] = [
       { name: 'Released', type: 'exec', desc: '松开时执行。' },
     ],
   },
-  // —— 流程控制 ——
+
+  /* ============ 流程控制 ============ */
   {
     id: 'branch', title: 'Branch', category: '流程控制', color: NODE_COLORS.flow,
     desc: '布尔条件判断，等价于 if / else。True 走一条路，False 走另一条。',
@@ -193,7 +217,8 @@ export const NODE_LIBRARY: NodeData[] = [
     outputs: [{ name: '', type: 'exec', desc: '执行输出。' }],
     defaultValues: { 1: 'Level_02' },
   },
-  // —— 角色 ——
+
+  /* ============ 角色 ============ */
   {
     id: 'getplayer', title: 'Get Player Character', category: '角色', color: NODE_COLORS.character,
     desc: '获取玩家角色的引用（返回 Actor 类型）。',
@@ -228,7 +253,8 @@ export const NODE_LIBRARY: NodeData[] = [
     outputs: [{ name: '', type: 'exec', desc: '执行输出。' }],
     defaultValues: { 1: '0,0,0' },
   },
-  // —— 变换 ——
+
+  /* ============ 变换 ============ */
   {
     id: 'getactorlocation', title: 'Get Actor Location', category: '变换', color: NODE_COLORS.transform,
     desc: '获取 Actor 的世界坐标（Vector）。',
@@ -339,7 +365,8 @@ export const NODE_LIBRARY: NodeData[] = [
     ],
     defaultValues: { 0: '0,0,0' },
   },
-  // —— 类型转换 ——
+
+  /* ============ 类型转换 ============ */
   {
     id: 'cast', title: 'Cast To BP_Player', category: '类型转换', color: NODE_COLORS.cast,
     desc: '把通用对象引用转换为特定类，成功/失败走不同执行引脚。',
@@ -350,12 +377,13 @@ export const NODE_LIBRARY: NodeData[] = [
       { name: 'Object', type: 'object', desc: '要转换的对象。' },
     ],
     outputs: [
-      { name: 'As Player', type: 'actor', desc: '转换成功后的结果。' },
       { name: 'Cast Failed', type: 'exec', desc: '转换失败时执行。' },
       { name: '', type: 'exec', desc: '转换成功时执行。' },
+      { name: 'As Player', type: 'actor', desc: '转换成功后的结果。' },
     ],
   },
-  // —— 生成 ——
+
+  /* ============ 生成 ============ */
   {
     id: 'spawn', title: 'Spawn Actor from Class', category: '生成', color: NODE_COLORS.spawn,
     desc: '运行时生成一个 Actor 实例。',
@@ -384,7 +412,8 @@ export const NODE_LIBRARY: NodeData[] = [
     ],
     outputs: [{ name: '', type: 'exec', desc: '执行输出。' }],
   },
-  // —— 定时器 ——
+
+  /* ============ 定时器 ============ */
   {
     id: 'settimer', title: 'Set Timer by Event', category: '定时器', color: NODE_COLORS.timer,
     desc: '延迟或循环触发一个事件。',
@@ -393,7 +422,7 @@ export const NODE_LIBRARY: NodeData[] = [
     inputs: [
       { name: '', type: 'exec', desc: '执行输入。' },
       { name: 'Object', type: 'object', desc: '事件的所有者。' },
-      { name: 'Event', type: 'bool', desc: '要触发的事件委托。' },
+      { name: 'Event', type: 'object', desc: '要触发的事件委托。' },
       { name: 'Time', type: 'float', desc: '间隔时间（秒）。' },
       { name: 'Looping', type: 'bool', desc: '是否循环。' },
     ],
@@ -403,7 +432,8 @@ export const NODE_LIBRARY: NodeData[] = [
     ],
     defaultValues: { 3: '1.0', 4: 'true' },
   },
-  // —— 数学 ——
+
+  /* ============ 数学 ============ */
   {
     id: 'lerp', title: 'Lerp', category: '数学', color: NODE_COLORS.math,
     desc: '线性插值，Alpha 从 0 到 1，结果从 A 平滑过渡到 B。',
@@ -465,7 +495,8 @@ export const NODE_LIBRARY: NodeData[] = [
     outputs: [{ name: 'Return Value', type: 'bool', desc: 'A > B。' }],
     defaultValues: { 0: '0.0', 1: '0.0' },
   },
-  // —— UI ——
+
+  /* ============ UI ============ */
   {
     id: 'createwidget', title: 'Create Widget', category: 'UI', color: NODE_COLORS.ui,
     desc: '创建 UMG 控件实例。',
@@ -520,7 +551,8 @@ export const NODE_LIBRARY: NodeData[] = [
     outputs: [{ name: '', type: 'exec', desc: '执行输出。' }],
     defaultValues: { 2: 'Hello' },
   },
-  // —— 音频 ——
+
+  /* ============ 音频 ============ */
   {
     id: 'playsound', title: 'Play Sound at Location', category: '音频', color: NODE_COLORS.audio,
     desc: '在指定世界位置播放音效。',
@@ -545,7 +577,8 @@ export const NODE_LIBRARY: NodeData[] = [
     ],
     outputs: [{ name: '', type: 'exec', desc: '执行输出。' }],
   },
-  // —— 存档 ——
+
+  /* ============ 存档 ============ */
   {
     id: 'savegame', title: 'Save Game to Slot', category: '存档', color: NODE_COLORS.save,
     desc: '把游戏状态保存到指定槽位。',
@@ -571,7 +604,8 @@ export const NODE_LIBRARY: NodeData[] = [
     outputs: [{ name: 'Return Value', type: 'object', desc: '存档对象。' }],
     defaultValues: { 0: 'SaveSlot1' },
   },
-  // —— 调试 ——
+
+  /* ============ 调试 ============ */
   {
     id: 'print', title: 'Print String', category: '调试', color: NODE_COLORS.debug,
     desc: '在屏幕上打印文字，调试神器。',
@@ -585,7 +619,8 @@ export const NODE_LIBRARY: NodeData[] = [
     outputs: [{ name: '', type: 'exec', desc: '执行输出。' }],
     defaultValues: { 1: 'Hello UE', 2: '2.0' },
   },
-  // —— 工具 ——
+
+  /* ============ 工具 ============ */
   {
     id: 'isvalid', title: 'Is Valid', category: '工具', color: NODE_COLORS.pure,
     desc: '检查对象引用是否有效（非 null）。',
@@ -602,6 +637,217 @@ export const NODE_LIBRARY: NodeData[] = [
     inputs: [],
     outputs: [{ name: 'Return Value', type: 'float', desc: '帧时间间隔。' }],
   },
+
+  /* ============================================================
+   * 以下为补充节点（用于支撑 templates.ts 中的模板）
+   * ============================================================ */
+
+  /* ============ 数学 · 常量 ============ */
+  {
+    id: 'const_float', title: 'Float 常量', category: '数学', color: NODE_COLORS.math,
+    desc: '一个可直接填写的浮点常量。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Float',
+    inputs: [],
+    outputs: [{ name: 'Value', type: 'float', desc: '常量值。' }],
+    defaultValues: { 0: '0.0' },
+  },
+  {
+    id: 'const_int', title: 'Int 常量', category: '数学', color: NODE_COLORS.math,
+    desc: '一个可直接填写的整数常量。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Integer',
+    inputs: [],
+    outputs: [{ name: 'Value', type: 'int', desc: '常量值。' }],
+    defaultValues: { 0: '0' },
+  },
+
+  /* ============ 数学 · 浮点比较 ============ */
+  {
+    id: 'less_float', title: 'Less (Float)', category: '数学', color: NODE_COLORS.math,
+    desc: 'A < B 返回 True。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Float',
+    inputs: [
+      { name: 'A', type: 'float', desc: 'A。' },
+      { name: 'B', type: 'float', desc: 'B。' },
+    ],
+    outputs: [{ name: 'Return Value', type: 'bool', desc: 'A < B。' }],
+    defaultValues: { 0: '0.0', 1: '0.0' },
+  },
+  {
+    id: 'less_equal_float', title: 'Less Equal (Float)', category: '数学', color: NODE_COLORS.math,
+    desc: 'A ≤ B 返回 True。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Float',
+    inputs: [
+      { name: 'A', type: 'float', desc: 'A。' },
+      { name: 'B', type: 'float', desc: 'B。' },
+    ],
+    outputs: [{ name: 'Return Value', type: 'bool', desc: 'A ≤ B。' }],
+    defaultValues: { 0: '0.0', 1: '0.0' },
+  },
+  {
+    id: 'equal_float', title: 'Equal (Float)', category: '数学', color: NODE_COLORS.math,
+    desc: 'A == B 返回 True。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Float',
+    inputs: [
+      { name: 'A', type: 'float', desc: 'A。' },
+      { name: 'B', type: 'float', desc: 'B。' },
+    ],
+    outputs: [{ name: 'Return Value', type: 'bool', desc: 'A == B。' }],
+    defaultValues: { 0: '0.0', 1: '0.0' },
+  },
+
+  /* ============ 数学 · 浮点除法 ============ */
+  {
+    id: 'divide_float', title: 'Divide (Float)', category: '数学', color: NODE_COLORS.math,
+    desc: 'A / B。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Float',
+    inputs: [
+      { name: 'A', type: 'float', desc: '被除数。' },
+      { name: 'B', type: 'float', desc: '除数。' },
+    ],
+    outputs: [{ name: 'Return Value', type: 'float', desc: 'A / B。' }],
+    defaultValues: { 0: '1.0', 1: '1.0' },
+  },
+
+  /* ============ 数学 · 整型运算 ============ */
+  {
+    id: 'add_int', title: 'Add (Int)', category: '数学', color: NODE_COLORS.math,
+    desc: '两个整数相加。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Integer',
+    inputs: [
+      { name: 'A', type: 'int', desc: 'A。' },
+      { name: 'B', type: 'int', desc: 'B。' },
+    ],
+    outputs: [{ name: 'Return Value', type: 'int', desc: 'A + B。' }],
+    defaultValues: { 0: '0', 1: '0' },
+  },
+  {
+    id: 'subtract_int', title: 'Subtract (Int)', category: '数学', color: NODE_COLORS.math,
+    desc: '两个整数相减。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Integer',
+    inputs: [
+      { name: 'A', type: 'int', desc: 'A。' },
+      { name: 'B', type: 'int', desc: 'B。' },
+    ],
+    outputs: [{ name: 'Return Value', type: 'int', desc: 'A - B。' }],
+    defaultValues: { 0: '0', 1: '0' },
+  },
+  {
+    id: 'multiply_int', title: 'Multiply (Int)', category: '数学', color: NODE_COLORS.math,
+    desc: '两个整数相乘。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Integer',
+    inputs: [
+      { name: 'A', type: 'int', desc: 'A。' },
+      { name: 'B', type: 'int', desc: 'B。' },
+    ],
+    outputs: [{ name: 'Return Value', type: 'int', desc: 'A × B。' }],
+    defaultValues: { 0: '1', 1: '1' },
+  },
+  {
+    id: 'greater_int', title: 'Greater (Int)', category: '数学', color: NODE_COLORS.math,
+    desc: 'A > B 返回 True。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Integer',
+    inputs: [
+      { name: 'A', type: 'int', desc: 'A。' },
+      { name: 'B', type: 'int', desc: 'B。' },
+    ],
+    outputs: [{ name: 'Return Value', type: 'bool', desc: 'A > B。' }],
+    defaultValues: { 0: '0', 1: '0' },
+  },
+  {
+    id: 'equal_int', title: 'Equal (Int)', category: '数学', color: NODE_COLORS.math,
+    desc: 'A == B 返回 True。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Integer',
+    inputs: [
+      { name: 'A', type: 'int', desc: 'A。' },
+      { name: 'B', type: 'int', desc: 'B。' },
+    ],
+    outputs: [{ name: 'Return Value', type: 'bool', desc: 'A == B。' }],
+    defaultValues: { 0: '0', 1: '0' },
+  },
+
+  /* ============ 数学 · 随机 ============ */
+  {
+    id: 'random_float', title: 'Random Float in Range', category: '数学', color: NODE_COLORS.math,
+    desc: '返回 [Min, Max) 区间内的随机浮点数。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Random',
+    inputs: [
+      { name: 'Min', type: 'float', desc: '最小值。' },
+      { name: 'Max', type: 'float', desc: '最大值。' },
+    ],
+    outputs: [{ name: 'Return Value', type: 'float', desc: '随机数。' }],
+    defaultValues: { 0: '0.0', 1: '1.0' },
+  },
+
+  /* ============ 数学 · 布尔运算 ============ */
+  {
+    id: 'not_bool', title: 'Not (Bool)', category: '数学', color: NODE_COLORS.math,
+    desc: '布尔取反。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Boolean',
+    inputs: [{ name: 'A', type: 'bool', desc: '输入。' }],
+    outputs: [{ name: 'Return Value', type: 'bool', desc: '!A。' }],
+    defaultValues: { 0: 'false' },
+  },
+  {
+    id: 'and_bool', title: 'AND (Bool)', category: '数学', color: NODE_COLORS.math,
+    desc: 'A AND B。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Boolean',
+    inputs: [
+      { name: 'A', type: 'bool', desc: 'A。' },
+      { name: 'B', type: 'bool', desc: 'B。' },
+    ],
+    outputs: [{ name: 'Return Value', type: 'bool', desc: 'A && B。' }],
+    defaultValues: { 0: 'false', 1: 'false' },
+  },
+  {
+    id: 'or_bool', title: 'OR (Bool)', category: '数学', color: NODE_COLORS.math,
+    desc: 'A OR B。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Boolean',
+    inputs: [
+      { name: 'A', type: 'bool', desc: 'A。' },
+      { name: 'B', type: 'bool', desc: 'B。' },
+    ],
+    outputs: [{ name: 'Return Value', type: 'bool', desc: 'A || B。' }],
+    defaultValues: { 0: 'false', 1: 'false' },
+  },
+
+  /* ============ 角色 · 玩家控制器 ============ */
+  {
+    id: 'getplayercontroller', title: 'Get Player Controller', category: '角色', color: NODE_COLORS.character,
+    desc: '获取玩家控制器（用于 Set Input Mode 等）。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Game/Player',
+    inputs: [{ name: 'Player Index', type: 'int', desc: '玩家索引，单人游戏填 0。' }],
+    outputs: [{ name: 'Return Value', type: 'object', desc: '控制器。' }],
+    defaultValues: { 0: '0' },
+  },
+
+  /* ============ 定时器 · 按函数名 ============ */
+  {
+    id: 'settimer_byname', title: 'Set Timer by Function Name', category: '定时器', color: NODE_COLORS.timer,
+    desc: '用函数名延迟/循环触发。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Utilities/Time',
+    inputs: [
+      { name: '', type: 'exec', desc: '执行输入。' },
+      { name: 'Object', type: 'object', desc: '对象。' },
+      { name: 'Function Name', type: 'string', desc: '函数名。' },
+      { name: 'Time', type: 'float', desc: '间隔秒数。' },
+      { name: 'Looping', type: 'bool', desc: '是否循环。' },
+    ],
+    outputs: [
+      { name: '', type: 'exec', desc: '执行输出。' },
+      { name: 'Return Value', type: 'object', desc: 'Timer Handle。' },
+    ],
+    defaultValues: { 2: 'MyFunction', 3: '1.0', 4: 'false' },
+  },
+  {
+    id: 'clear_timer', title: 'Clear and Invalidate Timer by Handle', category: '定时器', color: NODE_COLORS.timer,
+    desc: '清除指定 Timer Handle 的定时器。',
+    source: 'https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Utilities/Time',
+    inputs: [
+      { name: '', type: 'exec', desc: '执行输入。' },
+      { name: 'Handle', type: 'object', desc: 'Timer Handle。' },
+    ],
+    outputs: [{ name: '', type: 'exec', desc: '执行输出。' }],
+  },
 ];
 
 /* ==================== 工具函数 ==================== */
@@ -613,13 +859,17 @@ export function sortPorts(ports: Port[]): Port[] {
   });
 }
 
-export function getPortPosition(node: PlacedNode, side: 'in' | 'out', index: number): { x: number; y: number } {
+export function getPortPosition(
+  node: PlacedNode,
+  side: 'in' | 'out',
+  index: number
+): { x: number; y: number } {
   const y = node.y + HEADER_H + PORT_AREA_PT + index * PORT_ROW_H + PORT_DOT_OFFSET;
   const x = side === 'in' ? node.x : node.x + NODE_WIDTH;
   return { x, y };
 }
 
-/* ==================== 优化的贝塞尔曲线 ==================== */
+/* ==================== 贝塞尔曲线 ==================== */
 export function bezierPath(x1: number, y1: number, x2: number, y2: number): string {
   const dx = x2 - x1;
   const dy = y2 - y1;
@@ -665,345 +915,170 @@ export interface TutorialChapter {
 }
 
 export const TUTORIAL_CHAPTERS: TutorialChapter[] = [
-  { id: 'ch-01', group: '基础', title: '初识蓝图编程', lessonNo: '第 08 课', difficulty: 1, duration: '10 分钟',
+  {
+    id: 'ch-01', group: '基础', title: '初识蓝图编程', lessonNo: '第 08 课',
+    difficulty: 1, duration: '10 分钟',
     goal: '理解事件、执行线、数据线的区别。',
     concepts: ['Event', 'Exec 执行线', 'Pure 纯函数'],
-    steps: ['从左侧拖「Event BeginPlay」到画布', '再拖一个「Print String」到它右边', '把 BeginPlay 的白色执行引脚拖到 Print String 的白色输入引脚', '黄色数据线上填一段文字'],
+    steps: [
+      '从左侧拖「Event BeginPlay」到画布',
+      '再拖一个「Print String」到它右边',
+      '把 BeginPlay 的白色执行引脚拖到 Print String 的白色输入引脚',
+      '黄色数据线上填一段文字',
+    ],
     checks: ['BeginPlay 已连到 Print String', '打印文字已填写'],
-    commonErrors: ['白色执行线只能连白色执行端口', '数据线是单向的'] },
-  { id: 'ch-02', group: '蓝图', title: '常用流程控制节点', lessonNo: '第 12 课', difficulty: 1, duration: '15 分钟',
+    commonErrors: ['白色执行线只能连白色执行端口', '数据线是单向的'],
+  },
+  {
+    id: 'ch-02', group: '蓝图', title: '常用流程控制节点', lessonNo: '第 12 课',
+    difficulty: 1, duration: '15 分钟',
     goal: '学会用 Branch 和 Sequence 控制执行流。',
     concepts: ['Branch 分支', 'Sequence 序列'],
-    steps: ['拖「Event BeginPlay」→「Branch」', '拖「Get 布尔」连到 Branch 的 Condition', 'Branch 的 True 和 False 分别连到两个 Print String'],
+    steps: [
+      '拖「Event BeginPlay」→「Branch」',
+      '拖「Get 布尔」连到 Branch 的 Condition',
+      'Branch 的 True 和 False 分别连到两个 Print String',
+    ],
     checks: ['Branch 的两个分支都已连接', 'Condition 端口已连'],
-    commonErrors: ['条件端口是布尔', '分支的两个出口可以都空着'] },
-  { id: 'ch-03', group: '蓝图', title: '实现自动门功能', lessonNo: '第 11 课', difficulty: 2, duration: '20 分钟',
+    commonErrors: ['条件端口是布尔', '分支的两个出口可以都空着'],
+  },
+  {
+    id: 'ch-03', group: '蓝图', title: '实现自动门功能', lessonNo: '第 11 课',
+    difficulty: 2, duration: '20 分钟',
     goal: '按 E 键，让门旋转 90 度打开。',
     concepts: ['Input Action', 'Branch', 'Set / Get 变量', 'Set Actor Rotation'],
-    steps: ['拖「Input Action」', '「Pressed」→ 「Branch」', '「Get 布尔」→ Branch 的 Condition', 'True →「Set 布尔」+「Set Actor Rotation」'],
+    steps: [
+      '拖「Input Action」',
+      '「Pressed」→「Branch」',
+      '「Get 布尔」→ Branch 的 Condition',
+      'True →「Set 布尔」+「Set Actor Rotation」',
+    ],
     checks: ['Input Action 输出已连到 Branch', '两个分支都连到了旋转节点'],
     commonErrors: ['确认连的是 Set Actor Rotation'],
-    templateId: 'tpl_door' },
-  { id: 'ch-04', group: '蓝图', title: '实现玩家移动功能', lessonNo: '第 09 课', difficulty: 2, duration: '15 分钟',
+    templateId: 'tpl_door',
+  },
+  {
+    id: 'ch-04', group: '蓝图', title: '实现玩家移动功能', lessonNo: '第 09 课',
+    difficulty: 2, duration: '15 分钟',
     goal: '用事件和方向向量让 Actor 移动。',
     concepts: ['Event Tick', 'Get Actor Forward Vector', 'Add Movement Input'],
-    steps: ['拖「Event Tick」', '拖「Get Actor Forward Vector」', '把方向向量连到「Add Movement Input」的 World Direction', '把 Tick 的执行输出连到 Add Movement Input 的执行输入'],
+    steps: [
+      '拖「Event Tick」',
+      '拖「Get Actor Forward Vector」',
+      '把方向向量连到「Add Movement Input」的 World Direction',
+      '把 Tick 的执行输出连到 Add Movement Input 的执行输入',
+    ],
     checks: ['Tick 已连到 Add Movement Input', '方向向量已连到 World Direction'],
     commonErrors: ['Add Movement Input 有两个输入'],
-    templateId: 'tpl_move' },
-  { id: 'ch-05', group: '蓝图', title: '制作场景机关（拾取道具）', lessonNo: '第 19 课', difficulty: 3, duration: '20 分钟',
+    templateId: 'tpl_move',
+  },
+  {
+    id: 'ch-05', group: '蓝图', title: '制作场景机关（拾取道具）', lessonNo: '第 19 课',
+    difficulty: 3, duration: '20 分钟',
     goal: '走进金币范围自动拾取。',
     concepts: ['Overlap 重叠事件', 'Cast 类型转换', 'Destroy'],
-    steps: ['「Event ActorBeginOverlap」→「Cast To BP_Player」', 'Cast 的「成功」→「Play Sound at Location」', '→「Destroy Actor」'],
+    steps: [
+      '「Event ActorBeginOverlap」→「Cast To BP_Player」',
+      'Cast 的「成功」→「Play Sound at Location」',
+      '→「Destroy Actor」',
+    ],
     checks: ['Overlap 已连到 Cast', 'Cast 成功分支已连到音效'],
     commonErrors: ['Cast 有两个执行出口'],
-    templateId: 'tpl_pickup' },
-  { id: 'ch-06', group: '蓝图', title: '制作倒计时', lessonNo: '第 22 课', difficulty: 3, duration: '20 分钟',
+    templateId: 'tpl_pickup',
+  },
+  {
+    id: 'ch-06', group: '蓝图', title: '制作倒计时', lessonNo: '第 22 课',
+    difficulty: 3, duration: '20 分钟',
     goal: '限时关卡，每秒扣 1 秒。',
     concepts: ['Set Timer by Event', 'Subtract', 'Branch 判断', 'Open Level'],
-    steps: ['「Event BeginPlay」→「Set Timer by Event」', '→「Get 浮点」→「Subtract」→「Set 浮点」', '→「Branch」', 'True →「Open Level」；False →「Set Text」'],
+    steps: [
+      '「Event BeginPlay」→「Set Timer by Event」',
+      '→「Get 浮点」→「Subtract」→「Set 浮点」',
+      '→「Branch」',
+      'True →「Open Level」；False →「Set Text」',
+    ],
     checks: ['倒计时逻辑完整', '分支两路都有连'],
     commonErrors: ['Branch 条件是布尔'],
-    templateId: 'tpl_timer' },
-  { id: 'ch-07', group: '蓝图', title: '角色朝向玩家', lessonNo: '第 17 课', difficulty: 3, duration: '15 分钟',
+    templateId: 'tpl_timer',
+  },
+  {
+    id: 'ch-07', group: '蓝图', title: '角色朝向玩家', lessonNo: '第 17 课',
+    difficulty: 3, duration: '15 分钟',
     goal: '让敌人一直朝向玩家。',
     concepts: ['Find Look at Rotation', 'Set Actor Rotation', 'Get Player Character'],
-    steps: ['「Event Tick」→「Get Player Character」', '→「Find Look at Rotation」', '→「Set Actor Rotation」'],
+    steps: [
+      '「Event Tick」→「Get Player Character」',
+      '→「Find Look at Rotation」',
+      '→「Set Actor Rotation」',
+    ],
     checks: ['Tick 已连到 Set Rotation', 'Find Look at Rotation 的两个输入都连了'],
     commonErrors: ['Find Look at Rotation 需要起点和终点'],
-    templateId: 'tpl_ai' },
-  { id: 'ch-08', group: '蓝图', title: '钥匙开门', lessonNo: '第 19 课', difficulty: 4, duration: '25 分钟',
+    templateId: 'tpl_ai',
+  },
+  {
+    id: 'ch-08', group: '蓝图', title: '钥匙开门', lessonNo: '第 19 课',
+    difficulty: 4, duration: '25 分钟',
     goal: '只有捡到钥匙后，按 E 才能开门。',
     concepts: ['Input Action', 'Branch', 'Set Text'],
-    steps: ['「Input Action」→「Branch」', '「Get 布尔」→ Branch 的 Condition', 'True →「Play Sound」+「Set Actor Rotation」', 'False →「Set Text」'],
+    steps: [
+      '「Input Action」→「Branch」',
+      '「Get 布尔」→ Branch 的 Condition',
+      'True →「Play Sound」+「Set Actor Rotation」',
+      'False →「Set Text」',
+    ],
     checks: ['分支条件已连', '两路都有输出'],
     commonErrors: ['把钥匙状态存成一个布尔变量'],
-    templateId: 'tpl_keydoor' },
-  { id: 'ch-09', group: '数学运算', title: '四则运算', lessonNo: '第 27 课', difficulty: 2, duration: '10 分钟',
+    templateId: 'tpl_keydoor',
+  },
+  {
+    id: 'ch-09', group: '数学运算', title: '四则运算', lessonNo: '第 27 课',
+    difficulty: 2, duration: '10 分钟',
     goal: '用 Add / Subtract / Multiply 做基础数学运算。',
     concepts: ['Add', 'Subtract', 'Multiply'],
-    steps: ['拖「Add (Float)」', '把两个输入的数值填上', '再试试 Multiply 和 Subtract', '结果输出可以连到 Print String'],
+    steps: [
+      '拖「Add (Float)」',
+      '把两个输入的数值填上',
+      '再试试 Multiply 和 Subtract',
+      '结果输出可以连到 Print String',
+    ],
     checks: ['输入端已填值', '输出已连到 Print'],
-    commonErrors: ['Float 和 Int 是两种类型'] },
-  { id: 'ch-10', group: '数学运算', title: '向量初步', lessonNo: '第 29 课', difficulty: 3, duration: '15 分钟',
+    commonErrors: ['Float 和 Int 是两种类型'],
+  },
+  {
+    id: 'ch-10', group: '数学运算', title: '向量初步', lessonNo: '第 29 课',
+    difficulty: 3, duration: '15 分钟',
     goal: '理解向量的三个分量。',
     concepts: ['Make Vector', 'Break Vector'],
-    steps: ['拖「Make Vector」', '把三个数值分别填上', '拖「Break Vector」', '把 Make 的输出连到 Break 的输入'],
+    steps: [
+      '拖「Make Vector」',
+      '把三个数值分别填上',
+      '拖「Break Vector」',
+      '把 Make 的输出连到 Break 的输入',
+    ],
     checks: ['Make 输出已连到 Break 输入', '三个分量都能对上'],
-    commonErrors: ['X 是前后，Y 是左右，Z 是上下'] },
-  { id: 'ch-11', group: '蓝图进阶', title: '函数与宏的应用', lessonNo: '第 34 课', difficulty: 4, duration: '20 分钟',
+    commonErrors: ['X 是前后，Y 是左右，Z 是上下'],
+  },
+  {
+    id: 'ch-11', group: '蓝图进阶', title: '函数与宏的应用', lessonNo: '第 34 课',
+    difficulty: 4, duration: '20 分钟',
     goal: '理解函数和宏的区别。',
     concepts: ['Function 函数', 'Macro 宏'],
     steps: ['把一段常用逻辑打包成函数', '在别处调用它', '宏可以有多个执行出口'],
     checks: ['理解函数和宏的差异'],
-    commonErrors: ['函数必须有返回值'] },
-  { id: 'ch-12', group: '综合实战', title: '存档读档', lessonNo: '第 25 课', difficulty: 4, duration: '20 分钟',
+    commonErrors: ['函数必须有返回值'],
+  },
+  {
+    id: 'ch-12', group: '综合实战', title: '存档读档', lessonNo: '第 25 课',
+    difficulty: 4, duration: '20 分钟',
     goal: '按 F5 存档，按 F9 读档。',
     concepts: ['Save Game to Slot', 'Load Game from Slot', 'Is Valid'],
-    steps: ['「Input Action (F5)」→「Save Game to Slot」', '「Input Action (F9)」→「Load Game from Slot」', '→「Is Valid」'],
+    steps: [
+      '「Input Action (F5)」→「Save Game to Slot」',
+      '「Input Action (F9)」→「Load Game from Slot」',
+      '→「Is Valid」',
+    ],
     checks: ['存档节点已连', '读档节点已连'],
     commonErrors: ['存档对象需要先创建'],
-    templateId: 'tpl_save' },
-];/* ==================== 模板 ==================== */
-export const TEMPLATES: Template[] = [
-  { id: 'tpl_door', name: '1. 开门交互', desc: '走近门按 E 开关门',
-    nodes: [
-      { refId: 'begin', nodeId: 'beginplay', x: 60, y: 60 },
-      { refId: 'getplayer', nodeId: 'getplayer', x: 60, y: 240 },
-      { refId: 'cast', nodeId: 'cast', x: 380, y: 60 },
-      { refId: 'input', nodeId: 'inputaction', x: 60, y: 420 },
-      { refId: 'varget', nodeId: 'var_get_bool', x: 380, y: 300 },
-      { refId: 'branch', nodeId: 'branch', x: 700, y: 300 },
-      { refId: 'setopen_t', nodeId: 'var_set_bool', x: 1020, y: 260 },
-      { refId: 'rot1', nodeId: 'setactorrotation', x: 1340, y: 260 },
-      { refId: 'setopen_f', nodeId: 'var_set_bool', x: 1020, y: 440 },
-      { refId: 'rot2', nodeId: 'setactorrotation', x: 1340, y: 440 },
-    ],
-    connections: [
-      { fromRef: 'begin', fromPort: 0, toRef: 'cast', toPort: 0 },
-      { fromRef: 'getplayer', fromPort: 0, toRef: 'cast', toPort: 1 },
-      { fromRef: 'input', fromPort: 0, toRef: 'branch', toPort: 0 },
-      { fromRef: 'varget', fromPort: 0, toRef: 'branch', toPort: 1 },
-      { fromRef: 'branch', fromPort: 0, toRef: 'setopen_t', toPort: 0 },
-      { fromRef: 'setopen_t', fromPort: 0, toRef: 'rot1', toPort: 0 },
-      { fromRef: 'branch', fromPort: 1, toRef: 'setopen_f', toPort: 0 },
-      { fromRef: 'setopen_f', fromPort: 0, toRef: 'rot2', toPort: 0 },
-    ] },
-  { id: 'tpl_move', name: '2. 玩家移动', desc: '用 Tick + Forward Vector 移动角色',
-    nodes: [
-      { refId: 'tick', nodeId: 'tick', x: 60, y: 60 },
-      { refId: 'fwd', nodeId: 'getforward', x: 60, y: 240 },
-      { refId: 'move', nodeId: 'addmovement', x: 380, y: 60 },
-    ],
-    connections: [
-      { fromRef: 'tick', fromPort: 0, toRef: 'move', toPort: 0 },
-      { fromRef: 'fwd', fromPort: 0, toRef: 'move', toPort: 1 },
-    ] },
-  { id: 'tpl_healthbar', name: '3. 血条 UI 跟随', desc: '血条跟着角色头顶',
-    nodes: [
-      { refId: 'begin', nodeId: 'beginplay', x: 60, y: 60 },
-      { refId: 'create', nodeId: 'createwidget', x: 60, y: 240 },
-      { refId: 'add', nodeId: 'addviewport', x: 380, y: 60 },
-      { refId: 'tick', nodeId: 'tick', x: 60, y: 480 },
-      { refId: 'vecVar', nodeId: 'var_get_vector', x: 60, y: 660 },
-      { refId: 'proj', nodeId: 'worldtoscreen', x: 380, y: 480 },
-      { refId: 'setpos', nodeId: 'setposviewport', x: 700, y: 480 },
-    ],
-    connections: [
-      { fromRef: 'begin', fromPort: 0, toRef: 'add', toPort: 0 },
-      { fromRef: 'create', fromPort: 0, toRef: 'add', toPort: 1 },
-      { fromRef: 'tick', fromPort: 0, toRef: 'setpos', toPort: 0 },
-      { fromRef: 'vecVar', fromPort: 0, toRef: 'proj', toPort: 0 },
-      { fromRef: 'proj', fromPort: 0, toRef: 'setpos', toPort: 2 },
-    ] },
-  { id: 'tpl_fire', name: '4. 子弹发射', desc: '鼠标左键发射子弹',
-    nodes: [
-      { refId: 'input', nodeId: 'inputaction', x: 60, y: 60 },
-      { refId: 'spawn', nodeId: 'spawn', x: 380, y: 60 },
-      { refId: 'fwd', nodeId: 'getforward', x: 60, y: 300 },
-      { refId: 'setvel', nodeId: 'setvelocity', x: 700, y: 60 },
-    ],
-    connections: [
-      { fromRef: 'input', fromPort: 0, toRef: 'spawn', toPort: 0 },
-      { fromRef: 'spawn', fromPort: 0, toRef: 'setvel', toPort: 0 },
-      { fromRef: 'fwd', fromPort: 0, toRef: 'setvel', toPort: 1 },
-    ] },
-  { id: 'tpl_pickup', name: '5. 拾取道具', desc: '走进道具自动拾取',
-    nodes: [
-      { refId: 'overlap', nodeId: 'beginoverlap', x: 60, y: 60 },
-      { refId: 'cast', nodeId: 'cast', x: 380, y: 60 },
-      { refId: 'sound', nodeId: 'playsound', x: 700, y: 60 },
-      { refId: 'destroy', nodeId: 'destroy', x: 1020, y: 60 },
-    ],
-    connections: [
-      { fromRef: 'overlap', fromPort: 0, toRef: 'cast', toPort: 0 },
-      { fromRef: 'overlap', fromPort: 1, toRef: 'cast', toPort: 1 },
-      { fromRef: 'cast', fromPort: 2, toRef: 'sound', toPort: 0 },
-      { fromRef: 'sound', fromPort: 0, toRef: 'destroy', toPort: 0 },
-    ] },
-  { id: 'tpl_timer', name: '6. 倒计时', desc: '限时关卡倒计时',
-    nodes: [
-      { refId: 'begin', nodeId: 'beginplay', x: 60, y: 60 },
-      { refId: 'timer', nodeId: 'settimer', x: 380, y: 60 },
-      { refId: 'getf', nodeId: 'var_get_float', x: 60, y: 300 },
-      { refId: 'subOp', nodeId: 'subtract_float', x: 380, y: 300 },
-      { refId: 'setf', nodeId: 'var_set_float', x: 700, y: 300 },
-      { refId: 'branch', nodeId: 'branch', x: 1020, y: 300 },
-      { refId: 'level', nodeId: 'openlevel', x: 1340, y: 260 },
-      { refId: 'text', nodeId: 'settext', x: 1340, y: 440 },
-    ],
-    connections: [
-      { fromRef: 'begin', fromPort: 0, toRef: 'timer', toPort: 0 },
-      { fromRef: 'timer', fromPort: 0, toRef: 'setf', toPort: 0 },
-      { fromRef: 'getf', fromPort: 0, toRef: 'subOp', toPort: 0 },
-      { fromRef: 'subOp', fromPort: 0, toRef: 'setf', toPort: 1 },
-      { fromRef: 'setf', fromPort: 0, toRef: 'branch', toPort: 0 },
-      { fromRef: 'branch', fromPort: 0, toRef: 'level', toPort: 0 },
-      { fromRef: 'branch', fromPort: 1, toRef: 'text', toPort: 0 },
-    ] },
-  { id: 'tpl_ai', name: '7. AI 追逐', desc: '敌人追玩家',
-    nodes: [
-      { refId: 'tick', nodeId: 'tick', x: 60, y: 60 },
-      { refId: 'getplayer', nodeId: 'getplayer', x: 60, y: 240 },
-      { refId: 'vecVar', nodeId: 'var_get_vector', x: 60, y: 420 },
-      { refId: 'find', nodeId: 'findlookat', x: 380, y: 60 },
-      { refId: 'setrot', nodeId: 'setactorrotation', x: 700, y: 60 },
-      { refId: 'dist', nodeId: 'getdistance', x: 380, y: 300 },
-      { refId: 'branch', nodeId: 'branch', x: 700, y: 300 },
-      { refId: 'move', nodeId: 'addmovement', x: 1020, y: 300 },
-    ],
-    connections: [
-      { fromRef: 'tick', fromPort: 0, toRef: 'setrot', toPort: 0 },
-      { fromRef: 'find', fromPort: 0, toRef: 'setrot', toPort: 1 },
-      { fromRef: 'tick', fromPort: 0, toRef: 'branch', toPort: 0 },
-      { fromRef: 'getplayer', fromPort: 0, toRef: 'dist', toPort: 0 },
-      { fromRef: 'branch', fromPort: 0, toRef: 'move', toPort: 0 },
-      { fromRef: 'vecVar', fromPort: 0, toRef: 'find', toPort: 1 },
-    ] },
-  { id: 'tpl_keydoor', name: '8. 钥匙开门', desc: '有钥匙才能开门',
-    nodes: [
-      { refId: 'input', nodeId: 'inputaction', x: 60, y: 60 },
-      { refId: 'cast', nodeId: 'cast', x: 380, y: 60 },
-      { refId: 'getkey', nodeId: 'var_get_bool', x: 60, y: 300 },
-      { refId: 'branch', nodeId: 'branch', x: 700, y: 60 },
-      { refId: 'sound', nodeId: 'playsound', x: 1020, y: 30 },
-      { refId: 'rot', nodeId: 'setactorrotation', x: 1340, y: 30 },
-      { refId: 'text', nodeId: 'settext', x: 1020, y: 240 },
-    ],
-    connections: [
-      { fromRef: 'input', fromPort: 0, toRef: 'branch', toPort: 0 },
-      { fromRef: 'getkey', fromPort: 0, toRef: 'branch', toPort: 1 },
-      { fromRef: 'branch', fromPort: 0, toRef: 'sound', toPort: 0 },
-      { fromRef: 'sound', fromPort: 0, toRef: 'rot', toPort: 0 },
-      { fromRef: 'branch', fromPort: 1, toRef: 'text', toPort: 0 },
-    ] },
-  { id: 'tpl_rotate', name: '9. 掉落物旋转', desc: '宝箱/金币一直旋转',
-    nodes: [
-      { refId: 'tick', nodeId: 'tick', x: 60, y: 60 },
-      { refId: 'addrot', nodeId: 'addrotation', x: 380, y: 60 },
-    ],
-    connections: [
-      { fromRef: 'tick', fromPort: 0, toRef: 'addrot', toPort: 0 },
-    ] },
-  { id: 'tpl_save', name: '10. 存档/读档', desc: '按 F5 存、F9 读',
-    nodes: [
-      { refId: 'input_save', nodeId: 'inputaction', x: 60, y: 60 },
-      { refId: 'save', nodeId: 'savegame', x: 380, y: 60 },
-      { refId: 'input_load', nodeId: 'inputaction', x: 60, y: 300 },
-      { refId: 'load', nodeId: 'loadgame', x: 60, y: 480 },
-      { refId: 'setint', nodeId: 'var_set_int', x: 380, y: 300 },
-      { refId: 'valid', nodeId: 'isvalid', x: 380, y: 480 },
-    ],
-    connections: [
-      { fromRef: 'input_save', fromPort: 0, toRef: 'save', toPort: 0 },
-      { fromRef: 'input_load', fromPort: 0, toRef: 'setint', toPort: 0 },
-      { fromRef: 'load', fromPort: 0, toRef: 'valid', toPort: 0 },
-    ] },
-
-  // ==================== 官方文档常见示例 ====================
-  { id: 'tpl_door_trigger', name: '11. 触发器自动门', desc: '走进触发区 → 门自动旋转打开（Epic 官方教程示例）',
-    nodes: [
-      { refId: 'overlap', nodeId: 'beginoverlap', x: 60, y: 60 },
-      { refId: 'cast', nodeId: 'cast', x: 380, y: 60 },
-      { refId: 'rot', nodeId: 'setactorrotation', x: 700, y: 60 },
-    ],
-    connections: [
-      { fromRef: 'overlap', fromPort: 0, toRef: 'cast', toPort: 0 },
-      { fromRef: 'overlap', fromPort: 1, toRef: 'cast', toPort: 1 },
-      { fromRef: 'cast', fromPort: 2, toRef: 'rot', toPort: 0 },
-    ] },
-  { id: 'tpl_orbit', name: '12. 摄像机环绕', desc: '每帧围绕目标旋转（Time + Sin/Cos + Set Rotation）',
-    nodes: [
-      { refId: 'tick', nodeId: 'tick', x: 60, y: 60 },
-      { refId: 'addrot', nodeId: 'addrotation', x: 380, y: 60 },
-    ],
-    connections: [
-      { fromRef: 'tick', fromPort: 0, toRef: 'addrot', toPort: 0 },
-    ] },
-  { id: 'tpl_teleport', name: '13. 传送门', desc: '按 E 键 → 传送自己到目标点',
-    nodes: [
-      { refId: 'input', nodeId: 'inputaction', x: 60, y: 60 },
-      { refId: 'setloc', nodeId: 'setactorlocation', x: 380, y: 60 },
-    ],
-    connections: [
-      { fromRef: 'input', fromPort: 0, toRef: 'setloc', toPort: 0 },
-    ] },
-  { id: 'tpl_respawn', name: '14. 死亡重生', desc: '受到伤害 → 播放特效 → 延迟后回出生点',
-    nodes: [
-      { refId: 'dmg', nodeId: 'anydamage', x: 60, y: 60 },
-      { refId: 'branch', nodeId: 'branch', x: 380, y: 60 },
-      { refId: 'setloc', nodeId: 'setactorlocation', x: 700, y: 30 },
-      { refId: 'delay', nodeId: 'delay', x: 700, y: 200 },
-    ],
-    connections: [
-      { fromRef: 'dmg', fromPort: 0, toRef: 'branch', toPort: 0 },
-      { fromRef: 'branch', fromPort: 0, toRef: 'setloc', toPort: 0 },
-      { fromRef: 'setloc', fromPort: 0, toRef: 'delay', toPort: 0 },
-    ] },
-  { id: 'tpl_health', name: '15. HP 系统', desc: '受伤 → 扣血 → 判断是否死亡',
-    nodes: [
-      { refId: 'dmg', nodeId: 'anydamage', x: 60, y: 60 },
-      { refId: 'getf', nodeId: 'var_get_float', x: 60, y: 240 },
-      { refId: 'sub', nodeId: 'subtract_float', x: 380, y: 240 },
-      { refId: 'setf', nodeId: 'var_set_float', x: 700, y: 240 },
-      { refId: 'branch', nodeId: 'branch', x: 1020, y: 240 },
-      { refId: 'destroy', nodeId: 'destroy', x: 1340, y: 200 },
-    ],
-    connections: [
-      { fromRef: 'dmg', fromPort: 0, toRef: 'setf', toPort: 0 },
-      { fromRef: 'getf', fromPort: 0, toRef: 'sub', toPort: 0 },
-      { fromRef: 'sub', fromPort: 0, toRef: 'setf', toPort: 1 },
-      { fromRef: 'setf', fromPort: 0, toRef: 'branch', toPort: 0 },
-      { fromRef: 'branch', fromPort: 0, toRef: 'destroy', toPort: 0 },
-    ] },
-  { id: 'tpl_patrol', name: '16. 巡逻 AI', desc: '每帧移动 + 到达后转向（简化版）',
-    nodes: [
-      { refId: 'tick', nodeId: 'tick', x: 60, y: 60 },
-      { refId: 'fwd', nodeId: 'getforward', x: 60, y: 240 },
-      { refId: 'move', nodeId: 'addmovement', x: 380, y: 60 },
-    ],
-    connections: [
-      { fromRef: 'tick', fromPort: 0, toRef: 'move', toPort: 0 },
-      { fromRef: 'fwd', fromPort: 0, toRef: 'move', toPort: 1 },
-    ] },
-  { id: 'tpl_rotate_tick', name: '17. 物体自转', desc: '每帧旋转一点（饰品、光圈）',
-    nodes: [
-      { refId: 'tick', nodeId: 'tick', x: 60, y: 60 },
-      { refId: 'addrot', nodeId: 'addrotation', x: 380, y: 60 },
-    ],
-    connections: [
-      { fromRef: 'tick', fromPort: 0, toRef: 'addrot', toPort: 0 },
-    ] },
-  { id: 'tpl_pickup_score', name: '18. 拾取加分', desc: '拾取 → 加分 → 更新 UI',
-    nodes: [
-      { refId: 'overlap', nodeId: 'beginoverlap', x: 60, y: 60 },
-      { refId: 'cast', nodeId: 'cast', x: 380, y: 60 },
-      { refId: 'getscore', nodeId: 'var_get_int', x: 60, y: 300 },
-      { refId: 'add', nodeId: 'add_float', x: 700, y: 300 },
-      { refId: 'setscore', nodeId: 'var_set_int', x: 1020, y: 300 },
-      { refId: 'destroy', nodeId: 'destroy', x: 1020, y: 60 },
-    ],
-    connections: [
-      { fromRef: 'overlap', fromPort: 0, toRef: 'cast', toPort: 0 },
-      { fromRef: 'overlap', fromPort: 1, toRef: 'cast', toPort: 1 },
-      { fromRef: 'cast', fromPort: 2, toRef: 'destroy', toPort: 0 },
-      { fromRef: 'getscore', fromPort: 0, toRef: 'add', toPort: 0 },
-      { fromRef: 'add', fromPort: 0, toRef: 'setscore', toPort: 1 },
-    ] },
-  { id: 'tpl_ui_toggle', name: '19. UI 开关', desc: '按键 → 显示/隐藏 UI',
-    nodes: [
-      { refId: 'input', nodeId: 'inputaction', x: 60, y: 60 },
-      { refId: 'add', nodeId: 'addviewport', x: 380, y: 60 },
-    ],
-    connections: [
-      { fromRef: 'input', fromPort: 0, toRef: 'add', toPort: 0 },
-    ] },
-  { id: 'tpl_door_key', name: '20. 钥匙 + 自动门', desc: '走近自动开门（无按键版）',
-    nodes: [
-      { refId: 'overlap', nodeId: 'beginoverlap', x: 60, y: 60 },
-      { refId: 'rot', nodeId: 'setactorrotation', x: 380, y: 60 },
-    ],
-    connections: [
-      { fromRef: 'overlap', fromPort: 0, toRef: 'rot', toPort: 0 },
-    ] },
+    templateId: 'tpl_save',
+  },
 ];
