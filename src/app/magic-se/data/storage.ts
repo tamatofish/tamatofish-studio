@@ -15,6 +15,8 @@ export interface TabData {
   name: string;
   placed: PlacedNode[];
   connections: Connection[];
+  /** ★ 若该 Tab 是某个折叠定义（宏/函数）的编辑视图，则记录其定义 id */
+  foldDefinitionId?: string;
 }
 
 /* ==================== 蓝图保存 ==================== */
