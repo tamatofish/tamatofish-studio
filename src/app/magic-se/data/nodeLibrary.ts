@@ -12,7 +12,13 @@ export interface NodeData {
   defaultValues?: Record<number, string>;
 }
 
-export interface PlacedNode extends NodeData { instanceId: string; x: number; y: number; }
+export interface PlacedNode extends NodeData {
+  instanceId: string;
+  x: number;
+  y: number;
+  /** ★ 若该节点是某个折叠定义（宏/函数）的实例，则记录其定义 id */
+  foldDefinitionId?: string;
+}
 
 export interface Connection {
   id: string;
@@ -874,13 +880,11 @@ export function bezierPath(x1: number, y1: number, x2: number, y2: number): stri
   const dx = x2 - x1;
   const dy = y2 - y1;
 
-  // 终点在起点右侧（正常情况）：横向拉伸
   if (dx > 40) {
     const cx = Math.max(40, dx * 0.5);
     return `M ${x1} ${y1} C ${x1 + cx} ${y1}, ${x2 - cx} ${y2}, ${x2} ${y2}`;
   }
 
-  // 终点在起点左侧（回绕）：绕上/下走一个大弧
   if (dx < -40) {
     const arc = Math.max(120, Math.abs(dx) * 0.6);
     const side = dy >= 0 ? 1 : -1;
@@ -888,7 +892,6 @@ export function bezierPath(x1: number, y1: number, x2: number, y2: number): stri
     return `M ${x1} ${y1} C ${x1 + 60} ${y1 + offY}, ${x2 - 60} ${y2 + offY}, ${x2} ${y2}`;
   }
 
-  // 起终点几乎竖直对齐：竖直弯曲
   const cy = Math.max(40, Math.abs(dy) * 0.5);
   const side = dy >= 0 ? 1 : -1;
   return `M ${x1} ${y1} C ${x1} ${y1 + cy * side}, ${x2} ${y2 - cy * side}, ${x2} ${y2}`;
