@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "next start",
     "dev": "next dev",
     "preinstall": "npx only-allow pnpm",
     "lint": "eslint --cache --cache-location node_modules/.cache/eslint/",

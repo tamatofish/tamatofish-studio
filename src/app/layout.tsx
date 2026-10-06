@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { SupabaseConfigProvider } from '@/lib/supabase-config-inject';
 import './globals.css';
 
@@ -17,6 +17,26 @@ export const metadata: Metadata = {
     locale: 'zh_CN',
     type: 'website',
   },
+  // ===== PWA 新增 =====
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: '番茄鱼工作室',
+  },
+  icons: {
+    icon: '/icons/icon-192x192.png',
+    apple: '/icons/icon-192x192.png',
+  },
+};
+
+// ===== PWA 新增：控制主题色和视口 =====
+export const viewport: Viewport = {
+  themeColor: '#1b1c1e',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
