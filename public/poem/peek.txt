@@ -1,0 +1,20 @@
+﻿x-sizing: border-box;
+    margin: 0 auto;
+}
+
+.prologue-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 0 0 32px 0;
+    padding: 0;
+}
+
+.prologue-title-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    background: linear-gradient(160deg, #3b82f6 0%, #1e5fd4 100%);
+    border-radius: 12px;
+    position:

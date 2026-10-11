@@ -8,7 +8,7 @@ import type { MeResponse } from '@/lib/types';
 const NAV_LINKS = [
   { href: '/#about', label: '关于我们' },
   { href: '/#contact', label: '合作意向' },
-  { href: '/login', label: '访客登录' },
+  { href: '/poem/index.html', label: '网页游戏', external: true },
   { href: '/staff-login', label: '管理平台' },
 ];
 
@@ -17,9 +17,41 @@ interface SiteNavProps {
   onOpenChangelog?: () => void;
 }
 
+const ME_CACHE_KEY = 'site-nav-me-cache';
+
+function readCachedMe(): MeResponse | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(ME_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object' && parsed.role && parsed.role !== 'none') {
+      return parsed as MeResponse;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedMe(data: MeResponse | null) {
+  if (typeof window === 'undefined') return;
+  try {
+    if (data && data.role !== 'none') {
+      window.localStorage.setItem(ME_CACHE_KEY, JSON.stringify(data));
+    } else {
+      window.localStorage.removeItem(ME_CACHE_KEY);
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
-  const [me, setMe] = useState<MeResponse | null>(null);
-  const [checked, setChecked] = useState(false);
+  // 首屏：直接读缓存，避免出现 "…" 闪烁
+  const [me, setMe] = useState<MeResponse | null>(() => readCachedMe());
+  // 只要缓存里已有数据，就认为已经"确认过"，直接显示；否则显示 "…"
+  const [checked, setChecked] = useState<boolean>(() => readCachedMe() !== null);
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
@@ -122,19 +154,33 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
     };
   }, []);
 
+  // 拉取登录状态
   useEffect(() => {
     let active = true;
-    fetch('/api/me')
+    // 先立即用缓存显示（如果有）
+    const cached = readCachedMe();
+    if (cached) {
+      setMe(cached);
+      setChecked(true);
+    }
+
+    fetch('/api/me', { credentials: 'include' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data: MeResponse | null) => {
-        if (active) {
-          setMe(data && data.role !== 'none' ? data : null);
-          setChecked(true);
-        }
+        if (!active) return;
+        const resolved = data && data.role !== 'none' ? data : null;
+        setMe(resolved);
+        setChecked(true);
+        writeCachedMe(resolved);
       })
       .catch(() => {
-        if (active) setChecked(true);
+        if (!active) return;
+        // 请求失败：如果本地有缓存就保留，否则显示未登录
+        const fallback = readCachedMe();
+        setMe(fallback);
+        setChecked(true);
       });
+
     return () => {
       active = false;
     };
@@ -158,6 +204,11 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
     };
   }, [mobileOpen]);
 
+  // 已登录时右上角显示的文本：优先用 email
+  const loggedInLabel: string | null = me
+    ? (me.email && String(me.email).trim()) || '我的账号'
+    : null;
+
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
@@ -175,7 +226,8 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
         <nav className="hidden items-center gap-10 md:flex">
           {NAV_LINKS.map((link) => {
             const isAnchor = link.href.startsWith('/#');
-            const Component = isAnchor ? 'a' : Link;
+            const isExternal = (link as { external?: boolean }).external === true;
+            const Component = (isAnchor || isExternal) ? 'a' : Link;
             return (
               <Component
                 key={link.href}
@@ -219,8 +271,9 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
             <Link
               href={me.role === 'internal' ? '/admin' : '/dashboard'}
               className="group hidden items-center gap-2 text-xs font-light tracking-[0.2em] text-[#1b1c1e] md:inline-flex"
+              title={loggedInLabel || undefined}
             >
-              {me.role === 'internal' ? '进入工作台' : '我的中心'}
+              <span className="max-w-[16rem] truncate">{loggedInLabel}</span>
               <svg
                 width="10"
                 height="10"
@@ -233,10 +286,10 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
             </Link>
           ) : (
             <Link
-              href="/register"
+              href="/login"
               className="group hidden items-center gap-2 text-xs font-light tracking-[0.2em] text-[#1b1c1e] md:inline-flex"
             >
-              注册合作
+              注册/登录
               <svg
                 width="10"
                 height="10"
@@ -281,7 +334,8 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
         <nav className="flex flex-col px-6 py-4">
           {NAV_LINKS.map((link) => {
             const isAnchor = link.href.startsWith('/#');
-            const Component = isAnchor ? 'a' : Link;
+            const isExternal = (link as { external?: boolean }).external === true;
+            const Component = (isAnchor || isExternal) ? 'a' : Link;
             return (
               <Component
                 key={link.href}
@@ -314,11 +368,11 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
 
           {checked && !me && (
             <Link
-              href="/register"
+              href="/login"
               onClick={() => setMobileOpen(false)}
               className="mt-2 inline-flex items-center gap-2 py-4 text-xs font-light tracking-[0.3em] text-[#1b1c1e]"
             >
-              注册合作
+              注册/登录
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                 <path d="M1 5h8M5.5 1.5 9 5l-3.5 3.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -329,8 +383,9 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
               href={me.role === 'internal' ? '/admin' : '/dashboard'}
               onClick={() => setMobileOpen(false)}
               className="mt-2 inline-flex items-center gap-2 py-4 text-xs font-light tracking-[0.3em] text-[#1b1c1e]"
+              title={loggedInLabel || undefined}
             >
-              {me.role === 'internal' ? '进入工作台' : '我的中心'}
+              <span className="max-w-[16rem] truncate">{loggedInLabel}</span>
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                 <path d="M1 5h8M5.5 1.5 9 5l-3.5 3.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

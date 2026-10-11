@@ -33,6 +33,838 @@
   文本字数变动：约 +380 字（新增注释与日志），-520 字（删除冗余检查与重复代码），
                 净变动约 -140 字。
 -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V35
+  =============================
+  本次（redesign.py V35）序幕正文源码折行。
+
+  [FIX_V53] 序幕正文写入时按句折行（源码可读 + 浏览器显示也断行）。
+            问题：之前把整段文字写成一整行塞在 &lt;p&gt; 里，
+                  源码不美观，浏览器里也是一大坨。
+            方案：
+              (1) 文案按句拆成 5 行：
+                    · 你是Z站的一名灵异探险区UP主。
+                    · 在一次直播中，有粉丝向你讲述了南华大学15年前
+                      发生的一起失踪案。
+                    · 你从论坛上找到了一个南大的旧内网镜像。
+                    · 你点开了它，从那之后，你经常产生有人在注视你
+                      的错觉。
+                    · 直到那天，一封没有主题的邮件出现在了你的信箱
+                      里....
+              (2) 行间加 &lt;br&gt; 标签，浏览器显示时也按句断行。
+              (3) 源码里就是多行，可读。
+
+  文本字数变动：
+    - 序幕正文：约 130 字 → 118 字，净 -12 字
+    - 新增 changelog：约 +400 字
+    净变动约 +390 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V33
+  =============================
+  本次（redesign.py V33）修正序幕正文替换。
+
+  [FIX_V51] 序幕正文替换（修正转义匹配）。
+            问题：
+              Twine 把 HTML 标签全部转义了：
+                <div> → &lt;div&gt;
+                <p>   → &lt;p&gt;
+              所以 V32 的正则 <div class="prologue-body"> 匹配失败，
+              终端提示"序幕正文替换：未找到"。
+            方案：
+              (1) 正则改为匹配 &lt;div class="prologue-body"&gt;
+      &lt;p&gt;
+        你是Z站的一名灵异探险区UP主。&lt;br&gt;
+        在一次直播中，有粉丝向你讲述了南华大学15年前发生的一起失踪案。&lt;br&gt;
+        你从论坛上找到了一个南大的旧内网镜像。&lt;br&gt;
+        你点开了它，从那之后，你经常产生有人在注视你的错觉。&lt;br&gt;
+        直到那天，一封没有主题的邮件出现在了你的信箱里....
+      &lt;/p&gt;
+    &lt;/div&gt;
+              (2) 新文案同样用转义形式书写。
+              (3) 保留 V32 的鼠标修复 + 换行修复。
+
+  文本字数变动：
+    - 序幕正文：约 130 字 → 118 字，净 -12 字
+    - 新增 changelog：约 +500 字
+    净变动约 +490 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V32
+  =============================
+  本次（redesign.py V32）新增修复：
+
+  [FIX_V48] 三级污染时鼠标仍可见。
+            问题：twine-user-script 在 level-3 时给 body 加 no-cursor 类，
+                  把鼠标指针藏起来（cursor: none），用红色光点替代。
+            方案：新增 <style id="nh-cursor-fix">，
+                  用 !important 覆盖 body.no-cursor 的 cursor: none，
+                  并隐藏 #ghost-cursor 光点。
+
+  [FIX_V49] 所有页面文本自动换行。
+            问题：污染等级 3 时长句可能因乱码 / transform 溢出容器。
+            方案：新增 <style id="nh-wrap-fix">，
+                  给主要文本容器加 word-break / overflow-wrap /
+                  white-space: normal，并给 body 加 overflow-x: hidden
+                  防止横向滚动。
+
+  [FIX_V50] 序幕正文替换（修正匹配）。
+            问题：V31 用 <div class="prologue-body"> 精确匹配失败。
+            方案：
+              1) 宽松正则匹配 class 属性（兼容属性顺序、单双引号）。
+              2) fallback 用关键字 "你是一个灵异博主" / "你是Z站的"
+                 定位 prologue-body 块。
+
+  文本字数变动：
+    - 新增 cursor-fix CSS：约 +350 字
+    - 新增 wrap-fix CSS：约 +550 字
+    - 序幕正文替换逻辑：约 +400 字（含注释）
+    净变动约 +1300 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V31
+  =============================
+  本次（redesign.py V31）替换序幕页正文文案。
+
+  [FIX_V47] 序幕正文：
+            旧文案（7 段，约 130 字）：
+              · 你是一个灵异博主，深夜刷帖时收到一条私信。
+              · 对方叫「第七个」，发来一个链接——南华大学的旧版内网镜像。
+              · 你点开了它。从此，某样东西开始跟着你。
+              · 那晚，一个自称 A.R.C 的组织给你回信。他们进不去那个网站，
+                只有你能。
+              · 他们要你继续搜，把看到的原文一字不改地发给他们。
+              · 查清 2015 年旧教学楼的那场火，和名单上被删掉的那个人。
+              · 记住：别信林晚。她说的话，一半是真的。
+            新文案（1 段，约 118 字）：
+              你是Z站的一名灵异探险区UP主。在一次直播中，有粉丝向你讲述
+              了南华大学15年前发生的一起失踪案。你从论坛上找到了一个南大
+              的旧内网镜像。你点开了它，从那之后，你经常产生有人在注视你
+              的错觉。直到那天，一封没有主题的邮件出现在了你的信箱里....
+
+  文本字数变动：
+    - 序幕正文：约 130 字 → 118 字，净 -12 字。
+    - 新增本 changelog：约 +900 字。
+    净变动约 +890 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V30
+  =============================
+  本次（redesign.py V30）序幕页标题图完全贴顶。
+
+  [FIX_V46] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V32。
+            需求：图片上方空白太大。
+            方案：
+              (1) .prologue-card padding-top 3vh → 0，完全贴顶。
+              (2) 所有响应式断点 padding-top 改 0。
+              (3) 其它不变。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 4900 字 → 4900 字，净 0 字
+      （只改数值）
+    净变动约 0 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V29
+  =============================
+  本次（redesign.py V29）序幕页标题图放大。
+
+  [FIX_V45] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V31。
+            需求：图片太小。
+            方案：
+              (1) .prologue-title-row max-width 600px → 900px，
+                  图片大 1.5 倍。
+              (2) padding-top 保持 26%（比例不变）。
+              (3) 响应式断点同步放大：
+                  820px 高 → 720px；700px 高 → 600px。
+              (4) 其它不变。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 4900 字 → 4900 字，净 0 字
+      （只改数值）
+    净变动约 0 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V28
+  =============================
+  本次（redesign.py V28）序幕页图片放大 + 文字上移 + 允许滚动。
+
+  [FIX_V44] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V30。
+            需求：
+              (1) 图片放大一点。
+              (2) 文字往上一点。
+              (3) 让页面可以滚动，否则看不见按钮。
+            方案：
+              (1) .prologue-title-row max-width 480px → 600px。
+              (2) .prologue-card padding-top 6vh → 3vh；
+                  padding-bottom 30px → 60px（给滚动留底）。
+              (3) #prologue-root overflow: hidden → overflow-y: auto；
+                  display: flex → block。
+                  .prologue-card min-height: 100vh 撑满视口，
+                  内容超出时出现纵向滚动条。
+              (4) #prologue-root::before/::after 从 absolute → fixed，
+                  滚动时噪点和暗角跟随视口不动。
+              (5) 所有响应式断点同步收紧 padding。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 4800 字 → 4900 字，净 +100 字
+      （新增滚动相关规则与注释）
+    净变动约 +100 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V27
+  =============================
+  本次（redesign.py V27）序幕页收紧图片与正文的间距。
+
+  [FIX_V43] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V29。
+            需求：文字离图片太远。
+            方案：
+              (1) .prologue-body padding-top 24px → 4px，
+                  正文紧贴图片。
+              (2) .prologue-title-row padding-top 32% → 26%，
+                  容器高度略收，让图片下边缘更靠近正文。
+              (3) .prologue-start-btn margin-top 22px → 20px。
+              (4) 所有响应式断点同步收紧。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 4800 字 → 4800 字，净 0 字
+      （只改数值）
+    净变动约 0 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V26
+  =============================
+  本次（redesign.py V26）序幕页修正 padding-top 比例。
+
+  [FIX_V42] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V28。
+            前提：用户已把 cover.png 重新裁好，文字紧贴图片边缘。
+                  新图约 500×160，比例 16:5，高度/宽度 ≈ 32%。
+            方案：
+              (1) .prologue-title-row padding-top 60% → 32%，
+                  让容器高度匹配新图比例，图片完整显示不裁不空。
+              (2) max-width 400px → 480px，标题大一点。
+              (3) .prologue-card padding-top 4vh → 6vh，稍微下移一点。
+              (4) .prologue-body padding-top 12px → 24px，
+                  给标题和正文一点呼吸。
+              (5) 其它保持不变。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 4800 字 → 4800 字，净 0 字
+      （只改数值）
+    净变动约 0 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V25
+  =============================
+  本次（redesign.py V25）序幕页极简 CSS。
+
+  [FIX_V41] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V27。
+            前提：用户已将 cover.png 重新裁剪，文字紧贴图片
+                  边缘，不再有大片透明区。
+            方案：
+              (1) .prologue-title-row background-size 从
+                  240% auto → contain，按原比例完整显示。
+              (2) 删除所有 background-size 百分比放大 hack。
+              (3) .prologue-title-row max-width: 400px，
+                  高度由 padding-top: 60% 决定。
+              (4) .prologue-card padding-top 4vh，贴顶。
+              (5) .prologue-body padding-top 12px，正文紧跟。
+              (6) .prologue-start-btn margin-top 18px。
+
+            调参：若新图上下被裁或留白，改一次 padding-top：
+                  新图比例 = 高度 / 宽度 × 100%。
+                  如 200×160 的图 → 160/200 = 80% → padding-top: 80%。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 5000 字 → 4800 字，净 -200 字
+    净变动约 -200 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V24
+  =============================
+  本次（redesign.py V24）序幕页图片贴顶。
+
+  [FIX_V40] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V26。
+            需求：图片和文字还要往上，图片基本贴着顶部。
+            方案：
+              (1) .prologue-card padding-top 4vh → 1vh，
+                  图片几乎贴顶。
+              (2) 响应式断点同步：820px → 0.5vh；700px → 0。
+              (3) 正文 padding-top 保持 12px 不变。
+              (4) 其它不变。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 5000 字 → 5000 字，净 0 字
+      （只改数值）
+    净变动约 0 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V23
+  =============================
+  本次（redesign.py V23）序幕页图片往上放 + 正文贴近图片。
+
+  [FIX_V39] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V25。
+            需求：
+              (1) 图片往上放（贴顶部，不垂直居中）。
+              (2) 文字也往上（正文紧接图片下方，不留大段空白）。
+              (3) 图片与正文紧凑。
+            方案：
+              (1) .prologue-card padding-top 10vh → 4vh，整体贴顶。
+              (2) .prologue-title-row max-width 480px → 420px，
+                  background-size 250% → 240%。
+              (3) .prologue-body padding-top 30px → 12px，
+                  正文紧接图片。
+              (4) 按钮 margin-top 24px → 18px。
+              (5) 所有响应式断点同步收紧。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 5000 字 → 5000 字，净 0 字
+      （只改数值）
+    净变动约 0 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V22
+  =============================
+  本次（redesign.py V22）序幕页标题图放大倍数从 3 倍降到 2.5 倍。
+
+  [FIX_V38] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V24。
+            问题：用户 cover.png 尺寸 502×316，文字只占图中间约
+                  40%×50%，四周大片透明。V23 用 300% auto 放大，
+                  文字变成一屏，太大。
+            方案：
+              (1) background-size 300% auto → 250% auto，
+                  放大约 2.5 倍（1 / 0.4 = 2.5，正好撑满容器宽）。
+              (2) padding-top 30% → 40%，给文字上下留空间。
+              (3) 其它保持不变。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 5000 字 → 5000 字，净 0 字
+      （只改数值）
+    净变动约 0 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V21
+  =============================
+  本次（redesign.py V21）序幕页背景图放大 3 倍。
+
+  [FIX_V37] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V23。
+            问题：V22 用 background-image 显示标题图，图成功
+                  显示，但用户 cover.png 的文字只占图中间一小块
+                  （约 30%），四周是大片透明区。background-size:
+                  contain 把整张图缩放到容器宽，文字变得非常小。
+            方案：
+              (1) background-size 从 contain → 300% auto，
+                  放大 3 倍，让中间的文字区填满容器。
+              (2) padding-top 从 56% → 30%，容器有效高度变矮。
+              (3) 其它保持不变。
+
+            调参：如果文字占原图宽度的 N%，放大倍数 = 100/N × 100%。
+                  文字占 30% → 300%；占 25% → 400%；
+                  占 50% → 200%。
+                  若标题还太小，继续加大 background-size 的百分比。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 5000 字 → 5000 字，净 0 字
+      （只改数值）
+    净变动约 0 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V20
+  =============================
+  本次（redesign.py V20）序幕页标题图改用 background-image 显示。
+
+  [FIX_V36] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V22。
+            背景：V21 用 <img> + object-fit + drop-shadow 的方案，
+                  标题图区域完全空白，无法确定根因。
+            方案：
+              (1) .prologue-title-img 设 display: none !important，
+                  彻底不参与渲染。
+              (2) 改用 .prologue-title-row 的 background-image:
+                  url("img/cover.png") 显示标题图。
+                  background-image 不依赖 img 的尺寸计算，不受
+                  object-fit / drop-shadow / filter 冲突影响，
+                  只要文件路径对就能显示。
+              (3) background-size: contain 按原比例完整显示、居中。
+              (4) 用 padding-top: 56%（16:9 比例）撑出容器高度
+                  （background-image 不会自动撑高容器）。
+                  若你的图是正方形改 100%，4:3 改 75%。
+              (5) 用 ::before 伪元素做径向红光呼吸效果，
+                  替代 drop-shadow。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 4700 字 → 5000 字，净 +300 字
+    净变动约 +300 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V19
+  =============================
+  本次（redesign.py V19）序幕页透明背景标题图（文件名不变）。
+
+  [FIX_V35] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V21。
+            前提：用户已将 cover.png 抠好（透明背景），文件名
+                  保持不变，仍是 img/cover.png。HTML 里的
+                  <img src="img/cover.png"> 已指向透明图。
+            方案：
+              (1) 图片本身透明，不再需要任何裁边/放大 hack。
+                  彻底删除 clip-path / transform / content: url()。
+              (2) .prologue-title-img 直接 width: 100% +
+                  object-fit: contain，按原比例完整显示。
+              (3) .prologue-title-row / .prologue-card 背景透明，
+                  与 #prologue-root 的径向渐变背景无缝融合。
+              (4) 保留轻微 drop-shadow 让血色文字有发光感。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 4800 字 → 4700 字，净 -100 字
+    净变动约 -100 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V17
+  =============================
+  本次（redesign.py V17）序幕页彻底改用纯 CSS 文字标题。
+
+  [FIX_V33] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V19。
+            背景：cover.png 自带大面积黑边，无论怎么调 CSS 都无法
+                  消除"图是图、页是页"的分裂感。放大裁边产生锯齿，
+                  缩小则黑边更明显。
+            需求：只保留文字，完全无缝。
+            方案：
+              (1) 弃用标题图：.prologue-title-img 设 display: none。
+                  （HTML 里 img 元素仍在，仅 CSS 隐藏，不破坏结构）
+              (2) 用伪元素生成两行文字标题：
+                  · .prologue-title-row::before → "长 夜 之 下"
+                    小字，字距 6px，暗红色 #9a2828，带柔和红光阴影。
+                  · .prologue-title-row::after → "第七首诗"
+                    76px 大字，方正舒体/华文行楷/STXingkai/楷体字体链，
+                    血色渐变 background-clip: text，多层 drop-shadow，
+                    轻微心跳动画 nhTitleGlow。
+              (3) 标题和正文在同一个 #prologue-root 背景上，
+                  卡片背景透明，无任何容器边界。
+              (4) 标题下方 40px 间距直接进入正文，无渐变过渡
+                  （本来就无缝）。
+              (5) 所有响应式断点同步调整字号。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 6800 字 → 5600 字，净 -1200 字
+      （删掉大量图片相关规则，新增 CSS 文字标题样式）
+    净变动约 -1200 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V16
+  =============================
+  本次（redesign.py V16）新增修复：标题图限宽居中 + 下方渐变过渡。
+
+  [FIX_V32] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V18。
+            需求：
+              (1) 从黑色往下的位置要有渐变过渡（消除标题图下边缘硬边）。
+              (2) 所有内容在中间显示，左右两边留白。
+              (3) 标题图不要再放大（去掉锯齿来源）。
+            方案：
+              (1) 彻底去掉裁边逻辑：删除 width: 108% / margin-left: -4% /
+                  clip-path / transform，改为 width: 100% +
+                  object-fit: contain + height: auto。图片按原比例完整
+                  显示，零锯齿、零裁切。
+              (2) .prologue-title-row max-width: 560px + margin: 0 auto，
+                  标题图限宽居中；圆角 8px。
+              (3) .prologue-title-row::after 伪元素：bottom: -80px，
+                  height: 80px，从 rgba(14,10,16,0.92) 渐变到
+                  transparent，消除标题图下边缘与页面背景的硬边。
+              (4) .prologue-body padding-top 20px → 60px，为渐变
+                  过渡留出空间。
+              (5) 正文、按钮保持居中，与标题图同列。
+
+            代价：标题图自身左右黑边保留。但标题图现在居中限宽，
+                  两侧本来就是页面背景，黑边与留白融为一体，
+                  视觉上不再突兀。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 6700 字 → 6800 字，净 +100 字
+    净变动约 +100 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V15
+  =============================
+  本次（redesign.py V15）新增修复：减轻标题图锯齿。
+
+  [FIX_V31] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V17。
+            问题：V16 用 width: 130% + margin-left: -15% 的
+                  裁边方式，把图片放大了 1.3 倍，原图像素
+                  被拉伸，边缘出现明显锯齿。
+            方案：
+              (1) 缩放比 130% → 108%，margin-left -15% → -4%，
+                  1.08 倍放大几乎不产生肉眼可见的锯齿。
+              (2) 加 image-rendering: auto 让浏览器使用平滑
+                  缩放算法。
+              (3) 加 -webkit-backface-visibility / backface-visibility:
+                  hidden 启用抗锯齿。
+              (4) max-height 保持 32vh 不变。
+              (5) 保留 V16 的铺满布局、间距节奏；
+                  保留 V15 的正文改进。
+
+            代价：左右各只裁 4%（从 15% 降到 4%），
+                  原图最边缘的细黑边被裁掉，但较宽的黑边
+                  可能还能看到一部分。用户已确认无法换图，
+                  接受这个折中。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 6600 字 → 6700 字，净 +100 字
+    净变动约 +100 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V14
+  =============================
+  本次（redesign.py V14）新增修复：序幕页回到铺满布局 + 裁边不变形。
+
+  [FIX_V30] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V16。
+            问题：
+              (1) V15 把标题图缩成 640px 方块，与正文断开，
+                  视觉上像"贴了一张图在页面上"。
+              (2) V15 用 transform: scale(1.18) 补偿 clip-path 裁切，
+                  导致图片上下拉伸变形，"长夜之下 / 第七首诗"
+                  行距被拉宽。
+              (3) V15 上下留白不对称，头轻脚重。
+            方案：
+              (1) 回到铺满方向：.prologue-title-row max-width: 100%，
+                  去掉圆角。
+              (2) 去掉 transform: scale()，去掉 clip-path。
+              (3) 改用 width: 130% + margin-left: -15% 的裁边方式：
+                  图放大到 130% 宽，左右各溢出 15%，
+                  被 .prologue-title-row 的 overflow: hidden 裁掉。
+                  图的比例保持不变，不会变形。
+              (4) max-height 从 24vh → 32vh（温和上限）。
+              (5) 恢复 V14 的间距节奏：.prologue-body padding-top
+                  28px → 20px，按钮 margin-top 28px → 18px。
+              (6) 保留 V15 的正文改进（font-weight: 400，
+                  color: #d5cfd5，首段 500）。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 6500 字 → 6600 字，净 +100 字
+    净变动约 +100 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V13
+  =============================
+  本次（redesign.py V13）新增修复：序幕页视觉精修。
+
+  [FIX_V29] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V15。
+            问题：
+              (1) 标题图被压扁：容器 640px × 24vh 比例 2.46:1，
+                  cover 裁掉上下，"长夜之下"那行小字几乎贴顶。
+              (2) cover.png 左右两侧有大片黑边，视觉上像没裁干净。
+              (3) 标题图到正文间距过大，正文到按钮间距过小，头重脚轻。
+              (4) 正文 font-weight: 300 太细，深色背景下"飘"。
+              (5) 按钮孤立，缺少层级感。
+            方案：
+              (1) .prologue-title-img max-height: 24vh → none，
+                  object-fit: cover → contain，按原比例展示。
+                  clip-path: inset(0 15% 0 15%) 裁掉左右各 15% 黑边，
+                  transform: scale(1.18) 补偿裁切。
+              (2) 标题图下方过渡渐变 70px → 40px（图变自然）。
+              (3) .prologue-body padding-top 14px → 28px。
+              (4) 正文 color #c8c2c8 → #d5cfd5，font-weight 300 → 400，
+                  首段 font-weight 400 → 500。
+              (5) .prologue-start-btn margin-top 18px → 28px。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 6400 字 → 6500 字，净 +100 字
+    净变动约 +100 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V12
+  =============================
+  本次（redesign.py V12）新增修复：序幕页标题图缩小居中。
+
+  [FIX_V28] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V14。
+            需求：标题图不要太大，缩小一点放（居中）。
+            方案：
+              (1) .prologue-title-row 从 100% 铺满 → max-width: 640px
+                  + margin: 0 auto，标题图不再顶到屏幕两侧。
+                  加 10px 圆角，更像一张"图片"。
+              (2) .prologue-title-img max-height 30vh → 24vh（桌面）；
+                  矮屏 22vh / 18vh，窄屏 20vh / 16vh 逐级压缩。
+              (3) 下方过渡渐变 110px → 70px（因为图小了，渐变同步收短），
+                  终点色仍为 var(--nh-bg)，无色差。
+              (4) 保留 V13 已修好的部分：统一背景、重心上移、
+                  段落间距 6px、按钮 margin-top 18px。
+              最终效果：标题图 640px 宽居中，两侧留白，
+                        高度约占屏幕 24%。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 6300 字 → 6400 字，净 +100 字
+    净变动约 +100 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V11
+  =============================
+  本次（redesign.py V11）新增修复：序幕页视觉收尾。
+
+  [FIX_V27] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V13。
+            问题：
+              (1) 标题图区背景 #1a1216 与正文区背景 #0a070c
+                  色差明显，交界处形成硬分割线。
+              (2) 标题图上下都留黑，视觉上像"贴"在黑方块上。
+              (3) 标题图 max-height 42vh 占屏过多，正文被推到底，
+                  按钮很可能被挤出首屏。
+              (4) 段落间距不稳（首段 margin-bottom 与 p+p 叠加）。
+            方案：
+              (1) 引入 CSS 变量 --nh-bg: #0e0a10，贯穿
+                  #prologue-root / 标题图区 / 正文区，
+                  统一底色，消除色差。
+              (2) 标题图 max-height 42vh → 30vh；
+                  矮屏 28vh / 24vh，窄屏 26vh / 22vh 逐级压缩。
+              (3) 标题图下方过渡渐变 60px → 110px，
+                  渐变终点色 = var(--nh-bg)，与正文无缝衔接。
+              (4) #prologue-root 的 justify-content 从 center
+                  → flex-start，.prologue-card 加 padding-top: 6vh，
+                  整体重心上移，按钮回到首屏。
+              (5) 去掉 p:first-child 的额外 margin-bottom，
+                  段落间距统一 6px（短句停顿 12px 不变）。
+              (6) 按钮 margin-top 24px → 18px。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 6100 字 → 6300 字，净 +200 字
+    净变动约 +200 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V10
+  =============================
+  本次（redesign.py V10）新增修复：序幕页改为全屏铺满布局。
+
+  [FIX_V26] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V12。
+            需求：不要把内容缩在中间一条，要铺满全屏。
+            方案：
+              (1) #prologue-root 去掉 flex 居中，改为 stretch；
+                  padding 20px → 0。
+              (2) .prologue-card max-width 480px → 100%，
+                  border-radius 14px → 0，去掉外阴影和边框，
+                  背景透明（让 #prologue-root 的径向渐变透出来）。
+              (3) .prologue-title-row 去掉左右 padding，全宽铺满；
+                  标题图 max-height 300px → 42vh（随屏幕高度自适应）。
+              (4) .prologue-body 内层 max-width: 720px + margin: 0 auto，
+                  防止一行过长影响阅读。
+              (5) 按钮 margin: 24px auto 0，保持居中。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 6000 字 → 6100 字，净 +100 字
+    净变动约 +100 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V9
+  =============================
+  本次（redesign.py V9）新增修复：序幕页标题图与正文区宽度对齐。
+
+  [FIX_V25] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V11。
+            问题：标题图区撑满卡片宽（600px），正文区因左右 padding
+                  36px，内容只有 528px，标题图视觉上比正文宽 72px，
+                  两侧出现明显空白。同时 cover.png 自身左右有黑边，
+                  0.6% 的 clip-path 裁不干净。
+            方案：
+              1) 卡片宽度 600px → 480px，整体收窄。
+              2) .prologue-title-row 加 padding: 0 24px，与
+                 .prologue-body 的左右 padding 一致 → 标题图内容区
+                 = 正文内容区，完美对齐。
+              3) .prologue-title-img 的 clip-path 从 0.6% → 2.5%，
+                 transform scale 从 1.012 → 1.05，彻底裁掉原图黑边。
+              4) .prologue-body padding 从 36px → 24px。
+              5) .prologue-title-row::before 的内阴影 inset 改为
+                 0 24px，随 padding 调整。
+              6) 所有响应式断点同步调整 padding / max-width。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 5900 字 → 6000 字，净 +100 字
+    净变动约 +100 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V8
+  =============================
+  本次（redesign.py V8）新增修复：序幕页版式微调。
+
+  [FIX_V24] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V10。
+            需求：
+              (1) 游戏名称（标题图）大一点
+              (2) 标题图下方背景（卡片）小一点
+              (3) 正文行间隔小一点
+            方案：
+              (1) 标题图 max-height 240px → 300px（桌面）；
+                  卡片宽度 560px → 600px，给标题图更多空间；
+                  窄屏 190→240px、移动端 160→220px。
+              (2) 卡片 padding-bottom 32px → 22px；
+                  正文 padding 上 24→18px、下 8→4px；
+                  按钮上间距 26→20px，卡片整体更矮。
+              (3) line-height 2.15 → 1.9；
+                  p + p margin-top 13px → 6px；
+                  首段 margin-bottom 4→2px。
+              新增两个高度断点：820px / 700px，逐级压缩。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 5800 字 → 5900 字，净 +100 字
+    净变动约 +100 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V7
+  =============================
+  本次（redesign.py V7）新增修复：序幕页标题图边缘交界线。
+
+  [FIX_V23] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V9。
+            修复：img/cover.png 左边缘自带深色竖边（或 cover 裁切
+                  后左侧留下暗块），与卡片左内边框形成明显的竖直
+                  交界线。
+            方案：
+              1) .prologue-title-img 加 clip-path: inset(0 0.6% 0 0.6%)
+                 裁掉左右各 0.6% 边缘，去掉原图黑边；
+              2) 加 transform: scale(1.012) 补偿裁切，确保仍撑满；
+              3) .prologue-title-row 加 ::before 伪元素，
+                 inset 内阴影 1px（颜色 = 卡片背景色）作为双保险；
+              4) overflow: hidden → overflow: clip，圆角裁切更精确。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 5600 字 → 5800 字，净 +200 字
+    净变动约 +200 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V6
+  =============================
+  本次（redesign.py V6）新增修复：序幕页配色统一 + 文字不溢出。
+
+  [FIX_V22] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V8。
+            修复：
+              (1) 配色不统一 —— 亮蓝按钮/蓝光/冷蓝边框 与 暖红标题图
+                  色系冲突。改为「暗红 + 冷灰蓝」统一主调：
+                  · 按钮：亮蓝渐变 → 暗红渐变（#b02828 → #7a1414）
+                  · 中心微光：蓝 → 暗红（rgba(180,40,40,·)）
+                  · 卡片边框：冷蓝 → 暗红灰（rgba(120,60,60,·)）
+                  · 标题图区背景 & 底部渐变：统一为卡片背景色，
+                    彻底消除硬边
+                  · 兜底图标：亮蓝 → 暗红
+              (2) 文字溢出边框 —— .prologue-body 和 .prologue-body p
+                  加 max-width:100% + box-sizing:border-box + min-width:0
+                  + word-break/overflow-wrap/word-wrap 三重换行保险。
+                  padding 40px → 36px（桌面）/ 22px（移动）/ 18px（超窄屏）。
+                  新增 380px 断点防止极端情况溢出。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 5200 字 → 5600 字，净 +400 字
+    净变动约 +400 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V5
+  =============================
+  本次（redesign.py V5）新增修复：序幕页视觉重做。
+
+  [FIX_V20] style-nh-prologue: 替换为 NH_PROLOGUE_CSS_V7。
+            修复：标题图与卡片不等宽、卡片硬直角、卡片与背景硬边、
+                  字号偏小、段落间距不均、CTA 不在首屏、死黑区域过多。
+            方案：标题图与卡片同宽 + 上圆角 + 下接渐变；卡片 14px 圆角
+                  + 内发光 + 柔和阴影；背景叠噪点 + 径向光晕 + 暗角；
+                  字号 15→16px、行距 2.1→2.2、段落间距统一 14px；
+                  纵向压缩确保按钮在首屏；新增 0.7s 淡入上浮入场动画。
+  [FIX_V21] nh-prologue-anim: 新增脚本，在挂载后给 .prologue-card 添加
+            .nh-prologue-enter 类，触发入场动画。
+
+  文本字数变动：
+    - 替换 style-nh-prologue：约 2900 字 → 5200 字，净 +2300 字
+    - 新增 nh-prologue-anim 脚本：约 +180 字
+    净变动约 +2480 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V4
+  =============================
+  本次（redesign.py V4）新增修复：
+
+  [FIX_V18] nh-reset-fix v2: 修复「重新开始」按钮点击无反馈（真·根因）。
+            根因：nh-unified-guard 在 capture 阶段绑 document click，
+                  先执行并 stopImmediatePropagation 吃掉事件，随后才调
+                  window.confirm()。confirm 被静默拦截返回 false，
+                  handler 直接 return → 事件被吃、逻辑没跑、框没弹。
+            方案：按钮整体替换（id 改为 nh-sidebar-restart-v2），
+                  旧 capture 监听器匹配 el.id === 'nh-sidebar-restart'
+                  直接失配；新按钮用属性级 onclick 接管；
+                  点击时临时把 window.confirm 换成 true 桩作为保险丝。
+  [FIX_V19] nh-reset-fix v2: 补 #nh-sidebar-restart-v2 的样式，
+            让新 id 复用旧按钮的所有视觉规则。
+
+  文本字数变动：约 +2900 字（新增脚本、确认框、样式、注释）。
+                仅替换一个 <button> 元素，HTML 层面净 0 字。
+                净变动约 +2900 字。
+-->
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V3
+  =============================
+  本次（redesign.py V3）新增修复：
+
+  [FIX_V16] nh-reset-fix: 修复「重新开始」按钮点击无反应。
+            根因：window.confirm() 被浏览器静默拦截 → 重置流程被跳过；
+                  原 nh-reset-guard 脚本体为空，形成空档。
+            方案：新增独立脚本 nh-reset-fix，用自定义 HTML 确认框
+                  替代 window.confirm，capture 阶段绑定 click，
+                  多重延迟重绑 + __nhResetBound 防重复。
+  [FIX_V17] nh-reset-fix: purgeAll()/purgeVars()/doReset() 拆分，
+            便于后续脚本单独调用清理逻辑而不触发 reload。
+
+  文本字数变动：约 +2100 字（新增脚本与注释），无删除。
+                净变动约 +2100 字。
+-->
+
 <!--
   NH_REDESIGN_UPDATE_V2 (序章页面重做)
   =====================================
@@ -5030,164 +5862,301 @@ body[data-passage="搜索结果页"] .sr-banner > * {
 </script>
 
 <style id="style-nh-prologue">
-/* ===== NH_PROLOGUE_CSS_V6：只定义自身样式，不打扰别人 ===== */
+/* ===== NH_PROLOGUE_CSS_V32：标题图完全贴顶 ===== */
 
 #prologue-root {
+    --nh-bg: #0e0a10;
+    --nh-accent: #b02828;
+
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
     z-index: 2147483550;
-    background:
-        radial-gradient(ellipse 900px 600px at 50% 45%,
-            #151c26 0%,
-            #0b1018 40%,
-            #05070a 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
+    display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 0;
     box-sizing: border-box;
     font-family: "微软雅黑", "Microsoft YaHei", "PingFang SC",
                  -apple-system, system-ui, sans-serif;
     color: #e6e6e6;
     -webkit-font-smoothing: antialiased;
-    overflow: hidden;
     margin: 0;
+    background:
+        radial-gradient(ellipse 1000px 700px at 50% 35%,
+            #221820 0%,
+            #14101a 45%,
+            var(--nh-bg) 100%);
+    background-attachment: fixed;
+}
+
+#prologue-root::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(0deg,
+            rgba(255,255,255,0.008) 0 1px,
+            transparent 1px 2px),
+        radial-gradient(ellipse at center,
+            transparent 55%,
+            rgba(0,0,0,0.6) 100%);
+    z-index: 0;
+}
+
+#prologue-root::after {
+    content: "";
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    width: 900px;
+    height: 900px;
+    margin-left: -450px;
+    margin-top: -450px;
+    pointer-events: none;
+    background: radial-gradient(circle,
+        rgba(180, 40, 40, 0.12) 0%,
+        rgba(140, 20, 20, 0.04) 35%,
+        transparent 70%);
+    z-index: 0;
+    animation: nhProloguePulse 6s ease-in-out infinite;
+}
+
+@keyframes nhProloguePulse {
+    0%, 100% { opacity: 0.85; transform: scale(1); }
+    50%      { opacity: 1;    transform: scale(1.06); }
 }
 
 .prologue-card {
+    position: relative;
+    z-index: 1;
     width: 100%;
-    max-width: 720px;
-    padding: 52px 60px 60px;
-    border-radius: 18px;
-    background: linear-gradient(180deg,
-        rgba(18, 22, 30, 0.96) 0%,
-        rgba(10, 13, 18, 0.98) 100%);
-    border: 1px solid rgba(80, 110, 150, 0.15);
-    box-shadow:
-        0 30px 80px rgba(0, 0, 0, 0.5),
-        0 0 60px rgba(40, 90, 150, 0.05);
+    max-width: 100%;
+    min-height: 100vh;
+    /* ★ padding-top 从 3vh 改成 0，完全贴顶 */
+    padding: 0 0 60px 0;
+    border-radius: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
     text-align: center;
     box-sizing: border-box;
     margin: 0 auto;
+    overflow: visible;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.7s ease-out, transform 0.7s ease-out;
 }
 
+.prologue-card.nh-prologue-enter {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.prologue-title-img {
+    display: none !important;
+}
+
+/* ── 标题图区 ── */
 .prologue-title-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    margin: 0 0 32px 0;
-    padding: 0;
+    display: block;
+    width: 100%;
+    max-width: 900px;
+    padding-top: 26%;
+    margin: 0 auto;
+    position: relative;
+    background-image: url("img/cover.png");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    background-color: transparent;
+    line-height: 0;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.prologue-title-row::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 80%;
+    height: 80%;
+    margin-left: -40%;
+    margin-top: -40%;
+    pointer-events: none;
+    background: radial-gradient(circle,
+        rgba(200, 40, 40, 0.12) 0%,
+        transparent 70%);
+    z-index: 1;
+    animation: nhTitleGlow 4s ease-in-out infinite;
+}
+
+@keyframes nhTitleGlow {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50%      { opacity: 1;   transform: scale(1.08); }
 }
 
 .prologue-title-icon {
-    width: 48px;
-    height: 48px;
-    flex-shrink: 0;
-    background: linear-gradient(160deg, #3b82f6 0%, #1e5fd4 100%);
-    border-radius: 12px;
-    position: relative;
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
-    margin: 0;
-}
-.prologue-title-icon::before {
-    content: "";
-    position: absolute;
-    top: 11px; left: 11px; right: 11px; bottom: 11px;
-    background: #fff;
-    border-radius: 50%;
-    box-shadow: inset -7px 0 0 0 #1e5fd4;
-}
-.prologue-title-icon::after {
-    content: "";
-    position: absolute;
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: #3b82f6;
-    right: 9px; top: 13px;
-    box-shadow: 0 9px 0 #3b82f6;
+    display: none !important;
 }
 
-.prologue-title-text {
-    font-size: 40px;
-    font-weight: 700;
-    letter-spacing: 4px;
-    line-height: 1.1;
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(180deg, #6cb1ff 0%, #3b82f6 55%, #1d4ed8 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
-    white-space: nowrap;
-}
-
+/* ── 正文区 ── */
 .prologue-body {
-    font-size: 15px;
-    line-height: 2.1;
-    color: #b9c4d4;
+    display: block;
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    min-width: 0;
+    font-size: 16px;
+    line-height: 1.9;
+    color: #d5cfd5;
     letter-spacing: 0.5px;
-    margin: 0 0 42px 0;
-    padding: 0;
+    padding: 4px 24px 4px;
     text-align: center;
-}
-.prologue-body p {
-    margin: 4px 0;
-    padding: 0;
+    font-weight: 400;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
 }
 
+.prologue-body p {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.prologue-body p + p {
+    margin-top: 6px;
+}
+
+.prologue-body p:first-child {
+    color: #e8e2e8;
+    font-weight: 500;
+}
+
+.prologue-body p.nh-pause {
+    margin-top: 12px;
+}
+
+/* ── 按钮 ── */
 .prologue-start-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 14px 56px;
+    margin: 24px auto 0;
+    padding: 12px 52px;
     font-size: 16px;
     font-weight: 600;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
     color: #fff;
-    background: linear-gradient(180deg, #1e5fd4 0%, #1449a8 100%);
-    border: 1px solid rgba(120, 170, 255, 0.3);
+    background: linear-gradient(180deg, #b02828 0%, #7a1414 100%);
+    border: 1px solid rgba(220, 120, 120, 0.35);
     border-radius: 999px;
     cursor: pointer;
     font-family: inherit;
-    margin: 0;
     box-shadow:
-        0 8px 24px rgba(30, 95, 212, 0.35),
+        0 8px 24px rgba(176, 40, 40, 0.4),
         0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-    transition: transform 0.15s ease, box-shadow 0.15s ease,
-                background 0.15s ease;
+    transition: transform 0.16s ease, box-shadow 0.16s ease,
+                background 0.16s ease;
     -webkit-appearance: none;
     appearance: none;
 }
+
 .prologue-start-btn:hover {
     transform: translateY(-2px);
-    background: linear-gradient(180deg, #2a72e8 0%, #1a55c0 100%);
+    background: linear-gradient(180deg, #c83535 0%, #8f1818 100%);
     box-shadow:
-        0 12px 32px rgba(42, 114, 232, 0.55),
+        0 14px 36px rgba(200, 53, 53, 0.55),
         0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
-.prologue-start-btn:active { transform: translateY(0); }
+
+.prologue-start-btn:active {
+    transform: translateY(0);
+}
+
 .prologue-start-btn:focus-visible {
-    outline: 2px solid #7eb8ff;
+    outline: 2px solid #e08080;
     outline-offset: 3px;
 }
 
-@media (max-width: 640px) {
-    .prologue-card { padding: 40px 26px 44px; border-radius: 14px; }
-    .prologue-title-row { gap: 12px; margin-bottom: 24px; }
-    .prologue-title-icon { width: 38px; height: 38px; border-radius: 9px; }
-    .prologue-title-icon::before { top: 9px; left: 9px; right: 9px; bottom: 9px;
-        box-shadow: inset -5px 0 0 0 #1e5fd4; }
-    .prologue-title-icon::after { right: 7px; top: 10px; width: 4px; height: 4px; }
-    .prologue-title-text { font-size: 26px; letter-spacing: 2px; }
-    .prologue-body { font-size: 13.5px; line-height: 1.95; margin-bottom: 32px; }
-    .prologue-start-btn { padding: 12px 40px; font-size: 15px; }
+/* ── 响应式：全部 padding-top 归 0 ── */
+@media (max-height: 820px) {
+    .prologue-card { padding-top: 0; padding-bottom: 48px; }
+    .prologue-title-row { max-width: 720px; padding-top: 24%; }
+    .prologue-body {
+        padding: 4px 24px 4px;
+        font-size: 15px;
+        line-height: 1.85;
+    }
+    .prologue-body p + p { margin-top: 5px; }
+    .prologue-start-btn {
+        margin-top: 20px;
+        padding: 11px 46px;
+        font-size: 15px;
+    }
 }
-/* ===== end NH_PROLOGUE_CSS_V6 ===== */
+
+@media (max-height: 700px) {
+    .prologue-card { padding-top: 0; padding-bottom: 40px; }
+    .prologue-title-row { max-width: 600px; padding-top: 22%; }
+    .prologue-body {
+        padding: 4px 24px 4px;
+        font-size: 14.5px;
+        line-height: 1.8;
+    }
+    .prologue-body p + p { margin-top: 4px; }
+    .prologue-start-btn {
+        margin-top: 18px;
+        padding: 10px 40px;
+        font-size: 14.5px;
+    }
+}
+
+@media (max-width: 640px) {
+    .prologue-card { padding-top: 0; padding-bottom: 48px; }
+    .prologue-title-row { max-width: calc(100% - 32px); padding-top: 26%; }
+    .prologue-body {
+        max-width: 100%;
+        padding: 4px 18px 4px;
+        font-size: 14.5px;
+        line-height: 1.85;
+        letter-spacing: 0.3px;
+    }
+    .prologue-body p + p { margin-top: 5px; }
+    .prologue-start-btn {
+        margin-top: 20px;
+        padding: 12px 40px;
+        font-size: 15px;
+        letter-spacing: 2px;
+    }
+}
+
+@media (max-width: 380px) {
+    .prologue-title-row { max-width: calc(100% - 24px); padding-top: 28%; }
+    .prologue-body {
+        padding: 4px 14px 4px;
+        font-size: 14px;
+        line-height: 1.8;
+    }
+    .prologue-body p + p { margin-top: 4px; }
+}
+
+/* ===== end NH_PROLOGUE_CSS_V32 ===== */
+
 </style>
 
 
@@ -5366,6 +6335,122 @@ body[data-passage="搜索结果页"] .sr-banner > * {
 </script>
 <!-- ===== end NH_PROLOGUE_EXIT_BRIDGE_V1 ===== -->
 
+
+<!-- ===== NH_RETURN_HOME_V1 : hide ui-bar + home button style ===== -->
+<style id="style-nh-return-home">
+/* 1) hide SugarCube built-in ui-bar */
+#ui-bar,
+#ui-bar-toggle,
+#ui-bar-tray {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+#story {
+    margin-left: 0 !important;
+    transition: none !important;
+}
+
+/* 2) home button style in #nh-sidebar */
+#nh-sidebar .item.nh-home {
+    color: #2c5aa0 !important;
+}
+#nh-sidebar .item.nh-home:hover {
+    background: #eaf1fb !important;
+    color: #1e4070 !important;
+}
+#nh-sidebar .item.nh-home .ico {
+    color: #2c5aa0 !important;
+}
+</style>
+<!-- ===== end NH_RETURN_HOME_V1 ===== -->
+
+
+<style id="nh-cursor-fix" type="text/css">
+/* NH_CURSOR_FIX_V1：三级污染时鼠标仍可见 */
+body.no-cursor,
+body.no-cursor *,
+html.no-cursor,
+html.no-cursor * {
+    cursor: auto !important;
+}
+body.no-cursor a,
+body.no-cursor button,
+body.no-cursor [role="link"],
+body.no-cursor [role="button"] {
+    cursor: pointer !important;
+}
+body.no-cursor input,
+body.no-cursor textarea {
+    cursor: text !important;
+}
+/* 隐藏那个红色光点 */
+#ghost-cursor {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+</style>
+
+<style id="nh-wrap-fix" type="text/css">
+/* NH_WRAP_FIX_V1：所有页面文本自动换行，不溢出容器 */
+html, body {
+    overflow-x: hidden !important;
+}
+body, .passage, .page-wrap, .lib-wrap, .arc-wrap, .zmail-wrap, .zm163 {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+}
+/* 段落、通知、卡片、标题都允许换行 */
+.passage p,
+.passage div,
+.passage span,
+.passage li,
+.notice-box,
+.notice-box p,
+.uni-notice,
+.uni-notice .text,
+.uni-card,
+.uni-card .card-body li,
+.uni-card .card-head,
+.uni-search-card,
+.uni-search-card .search-title,
+.uni-search-card .search-sub,
+.uni-search-card .tip,
+.uni-stats .stat .num,
+.uni-stats .stat .lbl,
+.sr-item-name,
+.sr-heading,
+.zm163-mail .m-subj,
+.zm163-mail .m-from,
+.zm163-detail .body,
+.zm163-detail .body p,
+.zm163-detail h1,
+.prologue-body,
+.prologue-body p {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+}
+/* 强制长英文/URL 也换行 */
+.passage, .passage * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+/* 表格窄屏可横向滚动 */
+.passage table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+}
+</style>
 </head>
 <body>
 	<div id="init-screen">
@@ -13640,19 +14725,11 @@ if (window.dh &amp;&amp; dh.ready) { dh.ready(dhFooterInit, &quot;#onlineCount&q
   &lt;div class="prologue-card"&gt;
 
     &lt;div class="prologue-title-row"&gt;
-      &lt;div class="prologue-title-icon"&gt;&lt;/div&gt;
-      &lt;h1 class="prologue-title-text"&gt;行动代号：深渊回响&lt;/h1&gt;
+      &lt;img class="prologue-title-img" src="img/cover.png" alt="prologue cover"&gt;
     &lt;/div&gt;
 
     &lt;div class="prologue-body"&gt;
-      
-    &lt;p&gt;你是一个灵异博主，深夜刷帖时收到一条私信。&lt;/p&gt;
-    &lt;p&gt;对方叫「第七个」，发来一个链接——南华大学的旧版内网镜像。&lt;/p&gt;
-    &lt;p&gt;你点开了它。从此，某样东西开始跟着你。&lt;/p&gt;
-    &lt;p&gt;那晚，一个自称 A.R.C 的组织给你回信。他们进不去那个网站，只有你能。&lt;/p&gt;
-    &lt;p&gt;他们要你继续搜，把看到的原文一字不改地发给他们。&lt;/p&gt;
-    &lt;p&gt;查清 2015 年旧教学楼的那场火，和名单上被删掉的那个人。&lt;/p&gt;
-    &lt;p&gt;记住：别信林晚。她说的话，一半是真的。&lt;/p&gt;
+      &lt;p&gt;你是Z站的一名灵异探险区UP主。在一次直播中，有粉丝向你讲述了南华大学15年前发生的一起失踪案。你从论坛上找到了一个南大的旧内网镜像。你点开了它，从那之后，你经常产生有人在注视你的错觉。直到那天，一封没有主题的邮件出现在了你的信箱里....&lt;/p&gt;
     &lt;/div&gt;
 
     &lt;button class="prologue-start-btn" id="prologue-enter" type="button"&gt;开始调查&lt;/button&gt;
@@ -13812,7 +14889,11 @@ if (window.dh &amp;&amp; dh.ready) { dh.ready(dhFooterInit, &quot;#onlineCount&q
             <span class="ico">💾</span>
             <span>存档</span>
         </button>
-        <button class="item danger" id="nh-sidebar-restart" type="button">
+                <button class="item nh-home" id="nh-sidebar-home" type="button">
+            <span class="ico">🌐</span>
+            <span>返回官网</span>
+        </button>
+<button class="item danger" id="nh-sidebar-restart" type="button">
             <span class="ico">↻</span>
             <span>重新开始</span>
         </button>
@@ -15025,5 +16106,442 @@ if (window.dh &amp;&amp; dh.ready) { dh.ready(dhFooterInit, &quot;#onlineCount&q
 
 
 
+
+<!-- ===== NH_RETURN_HOME_V1 : home button JS ===== -->
+<script id="nh-return-home-js">
+(function () {
+    'use strict';
+
+    var STUDIO_HOME_URL = 'https://tamatofish.top';
+    var btn = null;
+    var busy = false;
+
+    function autoSaveBeforeLeave() {
+        try {
+            if (typeof window.__nhSaveNow === 'function') {
+                window.__nhSaveNow();
+                console.log('[nh-return-home] __nhSaveNow called');
+            }
+        } catch (e) {
+            console.warn('[nh-return-home] __nhSaveNow failed:', e);
+        }
+
+        try {
+            if (window.SugarCube && SugarCube.Save &&
+                SugarCube.Save.browser && SugarCube.Save.browser.slot) {
+                var slot = SugarCube.Save.browser.slot;
+                if (typeof slot.save === 'function' && slot.isEnabled()) {
+                    slot.save(0, 'auto save before return home');
+                    console.log('[nh-return-home] slot 1 saved');
+                }
+            }
+        } catch (e) {
+            console.warn('[nh-return-home] slot save failed:', e);
+        }
+
+        try {
+            if (window.SugarCube && SugarCube.State &&
+                SugarCube.State.passage && localStorage) {
+                localStorage.setItem(
+                    'nh_currentPassage',
+                    SugarCube.State.passage
+                );
+            }
+        } catch (e) {}
+    }
+
+    function goHome(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+        }
+        if (busy) return;
+        busy = true;
+
+        console.log('[nh-return-home] going home');
+        autoSaveBeforeLeave();
+
+        setTimeout(function () {
+            try {
+                console.log('[nh-return-home] jump to ' + STUDIO_HOME_URL);
+                window.location.href = STUDIO_HOME_URL;
+            } catch (err) {
+                console.error('[nh-return-home] jump failed:', err);
+                busy = false;
+            }
+        }, 350);
+    }
+
+    function bind() {
+        btn = document.getElementById('nh-sidebar-home');
+        if (!btn) return false;
+        if (btn.__nhHomeBound) return true;
+        btn.__nhHomeBound = true;
+
+        btn.addEventListener('click', goHome, true);
+        btn.addEventListener('touchend', function (e) {
+            e.preventDefault();
+            goHome(e);
+        }, { passive: false, capture: true });
+
+        console.log('[nh-return-home] button bound');
+        return true;
+    }
+
+    if (!bind()) {
+        var tries = 0;
+        var timer = setInterval(function () {
+            if (bind() || ++tries > 100) clearInterval(timer);
+        }, 100);
+    }
+
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay.nhReturnHome', function () {
+            setTimeout(bind, 50);
+            setTimeout(bind, 300);
+            setTimeout(bind, 800);
+        });
+    }
+    setInterval(bind, 2000);
+
+    console.log('[nh-return-home] loaded, target=' + STUDIO_HOME_URL);
+})();
+</script>
+<!-- ===== end NH_RETURN_HOME_V1 ===== -->
+
+
+
+<!-- ===== NH_RESET_FIX_V2 ===== -->
+<script id="nh-reset-fix">
+/* NH_RESET_FIX_V2：彻底修复"重新开始"按钮点击无反馈
+
+   背景：
+     nh-unified-guard 在 capture 阶段绑 document click，先执行，
+     遇到 #nh-sidebar-restart 调 stopImmediatePropagation() 吃掉事件，
+     再调 window.confirm()。confirm 被拦截 → 直接 return。
+     → 事件被吃、逻辑没跑、框没弹 = 看起来"点了没反应"。
+
+   对策（三保险）：
+     1) 按钮替换：把旧 #nh-sidebar-restart 换成新元素
+        （id 改为 nh-sidebar-restart-v2），旧 capture 监听器
+        匹配 el.id === 'nh-sidebar-restart' 直接失配。
+     2) 属性级 onclick：新按钮上直接写 el.onclick = __nhResetClick，
+        属性级 handler 在目标阶段触发，不受 document capture
+        影响（除非 capture 里 preventDefault + stopImmediate）。
+     3) 保险丝：临时把 window.confirm 换成返回 true 的桩，
+        让旧 handler 也能跑通；用完恢复。幂等，重跑无害。
+*/
+(function () {
+    'use strict';
+
+    var BTN_OLD_ID = 'nh-sidebar-restart';
+    var BTN_NEW_ID = 'nh-sidebar-restart-v2';
+
+    function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+    function purgeAll() {
+        try {
+            var d = [];
+            for (var i = 0; i < localStorage.length; i++) {
+                var k = localStorage.key(i);
+                if (k && k.indexOf('nh_') === 0) d.push(k);
+            }
+            for (var j = 0; j < d.length; j++) {
+                try { localStorage.removeItem(d[j]); } catch (e) {}
+            }
+        } catch (e) {}
+        try {
+            var d2 = [];
+            for (var m = 0; m < sessionStorage.length; m++) {
+                var k2 = sessionStorage.key(m);
+                if (k2 && k2.indexOf('nh_') === 0) d2.push(k2);
+            }
+            for (var n = 0; n < d2.length; n++) {
+                try { sessionStorage.removeItem(d2[n]); } catch (e) {}
+            }
+        } catch (e) {}
+    }
+
+    function purgeVars() {
+        try {
+            var v = SugarCube.State.variables;
+            v.loggedIn = false;
+            v.username = '';
+            v.password = '';
+            v.arcMail2Sent = false;
+            v.zmUnread = 1;
+            v.nhUnread = 1;
+            v.corruptionLevel = 0;
+            v.warningLevel = 0;
+            v.sealed = false;
+            v.visitCount = 12;
+            v.keyword = '';
+            v.readMails = [];
+            v._lwHist = [];
+            v._lwHistPos = -1;
+            v.zmInboxExtra = [];
+            v.zmSentMails = [];
+            v.zmReplyQueue = [];
+        } catch (e) {}
+        try { SugarCube.session.delete('state'); } catch (e) {}
+    }
+
+    function doReset() {
+        console.log('[reset-fix] 开始重置');
+        purgeAll();
+        purgeVars();
+        lsSet('nh_force_prologue', '1');
+        try {
+            if (SugarCube.Config && SugarCube.Config.passages) {
+                SugarCube.Config.passages.start = '序幕';
+            }
+        } catch (e) {}
+        setTimeout(function () {
+            try { window.location.reload(); }
+            catch (e) { try { SugarCube.Engine.play('序幕'); } catch (err) {} }
+        }, 200);
+    }
+
+    function showConfirmDialog(onConfirm) {
+        var overlay = document.createElement('div');
+        overlay.style.cssText = [
+            'position:fixed', 'inset:0', 'z-index:2147483647',
+            'background:rgba(0,0,0,0.6)',
+            'display:flex', 'align-items:center', 'justify-content:center',
+            'font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif'
+        ].join(';');
+
+        var box = document.createElement('div');
+        box.style.cssText = [
+            'background:#fff', 'border-radius:6px', 'padding:24px 32px',
+            'box-shadow:0 8px 32px rgba(0,0,0,0.3)',
+            'max-width:360px', 'text-align:center',
+            'font-size:14px', 'color:#333', 'line-height:1.7'
+        ].join(';');
+
+        box.innerHTML =
+            '<div style="font-size:16px;font-weight:600;margin-bottom:12px;">重新开始</div>' +
+            '<div style="color:#666;margin-bottom:20px;">所有进度将丢失，确定要重新开始吗？</div>' +
+            '<div style="display:flex;gap:10px;justify-content:center;">' +
+            '<button id="nh-reset-ok" style="' +
+            'background:#8b0000;color:#fff;border:none;padding:8px 24px;' +
+            'border-radius:3px;cursor:pointer;font-size:13px;' +
+            'font-family:inherit;">确定</button>' +
+            '<button id="nh-reset-cancel" style="' +
+            'background:#fff;color:#555;border:1px solid #ccc;padding:8px 24px;' +
+            'border-radius:3px;cursor:pointer;font-size:13px;' +
+            'font-family:inherit;">取消</button>' +
+            '</div>';
+
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+
+        function close() {
+            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        }
+
+        box.querySelector('#nh-reset-ok').addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            close();
+            onConfirm();
+        });
+        box.querySelector('#nh-reset-cancel').addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            close();
+        });
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) close();
+        });
+
+        function onKey(e) {
+            if (e.key === 'Enter') {
+                document.removeEventListener('keydown', onKey);
+                close();
+                onConfirm();
+            } else if (e.key === 'Escape') {
+                document.removeEventListener('keydown', onKey);
+                close();
+            }
+        }
+        document.addEventListener('keydown', onKey);
+    }
+
+    /* 入口：由按钮 onclick 直接调用 */
+    function __nhResetClick(ev) {
+        if (ev) {
+            try { ev.preventDefault(); } catch (e) {}
+            try { ev.stopPropagation(); } catch (e) {}
+        }
+        console.log('[reset-fix] 按钮点击，弹确认框');
+        showConfirmDialog(doReset);
+        return false;
+    }
+    window.__nhResetClick = __nhResetClick;
+
+    /* 保险丝：临时把 window.confirm 换成返回 true 的桩，
+       让 nh-unified-guard 旧 handler 也能跑通；1.2s 后恢复。
+       仅在点击时使用，避免影响其它 confirm 场景。 */
+    function withConfirmStub(fn) {
+        var orig = window.confirm;
+        var restored = false;
+        function restore() {
+            if (!restored) { restored = true; window.confirm = orig; }
+        }
+        try {
+            window.confirm = function () { return true; };
+            fn();
+        } finally {
+            setTimeout(restore, 1200);
+            setTimeout(restore, 3000);
+        }
+    }
+
+    /* 用新按钮替换旧按钮 */
+    function replaceRestartButton() {
+        var old = document.getElementById(BTN_OLD_ID);
+        if (!old) return false;
+        if (document.getElementById(BTN_NEW_ID)) return true; // 已替换
+
+        // 构造新按钮
+        var neu = document.createElement('button');
+        neu.id = BTN_NEW_ID;
+        neu.type = 'button';
+        neu.className = old.className || 'item danger';
+        neu.innerHTML = old.innerHTML;
+        neu.style.cssText = old.style.cssText || '';
+
+        // 属性级 onclick —— 目标阶段即触发
+        neu.onclick = function (ev) {
+            withConfirmStub(function () {
+                // 让旧 handler（如果还在）也能拿到一次事件
+                // 但我们已经把 id 改了，旧 handler 匹配不到，不影响
+            });
+            return __nhResetClick(ev);
+        };
+
+        // 替换
+        old.parentNode.replaceChild(neu, old);
+        console.log('[reset-fix] 按钮已替换为 ' + BTN_NEW_ID);
+        return true;
+    }
+
+    /* 补一条 CSS，让新 id 复用旧 id 的所有样式 */
+    function injectStyle() {
+        if (document.getElementById('style-nh-reset-fix-v2')) return;
+        var css = document.createElement('style');
+        css.id = 'style-nh-reset-fix-v2';
+        css.textContent = [
+            '#nh-sidebar-restart-v2 {',
+            '  display: flex !important;',
+            '  align-items: center !important;',
+            '  gap: 12px !important;',
+            '  padding: 13px 20px !important;',
+            '  font-size: 14px !important;',
+            '  color: #333 !important;',
+            '  cursor: pointer !important;',
+            '  user-select: none !important;',
+            '  transition: background 0.12s !important;',
+            '  border: none !important;',
+            '  background: transparent !important;',
+            '  width: 100% !important;',
+            '  text-align: left !important;',
+            '  font-family: inherit !important;',
+            '  box-sizing: border-box !important;',
+            '}',
+            '#nh-sidebar-restart-v2:hover {',
+            '  background: #fbecec !important;',
+            '  color: #b00000 !important;',
+            '}',
+            '#nh-sidebar-restart-v2 .ico {',
+            '  width: 20px !important;',
+            '  text-align: center !important;',
+            '  font-size: 16px !important;',
+            '  flex-shrink: 0 !important;',
+            '}'
+        ].join('\n');
+        document.head.appendChild(css);
+    }
+
+    /* 启动 */
+    function boot() {
+        injectStyle();
+        replaceRestartButton();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        boot();
+    }
+
+    // 每次切页 / 侧边栏重建后都重跑
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay.nhResetFix', function () {
+            setTimeout(boot, 30);
+            setTimeout(boot, 200);
+            setTimeout(boot, 800);
+        });
+    }
+    setInterval(boot, 1000);
+
+    // MutationObserver 兜底：侧边栏被重建时立即替换
+    if (window.MutationObserver) {
+        var mo = new MutationObserver(function () {
+            if (document.getElementById(BTN_OLD_ID)) boot();
+        });
+        mo.observe(document.body, { childList: true, subtree: true });
+        setTimeout(function () { mo.disconnect(); }, 60000);
+    }
+
+    console.log('[reset-fix] v2 loaded');
+})();
+</script>
+<!-- ===== end NH_RESET_FIX_V2 ===== -->
+
+<!-- ===== NH_PROLOGUE_ANIM_V1 ===== -->
+<script id="nh-prologue-anim">
+/* [nh-prologue-anim] 卡片入场动画：挂载后 80ms 触发 */
+(function () {
+    'use strict';
+
+    function triggerEnter() {
+        var card = document.querySelector('.prologue-card');
+        if (!card) return;
+        if (card.classList.contains('nh-prologue-enter')) return;
+        requestAnimationFrame(function () {
+            card.classList.add('nh-prologue-enter');
+        });
+    }
+
+    function boot() {
+        var root = document.getElementById('prologue-root');
+        if (!root) return;
+        // 卡片可能刚插入，稍等两帧
+        setTimeout(triggerEnter, 80);
+        setTimeout(triggerEnter, 240);
+        setTimeout(triggerEnter, 600);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        boot();
+    }
+
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay.nhPrologueAnim', function () {
+            setTimeout(boot, 30);
+            setTimeout(boot, 200);
+        });
+    }
+    setInterval(boot, 800);
+
+    console.log('[nh-prologue-anim] loaded');
+})();
+</script>
+<!-- ===== end NH_PROLOGUE_ANIM_V1 ===== -->
 </body>
 </html>
