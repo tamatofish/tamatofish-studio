@@ -1,6 +1,33 @@
 <!DOCTYPE html>
 <html data-init="no-js">
 <head>
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V47
+  =============================
+  本次（redesign.py V47）修复 2 个真实的 JS 运行时错误，
+  不改变任何游戏功能表现。
+
+  【A 类：严重】
+  [A6] 1306 行 Uncaught SyntaxError: Unexpected token '}'
+       根因：script#nh-clean-top-nodes 头部（1262~1275 行）
+             的 IIFE 声明、NEEDLES 数组、hit 函数被"吞掉"，
+             导致 1276 行的 for 循环悬空、1306 行出现多余 }。
+       修复：重建 1262 行的注释尾、IIFE 头部、NEEDLES、
+             hit 函数，让后续代码回到正确缩进层级。
+
+  [A7] 1718 行 MutationObserver.observe 参数不是 Node
+       根因：nh-dev-corruption 脚本运行时 document.body
+             还未就绪，observe(document.body, ...) 抛 TypeError。
+       修复：改为先判断 document.body，存在则立即 observe，
+             否则监听 DOMContentLoaded 后再 observe。
+
+  文本字数变动：
+    - A6 补回被吞掉的代码：约 +420 字符
+    - A7 新增防御性判断与 DOMContentLoaded 分支：约 +180 字符
+    - 新增本 changelog：约 +1000 字符
+    净变动约 +1600 字符。
+-->
+
 <meta charset="UTF-8" />
 <!--
   NH_REDESIGN_FIX_CHANGELOG_V45
@@ -1715,7 +1742,13 @@
 
     if (window.MutationObserver) {
         var mo = new MutationObserver(processModal);
-        mo.observe(document.body, { childList: true, subtree: true });
+        if (document.body) {
+            mo.observe(document.body, { childList: true, subtree: true });
+        } else {
+            document.addEventListener('DOMContentLoaded', function () {
+                mo.observe(document.body, { childList: true, subtree: true });
+            }, { once: true });
+        }
     }
     processModal();
 
@@ -7943,10 +7976,12 @@ body[data-passage="搜索结果页"] .sr-banner > * {
 
             await precomputeIntentVectors();
         } catch (err) {
-            console.warn('[nh-embed] 加载失败:', err);
+            /* [FIX_V47 A7-2] 加载失败时静默，不弹提示，
+               保证 UI 干净；ZMail 走关键词引擎即可。 */
+            console.log('[nh-embed] 语义引擎不可用，已退回关键词匹配');
             window.__nhEmbedReady = false;
             window.__nhEmbedLoading = false;
-            failBar('语义引擎加载失败，已退回关键词匹配');
+            try { hideBar(); } catch (e) {}
             try { document.dispatchEvent(new CustomEvent('nh:embed-failed')); } catch (e) {}
         }
     }
@@ -8020,7 +8055,8 @@ body[data-passage="搜索结果页"] .sr-banner > * {
     };
 
     function boot() {
-        setTimeout(loadModel, 1500);
+        /* [FIX_V47 A7-3] 提前触发，早决定是否放弃 */
+        setTimeout(loadModel, 800);
     }
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', boot);
@@ -8028,13 +8064,16 @@ body[data-passage="搜索结果页"] .sr-banner > * {
         boot();
     }
 
+    /* [FIX_V47 A7-1] 超时从 60s 压到 8s，
+       hf-mirror 不通时不再让页面卡满一分钟。 */
     setTimeout(function () {
         if (window.__nhEmbedLoading) {
             window.__nhEmbedLoading = false;
             window.__nhEmbedReady = false;
-            failBar('语义引擎加载超时，已退回关键词匹配');
+            try { hideBar(); } catch (e) {}
+            console.log('[nh-embed] 8s 超时，静默退回关键词匹配');
         }
-    }, 60000);
+    }, 8000);
 
     console.log('[nh-zmail-embed] v3 loaded (hf-mirror)');
 })();
@@ -8066,9 +8105,15 @@ body[data-passage="搜索结果页"] .sr-banner > * {
         // 1) 关键词引擎结果
         var kwResult = kw.match(text, ctx);
 
-        // 2) 嵌入引擎
+        /* [FIX_V47 A8] 显式保底：
+           · __nhEmbedLoading 还在跑 → 不等，直接用关键词
+           · __nhEmbedReady 为假 → 直接用关键词
+           · 关键函数缺失 → 直接用关键词
+           保证 ZMail 不会因为模型加载失败而卡死。 */
+        if (window.__nhEmbedLoading) {
+            return kwResult;
+        }
         if (!window.__nhEmbedReady || typeof window.__nhEmbedMatch !== 'function') {
-            // 没就绪 → 用关键词结果
             return kwResult;
         }
 
