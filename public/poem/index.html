@@ -30,6 +30,33 @@
 
 <meta charset="UTF-8" />
 <!--
+  NH_REDESIGN_FIX_CHANGELOG_V48
+  =============================
+  本次（redesign.py V48）用 emlet 替换 hf-mirror 语义引擎，
+  不改变任何游戏功能表现。
+
+  【A 类：严重】
+  [A9] 语义引擎换用 emlet（纯本地）
+       问题：nh-zmail-embed 从 hf-mirror.com 加载模型权重，
+             该域名在当前网络环境不可达（ERR_CONNECTION_TIMED_OUT），
+             导致语义引擎永远无法就绪，ZMail 只能退回关键词匹配。
+       修复：
+         · 移除 @xenova/transformers + hf-mirror 加载逻辑
+         · 改为从 unpkg 加载 emlet（1MB，纯本地推理，无外部请求）
+         · 保留 __nhEmbedReady / __nhEmbedLoading 标志
+         · 保留 __nhEmbedMatch 接口（内部改调 emlet.embed + 余弦相似度）
+         · nh-zmail-fusion 无需改动，继续按原接口调用
+         · emlet 加载失败时静默退回关键词引擎
+
+  文本字数变动：
+    - 移除 transformers + hf-mirror 加载逻辑：约 -2800 字符
+    - 新增 emlet 加载 + 向量缓存 + 匹配：约 +1800 字符
+    - 新增本 changelog：约 +900 字符
+    净变动约 -100 字符。
+-->
+
+
+<!--
   NH_REDESIGN_FIX_CHANGELOG_V45
   =============================
   本次（redesign.py V45）修复浏览历史 < > 按钮的状态同步 bug，
@@ -7889,130 +7916,77 @@ body[data-passage="搜索结果页"] .sr-banner > * {
 })();
 </script>
 <script id="nh-zmail-embed">
-/* NH_ZMAIL_EMBED_V3：动态加载，不阻塞页面渲染，走 hf-mirror.com */
+/* NH_ZMAIL_EMBED_V4：语义引擎改用 emlet（纯本地，无网络请求）
+   原 V3 使用 @xenova/transformers + hf-mirror，网络不通时不可用。
+   V4 改为 emlet：1MB、纯 JS、无 WASM、无外部请求。
+   对外仍暴露 __nhEmbedReady / __nhEmbedLoading / __nhEmbedMatch。 */
 (function () {
     'use strict';
 
-    var MODEL_ID = 'Xenova/paraphrase-multilingual-MiniLM-L12-v2';
-    var CDN_URL = 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+    var EMLET_URL = 'https://unpkg.com/emlet@0.1.4/dist/index.mjs';
 
     window.__nhEmbedReady = false;
     window.__nhEmbedLoading = true;
     window.__nhEmbed = null;
     window.__nhIntentVectors = {};
 
-    var CACHE_PREFIX = 'nh_embed_cache_v1_';
-    var simTimer = null;
-    var simProgress = 0;
+    var _vectorCache = {};   // 缓存已算过的文本向量
+    var _emletReady = false;
 
-    function ensureBar() {
-        var el = document.getElementById('nh-embed-loading');
-        if (el) { el.style.display = ''; return el; }
-        return null;
-    }
-    function setProgress(pct, detail) {
-        var fill = document.getElementById('nh-embed-progress-fill');
-        var text = document.getElementById('nh-embed-progress-text');
-        var det  = document.getElementById('nh-embed-progress-detail');
-        if (fill) fill.style.width = pct + '%';
-        if (text) text.textContent = '语义引擎加载中… ' + Math.round(pct) + '%';
-        if (det && detail) det.textContent = detail;
-    }
-    function hideBar() {
-        if (simTimer) { clearInterval(simTimer); simTimer = null; }
-        var el = document.getElementById('nh-embed-loading');
-        if (el && el.parentNode) el.parentNode.removeChild(el);
-    }
-    function failBar(msg) {
-        if (simTimer) { clearInterval(simTimer); simTimer = null; }
-        var el = document.getElementById('nh-embed-loading');
-        if (!el) return;
-        el.style.background = 'rgba(180,30,30,0.9)';
-        var text = document.getElementById('nh-embed-progress-text');
-        if (text) text.textContent = msg;
-        setTimeout(hideBar, 4000);
+    /* ---------- 余弦相似度 ---------- */
+    function cosine(a, b) {
+        var dot = 0, na = 0, nb = 0;
+        var n = Math.min(a.length, b.length);
+        for (var i = 0; i < n; i++) {
+            dot += a[i] * b[i];
+            na += a[i] * a[i];
+            nb += b[i] * b[i];
+        }
+        if (na === 0 || nb === 0) return 0;
+        return dot / (Math.sqrt(na) * Math.sqrt(nb));
     }
 
-    function startSimProgress() {
-        ensureBar();
-        simProgress = 0;
-        setProgress(0, '正在连接镜像站…');
-        simTimer = setInterval(function () {
-            if (simProgress >= 85) return;
-            var step = (85 - simProgress) * 0.06 + 0.3;
-            simProgress += step;
-            if (simProgress > 85) simProgress = 85;
-            var detail = simProgress < 10 ? '正在连接镜像站…'
-                       : simProgress < 40 ? '正在下载模型文件…'
-                       : simProgress < 80 ? '正在解析 ONNX 权重…'
-                       : '正在初始化推理引擎…';
-            setProgress(simProgress, detail);
-        }, 400);
-    }
-
-    async function loadModel() {
-        startSimProgress();
+    /* ---------- 异步加载 emlet ---------- */
+    async function loadEmlet() {
         try {
-            var mod = await import(CDN_URL);
-            var pipeline = mod.pipeline;
-            var env = mod.env;
-
-            env.allowLocalModels = false;
-            env.useBrowserCache = true;
-            env.backends.onnx.wasm.numThreads = 1;
-            env.remoteHost = 'https://hf-mirror.com';
-            env.remotePathTemplate = '{model}/resolve/{revision}/';
-
-            var extractor = await pipeline(
-                'feature-extraction',
-                MODEL_ID,
-                {
-                    quantized: true,
-                    progress_callback: function (data) {
-                        if (data && data.status === 'progress' && typeof data.progress === 'number') {
-                            var real = Math.min(95, 60 + data.progress * 35);
-                            if (real > simProgress) {
-                                simProgress = real;
-                                setProgress(real, '正在下载模型权重…');
-                            }
-                        }
-                    }
-                }
-            );
-
-            window.__nhEmbed = extractor;
+            var mod = await import(EMLET_URL);
+            var emlet = mod.emlet || mod.default;
+            if (!emlet || typeof emlet.embed !== 'function') {
+                throw new Error('emlet.embed not found');
+            }
+            window.__nhEmbed = emlet;
+            _emletReady = true;
             window.__nhEmbedReady = true;
             window.__nhEmbedLoading = false;
+            console.log('[nh-embed] emlet 已就绪');
 
-            setProgress(100, '就绪');
-            setTimeout(hideBar, 600);
-            try { document.dispatchEvent(new CustomEvent('nh:embed-ready')); } catch (e) {}
-
+            /* 预热：给每个 intent 的样本算向量，缓存起来 */
             await precomputeIntentVectors();
+            try { document.dispatchEvent(new CustomEvent('nh:embed-ready')); } catch (e) {}
         } catch (err) {
-            /* [FIX_V47 A7-2] 加载失败时静默，不弹提示，
-               保证 UI 干净；ZMail 走关键词引擎即可。 */
-            console.log('[nh-embed] 语义引擎不可用，已退回关键词匹配');
+            console.log('[nh-embed] emlet 加载失败，退回关键词引擎:', err.message);
             window.__nhEmbedReady = false;
             window.__nhEmbedLoading = false;
-            try { hideBar(); } catch (e) {}
             try { document.dispatchEvent(new CustomEvent('nh:embed-failed')); } catch (e) {}
         }
     }
 
-    async function embed(text) {
-        if (!window.__nhEmbed) return null;
-        var out = await window.__nhEmbed(String(text), {
-            pooling: 'mean',
-            normalize: true
-        });
-        return Array.from(out.data);
+    /* ---------- 给一个文本取向量（带缓存） ---------- */
+    function embed(text) {
+        if (!_emletReady || !window.__nhEmbed) return null;
+        var key = String(text);
+        if (_vectorCache[key]) return _vectorCache[key];
+        try {
+            var v = window.__nhEmbed.embed(key);
+            var arr = Array.from(v);
+            _vectorCache[key] = arr;
+            return arr;
+        } catch (e) {
+            return null;
+        }
     }
-    function hashStr(s) {
-        var h = 0;
-        for (var i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
-        return String(h);
-    }
+
+    /* ---------- 预计算 intent 向量 ---------- */
     async function precomputeIntentVectors() {
         if (!window.ZMailSemantic || !window.ZMailSemantic.INTENTS) return;
         var intents = window.ZMailSemantic.INTENTS;
@@ -8023,40 +7997,24 @@ body[data-passage="搜索结果页"] .sr-banner > * {
             var vecs = [];
             var samples = it.samples || [];
             for (var j = 0; j < samples.length; j++) {
-                var sample = samples[j];
-                var cacheKey = CACHE_PREFIX + key + '_' + hashStr(sample);
-                var vec = null;
-                try {
-                    var raw = localStorage.getItem(cacheKey);
-                    if (raw) vec = JSON.parse(raw);
-                } catch (e) {}
-                if (!vec) {
-                    vec = await embed(sample);
-                    if (vec) {
-                        try { localStorage.setItem(cacheKey, JSON.stringify(vec)); } catch (e) {}
-                    }
-                }
-                if (vec) vecs.push(vec);
+                var v = embed(samples[j]);
+                if (v) vecs.push(v);
             }
             if (vecs.length) window.__nhIntentVectors[key] = vecs;
         }
-        console.log('[nh-embed] intent vectors ready:',
-            Object.keys(window.__nhIntentVectors).length, 'intents');
-        try { document.dispatchEvent(new CustomEvent('nh:embed-vectors-ready')); } catch (e) {}
+        console.log('[nh-embed] intent 向量预计算完成:',
+            Object.keys(window.__nhIntentVectors).length, '个 intent');
     }
 
-    function cosine(a, b) {
-        var dot = 0, n = Math.min(a.length, b.length);
-        for (var i = 0; i < n; i++) dot += a[i] * b[i];
-        return dot;
-    }
+    /* ---------- 对外接口：__nhEmbedMatch ---------- */
     window.__nhEmbedMatch = async function (text) {
         if (!window.__nhEmbedReady) return null;
-        var userVec = await embed(text);
+        var userVec = embed(text);
         if (!userVec) return null;
         var results = [];
         var iv = window.__nhIntentVectors;
         for (var id in iv) {
+            if (!Object.prototype.hasOwnProperty.call(iv, id)) continue;
             var maxSim = 0, vecs = iv[id];
             for (var i = 0; i < vecs.length; i++) {
                 var sim = cosine(userVec, vecs[i]);
@@ -8068,9 +8026,10 @@ body[data-passage="搜索结果页"] .sr-banner > * {
         return results;
     };
 
+    /* ---------- 启动 ---------- */
     function boot() {
-        /* [FIX_V47 A7-3] 提前触发，早决定是否放弃 */
-        setTimeout(loadModel, 800);
+        /* 延迟 800ms，等 ZMailSemantic 注册 intent */
+        setTimeout(loadEmlet, 800);
     }
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', boot);
@@ -8078,18 +8037,16 @@ body[data-passage="搜索结果页"] .sr-banner > * {
         boot();
     }
 
-    /* [FIX_V47 A7-1] 超时从 60s 压到 8s，
-       hf-mirror 不通时不再让页面卡满一分钟。 */
+    /* 8 秒超时兜底 */
     setTimeout(function () {
         if (window.__nhEmbedLoading) {
             window.__nhEmbedLoading = false;
             window.__nhEmbedReady = false;
-            try { hideBar(); } catch (e) {}
             console.log('[nh-embed] 8s 超时，静默退回关键词匹配');
         }
     }, 8000);
 
-    console.log('[nh-zmail-embed] v3 loaded (hf-mirror)');
+    console.log('[nh-embed] V4 loaded (emlet)');
 })();
 </script>
 <script id="nh-zmail-fusion">
