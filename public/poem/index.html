@@ -28,6 +28,26 @@
     净变动约 +1600 字符。
 -->
 
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V48
+  =============================
+  生成时间：2026-10-15 01:00:41
+  本次（redesign.py V48）修复清单：
+
+  A9] 语义引擎换用 emlet（纯本地）
+      · 移除 @xenova/transformers + hf-mirror 加载逻辑
+      · 改为从本地 js/emlet.mjs 加载 emlet（纯本地推理，无外部请求）
+      · 保留 __nhEmbedReady / __nhEmbedLoading 标志
+      · 保留 __nhEmbedMatch 接口（内部改调 emlet.embed + 余弦相似度）
+      · nh-zmail-fusion 无需改动，继续按原接口调用
+      · emlet 加载失败时静默退回关键词引擎
+
+  文本字数变动：
+    · 原 index.html 字符数：1474603
+    · 新 index.html 字符数：1474622
+    · 净变动：+19
+-->
+
 <meta charset="UTF-8" />
 <!--
   NH_REDESIGN_FIX_CHANGELOG_V48
@@ -7916,6 +7936,7 @@ body[data-passage="搜索结果页"] .sr-banner > * {
 })();
 </script>
 <script id="nh-zmail-embed">
+/* NH_ZMAIL_EMBED_V5：emlet 改为本地加载（js/emlet.mjs） */
 /* NH_ZMAIL_EMBED_V4：语义引擎改用 emlet（纯本地，无网络请求）
    原 V3 使用 @xenova/transformers + hf-mirror，网络不通时不可用。
    V4 改为 emlet：1MB、纯 JS、无 WASM、无外部请求。
@@ -7923,7 +7944,7 @@ body[data-passage="搜索结果页"] .sr-banner > * {
 (function () {
     'use strict';
 
-    var EMLET_URL = 'https://unpkg.com/emlet@0.1.4/dist/index.mjs';
+    var EMLET_URL = 'js/emlet.mjs';
 
     window.__nhEmbedReady = false;
     window.__nhEmbedLoading = true;
