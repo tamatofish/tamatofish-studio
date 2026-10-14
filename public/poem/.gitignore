@@ -1,0 +1,11 @@
+﻿# 本目录临时 / 备份 / 调试产物
+*.bak
+*.bak.*
+*.bak_*
+index*.html
+index.html.bak*
+!index.html
+peek*.txt
+diagnose_report.txt
+back/
+
