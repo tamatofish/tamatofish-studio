@@ -8037,14 +8037,14 @@ body[data-passage="搜索结果页"] .sr-banner > * {
         boot();
     }
 
-    /* 8 秒超时兜底 */
+    /* 15 秒超时兜底 */
     setTimeout(function () {
         if (window.__nhEmbedLoading) {
             window.__nhEmbedLoading = false;
             window.__nhEmbedReady = false;
-            console.log('[nh-embed] 8s 超时，静默退回关键词匹配');
+            console.log('[nh-embed] 15s 超时，静默退回关键词匹配');
         }
-    }, 8000);
+    }, 15000);
 
     console.log('[nh-embed] V4 loaded (emlet)');
 })();
