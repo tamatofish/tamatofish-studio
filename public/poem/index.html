@@ -1300,7 +1300,21 @@
 
       
            
-              < NEEDLES.length; i++) {
+   直接子节点的裸文本（比如截图里 "前即可）。" 那行）。
+*/
+
+(function () {
+    'use strict';
+
+    var NEEDLES = [
+        'NH_REDESIGN',
+        'NH_REDESIGN_FIX_CHANGELOG',
+        'NH_REDESIGN_UPDATE'
+    ];
+
+    function hit(s) {
+        if (!s) return false;
+        for (var i = 0; i < NEEDLES.length; i++) {
             if (s.indexOf(NEEDLES[i]) !== -1) return true;
         }
         return false;
