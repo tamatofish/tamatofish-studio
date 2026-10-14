@@ -2,19 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 redesign.py —— 第七首诗 / index.html 原地修补器
-
-用法：
-    1. 在 PATCHES 列表里写你的修改（用 替换 / 正则替换 / 替换函数体）。
-    2. 运行：python redesign.py
-    3. 脚本会：
-         · 先把当前 index.html 备份到 backups/index.YYYYMMDD-HHMMSS.html
-         · 再原地写回修改后的 index.html（同名覆盖，不生成新 html）
-         · 把「本次修复摘要 + 字数变动」写进 html 顶部的 changelog 注释区
-
-设计原则：
-    · 只改 index.html，不生成任何 *_new.html / *_fixed.html。
-    · 备份与覆盖是原子的：先备份成功，才允许写回。
-    · changelog 采用「最新的在最上面」，历史条目保留。
 """
 
 import os
@@ -30,145 +17,112 @@ import datetime
 HTML_FILE = "index.html"
 BACKUP_DIR = "backups"
 
-VERSION = "V48"
+VERSION = "V49"
 
-# 本次修复的粗略内容（写进 changelog 的「摘要」段）
 FIX_SUMMARY = [
-    "A9] 语义引擎 emlet：本地优先，失败回退 unpkg",
-    "    · 移除 @xenova/transformers + hf-mirror 加载逻辑",
-    "    · 改为「本地 js/emlet.mjs 优先」+「unpkg 回退」双通道",
-    "    · emlet 纯 JS、无 WASM、无外部请求（本地命中时）",
-    "    · 保留 __nhEmbedReady / __nhEmbedLoading 标志",
-    "    · 保留 __nhEmbedMatch 接口（内部改调 emlet.embed + 余弦相似度）",
-    "    · nh-zmail-fusion 无需改动，继续按原接口调用",
-    "    · 全部加载失败时静默退回关键词引擎",
+    "B1] 修复 A.R.C. 回信正文中 [[...]] 未被转成加粗的问题",
+    "    · 原因：nh-bold-render-final 的 fixBody 里",
+    "      `if (el.querySelector('strong')) return;`",
+    "      导致正文里一旦出现任意 <strong>，整段就被跳过，",
+    "      [[陈默]]、[[工号 ...]] 等标记原样显示。",
+    "    · 处理：新增独立兜底脚本 nh-bold-fix，与前者互不干扰：",
+    "      - 只对 .zm163-detail .body / .zm163-panel .body 生效",
+    "      - 用 data-nh-bold=1 标记，处理过就跳过（幂等）",
+    "      - 只把 [[xxx]] 转成 <strong>xxx</strong>，其它字符原样",
+    "      - :passagedisplay 后 0/100/300/800ms 触发 + 每 800ms 兜底",
 ]
 
 # ============================================================
-# 修改操作（PATCHES 里用到的工具函数）
+# 工具
 # ============================================================
 
 def 替换(旧, 新, 必改=True):
-    """把 旧 字符串替换为 新（只替换第一处）。"""
     def _patch(html):
         if 旧 not in html:
             if 必改:
-                raise RuntimeError(
-                    "未找到目标片段（前 80 字）：\n" + 旧[:80]
-                )
+                raise RuntimeError("未找到目标片段（前 80 字）：\n" + 旧[:80])
             return html
         return html.replace(旧, 新, 1)
     return _patch
 
 
-def 正则替换(模式, 新, flags=re.DOTALL, 必改=True):
-    """用正则替换（只替换第一处）。"""
-    def _patch(html):
-        new_html, n = re.subn(模式, 新, html, count=1, flags=flags)
-        if n == 0 and 必改:
-            raise RuntimeError("正则未匹配：\n" + 模式[:100])
-        return new_html
-    return _patch
-
-
-def 替换函数体(函数声明模式, 新函数体):
-    """
-    精确定位 `async function 名() { ... }` 并按大括号配对替换整个函数体（含末尾 }）。
-    函数声明模式 是一个编译好的正则，匹配到 '{' 为止。
-    """
-    def _patch(html):
-        m = 函数声明模式.search(html)
-        if not m:
-            raise RuntimeError("找不到函数声明：" + 函数声明模式.pattern)
-        start = m.end() - 1        # 指向 '{'
-        depth = 0
-        i = start
-        while i < len(html):
-            c = html[i]
-            if c == '{':
-                depth += 1
-            elif c == '}':
-                depth -= 1
-                if depth == 0:
-                    break
-            i += 1
-        else:
-            raise RuntimeError("函数括号不配对：" + 函数声明模式.pattern)
-        return html[:start] + 新函数体 + html[i+1:]
-    return _patch
-
-
 # ============================================================
-# 本次要做的修改
+# 新增的兜底脚本（插在 </body> 前）
 # ============================================================
 
-# ---- patch 1：把单 URL 常量换成候选列表 ----
-旧_EMLET_URL = "var EMLET_URL = 'https://unpkg.com/emlet@0.1.4/dist/index.mjs';"
+NH_BOLD_FIX = r'''<!-- ===== NH_BOLD_FIX_V1 ===== -->
+<script id="nh-bold-fix">
+/* NH_BOLD_FIX_V1：兜底把 ZMail 邮件正文里的 [[...]] 转成 <strong>。
+   与 nh-bold-render-final 互不干扰：
+     · 后者对含 <strong> 的 body 早退，不会碰这种 body；
+     · 本脚本主动接管所有「含 [[ 且未被本脚本处理过」的 body。
+   幂等：处理过的 body 打 data-nh-bold=1，不再重复。 */
+(function () {
+    'use strict';
 
-新_EMLET_URLS = """/* NH_EMLET_LOCAL_FIRST_V1：
-       本地优先，失败回退 unpkg。
-       本地路径相对 index.html 所在目录。 */
-    var EMLET_URLS = [
-        'js/emlet.mjs',
-        'https://unpkg.com/emlet@0.1.4/dist/index.mjs'
-    ];"""
+    function escapeHtml(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
 
-# ---- patch 2：替换 loadEmlet 函数体为「逐个尝试」 ----
-新_loadEmlet_体 = """{
-        /* NH_EMLET_LOCAL_FIRST_V1：候选列表逐个尝试 */
-        var mod = null, lastErr = null, usedUrl = null;
-        for (var i = 0; i < EMLET_URLS.length; i++) {
-            try {
-                mod = await import(EMLET_URLS[i]);
-                usedUrl = EMLET_URLS[i];
-                console.log('[nh-embed] emlet 已加载：' + usedUrl);
-                break;
-            } catch (e) {
-                lastErr = e;
-                console.warn('[nh-embed] emlet 加载失败：'
-                             + EMLET_URLS[i] + ' —— ' + e.message);
-            }
-        }
-        try {
-            if (!mod) throw (lastErr || new Error('all emlet sources failed'));
-            var emlet = mod.emlet || mod.default;
-            if (!emlet || typeof emlet.embed !== 'function') {
-                throw new Error('emlet.embed not found');
-            }
-            window.__nhEmbed = emlet;
-            _emletReady = true;
-            window.__nhEmbedReady = true;
-            window.__nhEmbedLoading = false;
-            window.__nhEmbedSource = usedUrl;
+    function boldify(raw) {
+        var e = escapeHtml(raw);
+        return e.replace(/\[\[([^\]]+)\]\]/g, '<strong>$1</strong>');
+    }
 
-            /* 预热：给每个 intent 的样本算向量，缓存起来 */
-            await precomputeIntentVectors();
-            try { document.dispatchEvent(new CustomEvent('nh:embed-ready')); } catch (e) {}
-        } catch (err) {
-            console.log('[nh-embed] emlet 全部加载失败，退回关键词引擎:', err.message);
-            window.__nhEmbedReady = false;
-            window.__nhEmbedLoading = false;
-            try { document.dispatchEvent(new CustomEvent('nh:embed-failed')); } catch (e) {}
-        }
-    }"""
+    function fixBody(el) {
+        if (!el || el.nodeType !== 1) return;
+        if (el.getAttribute('data-nh-bold') === '1') return;
+        var t = el.textContent || '';
+        if (t.indexOf('[[') === -1) return;
+        el.innerHTML = boldify(t);
+        el.setAttribute('data-nh-bold', '1');
+    }
 
-函数声明_LOADEMLET = re.compile(r"async\s+function\s+loadEmlet\s*\(\s*\)\s*\{")
+    function tick() {
+        var list = document.querySelectorAll(
+            '.zm163-detail .body, .zm163-panel .body'
+        );
+        for (var i = 0; i < list.length; i++) fixBody(list[i]);
+    }
 
+    /* 定时兜底 */
+    setInterval(tick, 800);
+
+    /* 切页时多打几枪，抢在面板刚渲染完那一刻 */
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay.nhBoldFix', function () {
+            [0, 100, 300, 800, 1500].forEach(function (t) {
+                setTimeout(tick, t);
+            });
+        });
+    }
+
+    /* 立即跑一次 */
+    tick();
+
+    console.log('[nh-bold-fix] v1 loaded');
+})();
+</script>
+<!-- ===== end NH_BOLD_FIX_V1 ===== -->
+'''
+
+# ============================================================
+# PATCHES
+# ============================================================
 
 PATCHES = [
     (
-        "emlet URL 常量 → 候选列表（本地优先 + unpkg 回退）",
-        替换(旧_EMLET_URL, 新_EMLET_URLS)
-    ),
-    (
-        "loadEmlet 改为逐个尝试候选源",
-        替换函数体(函数声明_LOADEMLET, 新_loadEmlet_体)
+        "在 </body> 前插入 nh-bold-fix 脚本",
+        替换("</body>", NH_BOLD_FIX + "\n</body>")
     ),
 ]
 
 
 # ============================================================
-# changelog 注释块的生成与插入
+# changelog
 # ============================================================
 
 CHANGELOG_ANCHOR = '<meta charset="UTF-8" />'
@@ -178,7 +132,6 @@ def 生成_changelog(净字数变动, 原字数, 新字数):
     sign = "+" if 净字数变动 >= 0 else ""
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     摘要 = "\n".join("  " + line for line in FIX_SUMMARY)
-
     return f"""<!--
   NH_REDESIGN_FIX_CHANGELOG_{VERSION}
   =============================
@@ -201,8 +154,7 @@ def 插入_changelog(html, block):
         return html.replace(CHANGELOG_ANCHOR, block + CHANGELOG_ANCHOR, 1)
     m = re.search(r"<head[^>]*>", html, re.IGNORECASE)
     if m:
-        pos = m.end()
-        return html[:pos] + "\n" + block + html[pos:]
+        return html[:m.end()] + "\n" + block + html[m.end():]
     return block + html
 
 

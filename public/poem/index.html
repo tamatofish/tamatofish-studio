@@ -48,6 +48,29 @@
     · 净变动：+19
 -->
 
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V49
+  =============================
+  生成时间：2026-10-15 01:05:48
+  本次（redesign.py V49）修复清单：
+
+  B1] 修复 A.R.C. 回信正文中 [[...]] 未被转成加粗的问题
+      · 原因：nh-bold-render-final 的 fixBody 里
+        `if (el.querySelector('strong')) return;`
+        导致正文里一旦出现任意 <strong>，整段就被跳过，
+        [[陈默]]、[[工号 ...]] 等标记原样显示。
+      · 处理：新增独立兜底脚本 nh-bold-fix，与前者互不干扰：
+        - 只对 .zm163-detail .body / .zm163-panel .body 生效
+        - 用 data-nh-bold=1 标记，处理过就跳过（幂等）
+        - 只把 [[xxx]] 转成 <strong>xxx</strong>，其它字符原样
+        - :passagedisplay 后 0/100/300/800ms 触发 + 每 800ms 兜底
+
+  文本字数变动：
+    · 原 index.html 字符数：1475130
+    · 新 index.html 字符数：1476685
+    · 净变动：+1555
+-->
+
 <meta charset="UTF-8" />
 <!--
   NH_REDESIGN_FIX_CHANGELOG_V48
@@ -2402,6 +2425,64 @@
 
 
 
+
+<!-- ===== NH_BOLD_FIX_V1 ===== -->
+<script id="nh-bold-fix">
+/* NH_BOLD_FIX_V1：兜底把 ZMail 邮件正文里的 [[...]] 转成 <strong>。
+   与 nh-bold-render-final 互不干扰：
+     · 后者对含 <strong> 的 body 早退，不会碰这种 body；
+     · 本脚本主动接管所有「含 [[ 且未被本脚本处理过」的 body。
+   幂等：处理过的 body 打 data-nh-bold=1，不再重复。 */
+(function () {
+    'use strict';
+
+    function escapeHtml(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function boldify(raw) {
+        var e = escapeHtml(raw);
+        return e.replace(/\[\[([^\]]+)\]\]/g, '<strong>$1</strong>');
+    }
+
+    function fixBody(el) {
+        if (!el || el.nodeType !== 1) return;
+        if (el.getAttribute('data-nh-bold') === '1') return;
+        var t = el.textContent || '';
+        if (t.indexOf('[[') === -1) return;
+        el.innerHTML = boldify(t);
+        el.setAttribute('data-nh-bold', '1');
+    }
+
+    function tick() {
+        var list = document.querySelectorAll(
+            '.zm163-detail .body, .zm163-panel .body'
+        );
+        for (var i = 0; i < list.length; i++) fixBody(list[i]);
+    }
+
+    /* 定时兜底 */
+    setInterval(tick, 800);
+
+    /* 切页时多打几枪，抢在面板刚渲染完那一刻 */
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay.nhBoldFix', function () {
+            [0, 100, 300, 800, 1500].forEach(function (t) {
+                setTimeout(tick, t);
+            });
+        });
+    }
+
+    /* 立即跑一次 */
+    tick();
+
+    console.log('[nh-bold-fix] v1 loaded');
+})();
+</script>
+<!-- ===== end NH_BOLD_FIX_V1 ===== -->
 
 </body> 前注册的 capture click 监听器，
                 晚于 <head> 里 nh-zmail-send 的 capture 监听器，
