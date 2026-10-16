@@ -1,0 +1,54 @@
+=== 学术动态 (位置 23175) ===
+做：登录页 + 红色系 + 学籍表格
+      · 加登录门：工号 + 密码，密码 nanhua.edu
+      · 白名单：陈默 1998010027 / 顾承声 2012050087
+      · 忘记密码 → 输工号后四位 → 通过后自动填密码
+      · 登录状态存 $jwLoggedIn，跟存档走
+      · 删原 nh-pwd-a1 学号后四位输入框
+      · 视觉改为与首页一致的深红系
+  2] 新增 passage：客座教授
+      · 顾承声，工号 2012050087，中文系客座教授
+      · 研究方向：现代诗与创伤叙事
+      · 首页学术动态卡片可点进
+  3] 新增 passage：公告:教务系统升级通知
+      · 提到密保信息为工号后四位
+      · 公告栏加入口
+  4] 持久化：$jwLoggedIn
+      · 加入 nh-save-v10 的 SNAPSHOT_KEYS
+      · 加入 nh-unlock-persist 的 WATCH_VARS
+
+  文本字数变动：
+    · 原 index.html 字符数：1580418
+    · 新 index.html 字符数：1587227
+    · 净变动：+6809
+-->
+
+<meta charset="UTF-8" />
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V48
+  =============================
+  本次（redesign.py V48）用 emlet 替换 hf-mirror 语义引擎，
+  不改变任何游戏功能表现。
+
+  【A 类：严重】
+  [A9] 语义引擎换用 emlet（纯本地）
+       问题：nh-zmail-embed 从 hf-mirror
+
+=== 朦胧诗 (位置 591336) ===
+[
+
+        {
+            topic: '陈默',
+            person: ['陈默', '陈老师', '陈教授', '默老师'],
+            /* [NH_FIX D2] 原 thing 字段在 smartMatch 中从未被读取，删除。 */
+            intent: 'chenmo',
+            variants: [
+                '__SIG__目标：[[陈默]]。\n\n[[工号 1998010027]]。\n\n中文系讲师，[[1998 年入职]]。\n\n研究方向：中国现代诗歌、朦胧诗派。\n\n教学评价：严谨、低调。\n\n近年极少参与社团活动。\n\n[[2015 年 9 月曾任文学社指导老师]]，任期不足两月。\n\n登记离职原因为"个人原因"，无补充材料。\n\n[[该条目存在人工修改痕迹]]，修改人未知。\n\n最后登录时间 [[2015-09-15 23:20]]。\n\n—— A.R.C',
+
+                '__SIG__[[陈默]]。\n\n[[工号 1998010027]]。\n\n中文系讲师，[[1998 年入职]]。\n\n研究方向为中国现代诗歌与朦胧诗派。\n\n[[档案异常点：任职记录与排课记录均存在人工修改痕迹]]。\n\n修改时间集中于 [[2015 年 9 月下旬]]。\n\n[[2015 年 9 月短暂担任文学社指导老师]]，未满两月即卸任。\n\n卸任原因登记为"个人原因"，未附任何说明。\n\n最后登录 [[2015-09-15 23:20]]。\n\n—— A.R.C',
+
+                '__SIG__目标人物：[[陈默]]。\n\n中文系讲师，[[工号 1998010027]]。
+
+=== 中文系举办 (位置 880861) ===
+;&lt;/li&gt;&lt;li class=&quot;shake-text&quot;&gt;她（*&amp;/“在复制你&amp;…………&lt;/li&gt;&lt;&lt;/if&gt;&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;uni-card&quot;&gt;&lt;div class=&quot;card-head&quot;&gt;学术动态&lt;/div&gt;&lt;div class=&quot;card-body&quot;&gt;&lt;ul&gt;&lt;li&gt;&lt;a&gt;中文系举办&quot;朦胧诗与现代性&quot;学术讲座&lt;/a&gt;&lt;span class=&quot;date&quot;&gt;09-14&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;a&gt;图书馆新引进电子资源数据库&lt;/a&gt;&lt;span class=&quot;date&quot;&gt;09-12&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;a&gt;文学社《青野诗刊》2015秋季号出刊&lt;/a&gt;&lt;span class=&quot;date&quot;&gt;09-10&lt;/span&gt;&lt;/li&gt;&lt;li class=&quot;fade-text&quot;&gt;（部分内容因故暂不显示）&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;uni-two-col&quot;&gt;&lt;div class=&quot;uni-card&quo
+
