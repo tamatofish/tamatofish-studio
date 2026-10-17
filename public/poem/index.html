@@ -1,4 +1,51 @@
 <!DOCTYPE html>
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V121
+  =============================
+  生成时间：2026-10-18 00:22:31
+  本次（redesign.py V121）修复清单：
+
+  1] 修复泉都论坛四个分析帖子内容完全重复的问题
+     · 症状：在【泉都论坛】首页点击“失联时间线”、“第六个人”、
+             “意外？”、“名如其人”四个帖子，进入后内容一模一样。
+     · 原因：之前生成时，这四个 passage 的内部 HTML 被错误地
+             全量复制成了同一段主帖内容。
+     · 修复：提取这四个 passage，分别替换为符合当前标题的
+             独立剧情正文内容（时间轴推理、人数论证、人为纵火
+             分析、陈默暗线）。
+  2] 修复论坛帖子样式丢失问题
+     · 为防止外部动态注入样式失效导致页面裸奔，在四个帖子的
+       HTML 内部直接注入了基础的 CSS 样式。
+
+  文本字数变动：
+    · 原 index.html 字符数：1666365
+    · 新 index.html 字符数：1673993
+    · 净变动：+7628
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V121
+  =============================
+  生成时间：2026-10-18 00:21:51
+  本次（redesign.py V121）修复清单：
+
+  1] 修复泉都论坛四个分析帖子内容完全重复的问题
+     · 症状：在【泉都论坛】首页点击“失联时间线”、“第六个人”、
+             “意外？”、“名如其人”四个帖子，进入后内容一模一样。
+     · 原因：之前生成时，这四个 passage 的内部 HTML 被错误地
+             全量复制成了同一段主帖内容。
+     · 修复：提取这四个 passage，分别替换为符合当前标题的
+             独立剧情正文内容（时间轴推理、人数论证、人为纵火
+             分析、陈默暗线）。
+
+  文本字数变动：
+    · 原 index.html 字符数：1690294
+    · 新 index.html 字符数：1665870
+    · 净变动：-24424
+-->
+
+
 <html data-init="no-js">
 <head>
 <!--
@@ -764,7 +811,206 @@
         SugarCube 解析这段多行 JS 时把变量 t 解析错。
       · 修复：
           · 删除 passage 里的 <<script>> 块
-          · 改为在 </body> 前插入独立脚本 nh-cctv-timer
+          · 改为在 
+<!-- ===== NH_ZMAIL_ULTIMATE_FIX ===== -->
+
+<!-- ===== end NH_ZMAIL_ULTIMATE_FIX ===== -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script id="nh-clean-leaked-text">
+(function(){
+    function cleanLeakedText() {
+        var body = document.body;
+        if (!body) return;
+        var children = body.childNodes;
+        for (var i = children.length - 1; i >= 0; i--) {
+            var node = children[i];
+            // 如果是文本节点（nodeType === 3），并且包含我们的特征词
+            if (node.nodeType === 3) {
+                var txt = node.nodeValue || '';
+                if (txt.indexOf('nh-cctv-timer') !== -1 || txt.indexOf('文本字数变动') !== -1 || txt.indexOf('净变动') !== -1) {
+                    body.removeChild(node);
+                    console.log('✂️ [clean-leaked-text] 已斩除顶部裸文本');
+                }
+            }
+        }
+    }
+    // 页面加载完成后立刻清理
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', cleanLeakedText);
+    } else {
+        cleanLeakedText();
+    }
+    // 防止切页时再次出现
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay.nhCleanLeak', function() {
+            setTimeout(cleanLeakedText, 50);
+        });
+    }
+})();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script id="nh-zmail-ultimate">
+(function () {
+    'use strict';
+    window.__nhSetUnread = function(n) {};
+    window.__nhGetUnread = function() { return 0; };
+    var READ_KEY = 'nh_zmail_fixed_reads_final';
+    function getReads() { try { return JSON.parse(localStorage.getItem(READ_KEY) || '[]'); } catch(e) { return []; } }
+    function addRead(id) {
+        if (!id) return; var arr = getReads();
+        if (arr.indexOf(id) === -1) { arr.push(id); localStorage.setItem(READ_KEY, JSON.stringify(arr)); }
+    }
+    var lastUnreadCount = -1;
+    function renderFinalUI() {
+        if (!window.SugarCube || !SugarCube.State || SugarCube.State.passage !== 'ZEmail') return;
+        var list = document.getElementById('zm163-inbox-list'); if (!list) return;
+        var rows = list.querySelectorAll('.zm163-mail'); var reads = getReads(); var count = 0;
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i]; if (row.nodeType !== 1) continue; var id = row.getAttribute('data-mail');
+            if (id && reads.indexOf(id) !== -1) { row.classList.remove('unread'); }
+            else { row.classList.add('unread'); count++; }
+        }
+        if (count === lastUnreadCount) return; lastUnreadCount = count;
+        try {
+            SugarCube.State.variables.zmUnread = count; localStorage.setItem('nh_zmUnread', String(count));
+            ['zm163-inbox-badge', 'zm163-unread-num', 'zm163-home-unread'].forEach(function(bid) {
+                var el = document.getElementById(bid);
+                if (el) { el.textContent = count; if (count === 0 && bid === 'zm163-home-unread') el.style.display = 'none'; }
+            });
+            var toolbar = document.getElementById('zm163-list-toolbar');
+            if (toolbar) {
+                var leftDiv = toolbar.querySelector('.left');
+                if (leftDiv) leftDiv.innerHTML = '有 <b id="zm163-unread-num" style="color:#c00;font-weight:600;">' + count + '</b> 封未读 <span style="color:#1e6fd9;cursor:pointer;margin-left:10px;" id="zm163-mark-all">全部设为已读</span>';
+            }
+            if (typeof window.__nhRefreshTabBadge === 'function') window.__nhRefreshTabBadge();
+        } catch (e) {}
+    }
+    document.addEventListener('click', function (ev) {
+        if (!window.SugarCube || SugarCube.State.passage !== 'ZEmail') return;
+        var el = ev.target;
+        if (el && el.id === 'zm163-mark-all') {
+            var allRows = document.querySelectorAll('#zm163-inbox-list .zm163-mail');
+            for (var i = 0; i < allRows.length; i++) addRead(allRows[i].getAttribute('data-mail'));
+            lastUnreadCount = -1; renderFinalUI(); return;
+        }
+        while (el && el !== document.body) {
+            if (el.classList && el.classList.contains('zm163-mail')) {
+                var id = el.getAttribute('data-mail');
+                if (id && el.classList.contains('unread')) { addRead(id); lastUnreadCount = -1; renderFinalUI(); }
+                break;
+            }
+            el = el.parentNode;
+        }
+    }, true);
+    function watchNewMails() {
+        var list = document.getElementById('zm163-inbox-list'); if (!list) { setTimeout(watchNewMails, 500); return; }
+        if (window.__nhZmailObserver) return;
+        window.__nhZmailObserver = new MutationObserver(function(mutations) {
+            for (var i = 0; i < mutations.length; i++) {
+                if (mutations[i].addedNodes.length > 0) { lastUnreadCount = -1; renderFinalUI(); break; }
+            }
+        });
+        window.__nhZmailObserver.observe(list, { childList: true });
+    }
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay.nhFinalRender', function() {
+            lastUnreadCount = -1; setTimeout(function() { renderFinalUI(); watchNewMails(); }, 50);
+        });
+    }
+})();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script id="nh-master-tab-controller">
+(function () {
+    'use strict';
+    function forceTabHighlight() {
+        var cur = '';
+        try { cur = SugarCube.State.passage; } catch(e) { return; }
+        
+        var tabs = document.querySelectorAll('#lw-tabs .lw-tab');
+        if (!tabs.length) return;
+        
+        var isHome = (cur === '内网首页' || cur === 'Start' || cur === '序幕');
+        var isArc  = (cur === 'ZEmail' || cur === '失联时间线' || cur === '第六个人' || cur === '意外？' || cur === '名如其人');
+        var isQD   = (cur.indexOf('泉都论坛') !== -1 || cur === '失联时间线' || cur === '第六个人' || cur === '意外？' || cur === '名如其人');
+
+        for (var i = 0; i < tabs.length; i++) {
+            var txt = (tabs[i].textContent || '').trim();
+            var shouldActive = false;
+            if (txt === '南华大学官网备份') shouldActive = isHome;
+            else if (txt === 'ZEmail') shouldActive = isArc;
+            else if (txt === '泉都论坛') shouldActive = isQD;
+            
+            if (shouldActive) {
+                tabs[i].classList.add('active');
+            } else {
+                tabs[i].classList.remove('active');
+            }
+        }
+    }
+    setInterval(forceTabHighlight, 250);
+})();
+</script>
+
+
+
+
+
+
+
+
+
+
+</body> 前插入独立脚本 nh-cctv-timer
           · 该脚本在 #cctvScreen 存在时才执行
 
   文本字数变动：
@@ -4854,6 +5100,205 @@
 </script>
 <!-- ===== end NH_CCTV_TIMER_V1 ===== -->
 
+
+<!-- ===== NH_ZMAIL_ULTIMATE_FIX ===== -->
+
+<!-- ===== end NH_ZMAIL_ULTIMATE_FIX ===== -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script id="nh-clean-leaked-text">
+(function(){
+    function cleanLeakedText() {
+        var body = document.body;
+        if (!body) return;
+        var children = body.childNodes;
+        for (var i = children.length - 1; i >= 0; i--) {
+            var node = children[i];
+            // 如果是文本节点（nodeType === 3），并且包含我们的特征词
+            if (node.nodeType === 3) {
+                var txt = node.nodeValue || '';
+                if (txt.indexOf('nh-cctv-timer') !== -1 || txt.indexOf('文本字数变动') !== -1 || txt.indexOf('净变动') !== -1) {
+                    body.removeChild(node);
+                    console.log('✂️ [clean-leaked-text] 已斩除顶部裸文本');
+                }
+            }
+        }
+    }
+    // 页面加载完成后立刻清理
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', cleanLeakedText);
+    } else {
+        cleanLeakedText();
+    }
+    // 防止切页时再次出现
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay.nhCleanLeak', function() {
+            setTimeout(cleanLeakedText, 50);
+        });
+    }
+})();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script id="nh-zmail-ultimate">
+(function () {
+    'use strict';
+    window.__nhSetUnread = function(n) {};
+    window.__nhGetUnread = function() { return 0; };
+    var READ_KEY = 'nh_zmail_fixed_reads_final';
+    function getReads() { try { return JSON.parse(localStorage.getItem(READ_KEY) || '[]'); } catch(e) { return []; } }
+    function addRead(id) {
+        if (!id) return; var arr = getReads();
+        if (arr.indexOf(id) === -1) { arr.push(id); localStorage.setItem(READ_KEY, JSON.stringify(arr)); }
+    }
+    var lastUnreadCount = -1;
+    function renderFinalUI() {
+        if (!window.SugarCube || !SugarCube.State || SugarCube.State.passage !== 'ZEmail') return;
+        var list = document.getElementById('zm163-inbox-list'); if (!list) return;
+        var rows = list.querySelectorAll('.zm163-mail'); var reads = getReads(); var count = 0;
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i]; if (row.nodeType !== 1) continue; var id = row.getAttribute('data-mail');
+            if (id && reads.indexOf(id) !== -1) { row.classList.remove('unread'); }
+            else { row.classList.add('unread'); count++; }
+        }
+        if (count === lastUnreadCount) return; lastUnreadCount = count;
+        try {
+            SugarCube.State.variables.zmUnread = count; localStorage.setItem('nh_zmUnread', String(count));
+            ['zm163-inbox-badge', 'zm163-unread-num', 'zm163-home-unread'].forEach(function(bid) {
+                var el = document.getElementById(bid);
+                if (el) { el.textContent = count; if (count === 0 && bid === 'zm163-home-unread') el.style.display = 'none'; }
+            });
+            var toolbar = document.getElementById('zm163-list-toolbar');
+            if (toolbar) {
+                var leftDiv = toolbar.querySelector('.left');
+                if (leftDiv) leftDiv.innerHTML = '有 <b id="zm163-unread-num" style="color:#c00;font-weight:600;">' + count + '</b> 封未读 <span style="color:#1e6fd9;cursor:pointer;margin-left:10px;" id="zm163-mark-all">全部设为已读</span>';
+            }
+            if (typeof window.__nhRefreshTabBadge === 'function') window.__nhRefreshTabBadge();
+        } catch (e) {}
+    }
+    document.addEventListener('click', function (ev) {
+        if (!window.SugarCube || SugarCube.State.passage !== 'ZEmail') return;
+        var el = ev.target;
+        if (el && el.id === 'zm163-mark-all') {
+            var allRows = document.querySelectorAll('#zm163-inbox-list .zm163-mail');
+            for (var i = 0; i < allRows.length; i++) addRead(allRows[i].getAttribute('data-mail'));
+            lastUnreadCount = -1; renderFinalUI(); return;
+        }
+        while (el && el !== document.body) {
+            if (el.classList && el.classList.contains('zm163-mail')) {
+                var id = el.getAttribute('data-mail');
+                if (id && el.classList.contains('unread')) { addRead(id); lastUnreadCount = -1; renderFinalUI(); }
+                break;
+            }
+            el = el.parentNode;
+        }
+    }, true);
+    function watchNewMails() {
+        var list = document.getElementById('zm163-inbox-list'); if (!list) { setTimeout(watchNewMails, 500); return; }
+        if (window.__nhZmailObserver) return;
+        window.__nhZmailObserver = new MutationObserver(function(mutations) {
+            for (var i = 0; i < mutations.length; i++) {
+                if (mutations[i].addedNodes.length > 0) { lastUnreadCount = -1; renderFinalUI(); break; }
+            }
+        });
+        window.__nhZmailObserver.observe(list, { childList: true });
+    }
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay.nhFinalRender', function() {
+            lastUnreadCount = -1; setTimeout(function() { renderFinalUI(); watchNewMails(); }, 50);
+        });
+    }
+})();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script id="nh-master-tab-controller">
+(function () {
+    'use strict';
+    function forceTabHighlight() {
+        var cur = '';
+        try { cur = SugarCube.State.passage; } catch(e) { return; }
+        
+        var tabs = document.querySelectorAll('#lw-tabs .lw-tab');
+        if (!tabs.length) return;
+        
+        var isHome = (cur === '内网首页' || cur === 'Start' || cur === '序幕');
+        var isArc  = (cur === 'ZEmail' || cur === '失联时间线' || cur === '第六个人' || cur === '意外？' || cur === '名如其人');
+        var isQD   = (cur.indexOf('泉都论坛') !== -1 || cur === '失联时间线' || cur === '第六个人' || cur === '意外？' || cur === '名如其人');
+
+        for (var i = 0; i < tabs.length; i++) {
+            var txt = (tabs[i].textContent || '').trim();
+            var shouldActive = false;
+            if (txt === '南华大学官网备份') shouldActive = isHome;
+            else if (txt === 'ZEmail') shouldActive = isArc;
+            else if (txt === '泉都论坛') shouldActive = isQD;
+            
+            if (shouldActive) {
+                tabs[i].classList.add('active');
+            } else {
+                tabs[i].classList.remove('active');
+            }
+        }
+    }
+    setInterval(forceTabHighlight, 250);
+})();
+</script>
+
+
+
+
+
+
+
+
+
+
 </body> 前注册的 capture click 监听器，
                 晚于 <head> 里 nh-zmail-send 的 capture 监听器，
 
@@ -6530,7 +6975,7 @@ svg.lw-ico {
         var passageName = normalize(rawName);
         if (!passageName) return;
         /* [V107] 不再依赖白名单，只要不是 ZEmail / Start / 结局，就记录 */
-        var SKIP = ['Start', 'ZEmail', '泉都论坛', '泉都论坛·帖子1', '泉都论坛·帖子2', '泉都论坛·帖子3', 'Start', 'ZEmail', '第七首诗', '序幕', '教务系统'];
+        var SKIP = ['失联时间线', '第六个人', '意外？', '名如其人', 'Start', 'ZEmail', '泉都论坛', '泉都论坛·帖子1', '泉都论坛·帖子2', '泉都论坛·帖子3', 'Start', 'ZEmail', '第七首诗', '序幕', '教务系统'];
         if (SKIP.indexOf(passageName) !== -1) return;
 
         var list = loadList();
@@ -8606,353 +9051,7 @@ body[data-passage="搜索结果页"] .sr-banner > * {
 }
 </style>
 
-<script id="nh-zmail-js">
-/* NH_ZMAIL_JS_V6：$zmUnread 是唯一真相
-
-   规则：
-   - 登录成功 → $zmUnread = 2, $arcMail2Sent = true
-   - 打开第 N 封（之前 unread）→ $zmUnread -= 1
-   - 全部已读 → $zmUnread = 0
-   - 进入 ZEmail 时：
-       * 若 $arcMail2Sent 为 true，保证列表里有 2 行
-       * 用 $zmUnread 决定哪几行显示为 unread
-   - 每次 $zmUnread 变化 → 立即同步所有角标 + 派发 nh:unread-changed */
-(function () {
-    'use strict';
-
-    var LS_KEY = 'nh_arcMail2Sent';
-    var LS_UNREAD = 'nh_zmUnread';
-
-    function readFlag() {
-        try { return localStorage.getItem(LS_KEY) === '1'; } catch (e) { return false; }
-    }
-    function writeFlag() {
-        try { localStorage.setItem(LS_KEY, '1'); } catch (e) {}
-    }
-    function readUnreadCache() {
-        try {
-            var v = localStorage.getItem(LS_UNREAD);
-            var n = v == null ? null : Number(v);
-            return (typeof n === 'number' && !isNaN(n)) ? n : null;
-        } catch (e) { return null; }
-    }
-    function writeUnreadCache(n) {
-        try { localStorage.setItem(LS_UNREAD, String(n)); } catch (e) {}
-    }
-
-    function onZmail() {
-        try { return SugarCube.State.passage === 'ZEmail'; } catch (e) { return false; }
-    }
-    function curPassage() {
-        try { return SugarCube.State.passage; } catch (e) { return ''; }
-    }
-    function getV(k) {
-        try { return SugarCube.State.variables[k]; } catch (e) { return undefined; }
-    }
-    function setV(k, v) {
-        try { SugarCube.State.variables[k] = v; } catch (e) {}
-    }
-
-    /* ============ 未读数：读写 + 同步 ============ */
-    function getUnread() {
-        var n = getV('zmUnread');
-        if (typeof n === 'number' && !isNaN(n)) return n;
-        var cached = readUnreadCache();
-        if (cached != null) {
-            setV('zmUnread', cached);
-            return cached;
-        }
-        return 1;   // 默认 1（第一封未读）
-    }
-    function setUnread(n) {
-        if (typeof n !== 'number' || isNaN(n) || n < 0) n = 0;
-        setV('zmUnread', n);
-        writeUnreadCache(n);
-        syncBadges(n);
-        try {
-            document.dispatchEvent(new CustomEvent('nh:unread-changed', {
-                detail: { unread: n }
-            }));
-        } catch (e) {}
-        try {
-            if (typeof window.__nhRefreshTabBadge === 'function') {
-                window.__nhRefreshTabBadge();
-            }
-        } catch (e) {}
-        console.log('[nh-zmail] unread set to', n);
-    }
-
-    function syncBadges(n) {
-        var ids = ['zm163-inbox-badge', 'zm163-unread-num'];
-        for (var i = 0; i < ids.length; i++) {
-            var el = document.getElementById(ids[i]);
-            if (el) el.textContent = String(n);
-        }
-        var home = document.getElementById('zm163-home-unread');
-        if (home) {
-            home.textContent = String(n);
-            home.style.display = (n > 0) ? '' : 'none';
-        }
-    }
-
-    /* ============ 第二封标志 ============ */
-    function checkAndSetFlag() {
-        // [B2] 重命名为 isLoggedIn，避免与变量名 logged 混淆
-        var isLoggedIn = false;
-        try { isLoggedIn = !!(localStorage.getItem('nh_loggedIn') === '1'); } catch (e) {}
-        if (!isLoggedIn) {
-            try {
-                var raw = localStorage.getItem('nh_snapshot');
-                if (raw) {
-                    var snap = JSON.parse(raw);
-                    if (snap && (snap.loggedIn === true || snap.arcMail2Sent === true)) {
-                        isLoggedIn = true;
-                    }
-                }
-            } catch (e) {}
-        }
-        // 已到过内网首页
-        if (curPassage() === '内网首页') isLoggedIn = true;
-
-        if (isLoggedIn && !readFlag()) {
-            writeFlag();
-            setV('arcMail2Sent', true);
-            console.log('[nh-zmail] flag set (logged)');
-        }
-        if (readFlag() && getV('arcMail2Sent') !== true) {
-            setV('arcMail2Sent', true);
-        }
-        return readFlag();
-    }
-
-    // 登录按钮 click：立刻 $zmUnread = 2
-    document.addEventListener('click', function (ev) {
-        var el = ev.target;
-        while (el && el !== document.body) {
-            if (el.classList && el.classList.contains('nh3-btn')) {
-                setTimeout(function () {
-                    try {
-                        if (SugarCube.State.variables.loggedIn === true) {
-                            writeFlag();
-                            setV('arcMail2Sent', true);
-                            setUnread(2);    // ★ 登录成功 = 2 封未读
-                        }
-                    } catch (e) {}
-                }, 100);
-                setTimeout(function () {
-                    try {
-                        if (SugarCube.State.variables.loggedIn === true) {
-                            writeFlag();
-                            setV('arcMail2Sent', true);
-                            setUnread(2);
-                        }
-                    } catch (e) {}
-                }, 500);
-                return;
-            }
-            el = el.parentNode;
-        }
-    }, true);
-
-    /* ============ 面板切换 ============ */
-    function showPanel(name) {
-        var panels = document.querySelectorAll('.zm163-panel');
-        for (var i = 0; i < panels.length; i++) {
-            panels[i].classList.toggle('active',
-                panels[i].getAttribute('data-panel') === name);
-        }
-    }
-
-    /* ============ 第二封信 ============ */
-    function secondMailRowHtml() {
-        return (
-            '<div class="zm163-mail" data-mail="arc2">' +
-            '  <div class="m-check"><input type="checkbox"></div>' +
-            '  <div class="m-star">☆</div>' +
-            '  <div class="m-from">A.R.C@zmail.com</div>' +
-            '  <div class="m-subj">（无主题）</div>' +
-            '  <div class="m-time">2030-09-17</div>' +
-            '  <div class="m-flag">📎</div>' +
-            '</div>'
-        );
-    }
-
-    /* 用 $zmUnread 决定哪几封显示为 unread（从新到旧） */
-    function applyUnreadToDom() {
-        var list = document.getElementById('zm163-inbox-list');
-        if (!list) return;
-        var rows = list.querySelectorAll('.zm163-mail');
-        var n = getUnread();
-        // 从最后一行往前数 n 行设为 unread，其余去掉
-        for (var i = 0; i < rows.length; i++) rows[i].classList.remove('unread');
-        var count = 0;
-        for (var j = rows.length - 1; j >= 0 && count < n; j--, count++) {
-            rows[j].classList.add('unread');
-        }
-    }
-
-    function ensureSecondMailRow() {
-        var list = document.getElementById('zm163-inbox-list');
-        if (!list) return;
-        var want = readFlag() || getV('arcMail2Sent') === true;
-        var exists = list.querySelector('.zm163-mail[data-mail="arc2"]');
-        if (want && !exists) {
-            var wrap = document.createElement('div');
-            wrap.innerHTML = secondMailRowHtml();
-            var row = wrap.firstChild;
-            list.appendChild(row);
-            bindMailRow(row);
-            console.log('[nh-zmail] second mail row appended');
-        }
-        // 用 $zmUnread 决定哪几封显示为 unread
-        applyUnreadToDom();
-    }
-
-    /* ============ 邮件行点击 ============ */
-    function bindMailRow(row) {
-        if (!row || row.__nhBound) return;
-        row.__nhBound = true;
-        row.addEventListener('click', function (e) {
-            if (e.target.tagName === 'INPUT') return;
-            var which = row.getAttribute('data-mail');
-            if (which === 'arc')  showPanel('mail-detail');
-            if (which === 'arc2') showPanel('mail-detail2');
-
-            // ★ 如果这行之前是未读 → 未读数 -1
-            if (row.classList.contains('unread')) {
-                row.classList.remove('unread');
-                var n = getUnread();
-                if (n > 0) setUnread(n - 1);
-            }
-        });
-    }
-
-    /* ============ 全部已读 ============ */
-    function bindMarkAll() {
-        var btn = document.getElementById('zm163-mark-all');
-        if (btn && !btn.__nhBound) {
-            btn.__nhBound = true;
-            btn.addEventListener('click', function () {
-                var list = document.getElementById('zm163-inbox-list');
-                if (list) {
-                    var rows = list.querySelectorAll('.zm163-mail');
-                    for (var i = 0; i < rows.length; i++) rows[i].classList.remove('unread');
-                }
-                setUnread(0);
-            });
-        }
-    }
-
-    /* ============ 主绑定 ============ */
-    function bindOnce() {
-        if (!onZmail()) return;
-
-        ensureSecondMailRow();
-
-        var rows = document.querySelectorAll('.zm163-mail');
-        for (var i = 0; i < rows.length; i++) bindMailRow(rows[i]);
-
-        var compBtn = document.getElementById('zm163-compose-btn');
-        if (compBtn && !compBtn.__nhBound) {
-            compBtn.__nhBound = true;
-            compBtn.addEventListener('click', function () { showPanel('compose'); });
-        }
-        var back = document.getElementById('zm163-back');
-        if (back && !back.__nhBound) {
-            back.__nhBound = true;
-            back.addEventListener('click', function () { showPanel('inbox'); });
-        }
-        var back2 = document.getElementById('zm163-back2');
-        if (back2 && !back2.__nhBound) {
-            back2.__nhBound = true;
-            back2.addEventListener('click', function () { showPanel('inbox'); });
-        }
-        var send = document.getElementById('zm163-send-btn');
-        if (send && !send.__nhBound) {
-            send.__nhBound = true;
-            send.addEventListener('click', function () {
-                var subj = document.getElementById('zm163-compose-subject');
-                var body = document.getElementById('zm163-compose-body');
-                var s = (subj && subj.value || '').trim();
-                var b = (body && body.value || '').trim();
-                if (!s && !b) { alert('邮件内容为空。'); return; }
-
-                var hadSecond = !!document.querySelector('#zm163-inbox-list .zm163-mail[data-mail="arc2"]');
-                writeFlag();
-                setV('arcMail2Sent', true);
-                ensureSecondMailRow();
-                if (!hadSecond) {
-                    // 追加的第二封 +1 未读
-                    setUnread(getUnread() + 1);
-                }
-                alert('邮件已发送至 A.R.C@zmail.com。\n（对方已回复，请查收）');
-                if (subj) subj.value = '';
-                if (body) body.value = '';
-                showPanel('inbox');
-                applyUnreadToDom();
-            });
-        }
-        var cancel = document.getElementById('zm163-cancel-btn');
-        if (cancel && !cancel.__nhBound) {
-            cancel.__nhBound = true;
-            cancel.addEventListener('click', function () { showPanel('inbox'); });
-        }
-
-        bindMarkAll();
-        syncBadges(getUnread());
-    }
-
-    /* ============ 进入任何页面都跑一下 ============ */
-    function onAnyPassageDisplay() {
-        // 1) 检查标志
-        checkAndSetFlag();
-        // 2) 若是"刚进入首页 + 未登录痕迹"的情况，保留 $zmUnread 不变
-        //    已登录且首次到首页 → $zmUnread 应为 2
-        try {
-            var cur = curPassage();
-            if ((cur === '内网首页') && readFlag()) {
-                var n = getV('zmUnread');
-                if (typeof n !== 'number' || n < 1) {
-                    // 从未设置过 → 保底 2
-                    setUnread(2);
-                }
-            }
-        } catch (e) {}
-        // 3) 若在 ZEmail → 走完整绑定
-        if (onZmail()) {
-            setTimeout(bindOnce, 30);
-            setTimeout(bindOnce, 200);
-            setTimeout(bindOnce, 600);
-        } else {
-            // 4) 不在 ZEmail → 至少同步一次角标
-            syncBadges(getUnread());
-            try {
-                if (typeof window.__nhRefreshTabBadge === 'function') {
-                    window.__nhRefreshTabBadge();
-                }
-            } catch (e) {}
-        }
-    }
-
-    if (window.jQuery) {
-        jQuery(document).on(':passagedisplay.nhZmail', onAnyPassageDisplay);
-    } else {
-        setInterval(onAnyPassageDisplay, 500);
-    }
-
-    /* [FIX_V4] 对外暴露 setUnread / getUnread，
-       让 nh-zmail-inbox-persist 等脚本统一走这里，
-       避免多处同时写 $zmUnread 造成冲突。 */
-    window.__nhSetUnread = setUnread;
-    window.__nhGetUnread = getUnread;
-
-    // 启动时先跑一次
-    checkAndSetFlag();
-    onAnyPassageDisplay();
-
-    console.log('[nh-zmail] v6 loaded, unread =', getUnread());
-})();
-</script>
+<!-- 旧版 nh-zmail-js 已被 redesign.py 移除，防止频闪 -->
 <script id="nh-zmail-login-hook">
 /* [STUBBED v15] 登录 hook 已并入 nh-login-persist */
 </script>
@@ -9568,6 +9667,8 @@ body[data-passage="搜索结果页"] .sr-banner > * {
 
     function bindOnce() {
         if (!onZmail()) return;
+        var list = document.getElementById('zm163-inbox-list');
+        if (!list) return;
         ensureStore();
         ensurePanel();
         bindSentMenu();
@@ -9776,6 +9877,8 @@ body[data-passage="搜索结果页"] .sr-banner > * {
 
     function bindOnce() {
         if (!onZmail()) return;
+        var list = document.getElementById('zm163-inbox-list');
+        if (!list) return;
         attachObserver();
     }
 
@@ -13586,6 +13689,20 @@ body.level-3 .jw-user-bar { background: #000; }
   cursor: pointer;
 }
 </style>
+
+<style id="nh-hide-navbar-qd-expand">
+body[data-passage="失联时间线"] #lw-nav-bar,
+body[data-passage="第六个人"] #lw-nav-bar,
+body[data-passage="意外？"] #lw-nav-bar,
+body[data-passage="名如其人"] #lw-nav-bar {
+    display: none !important;
+}
+</style>
+
+<style id="nh-hide-nav-bar-css">
+#lw-nav-bar { display: none !important; }
+</style>
+
 </head>
 <body>
 	<div id="init-screen">
@@ -17081,7 +17198,7 @@ document.addEventListener('visibilitychange', function () {
 
         // 统一算好三个 tab 的 active 状态
         var isHome = (name === '内网首页' || name === 'Start');
-        var isArc  = (name === 'ZEmail');
+        var isArc  = (name === 'ZEmail' || currentPassage() === '失联时间线' || currentPassage() === '第六个人' || currentPassage() === '意外？' || currentPassage() === '名如其人');
         var isQD   = (name === '泉都论坛' || name === '泉都论坛·帖子1' || name === '泉都论坛·帖子2' || name === '泉都论坛·帖子3');
 
         if (tabs) {
@@ -17091,9 +17208,9 @@ document.addEventListener('visibilitychange', function () {
             var t1 = tabs.children[0];
             var t2 = tabs.children[1];
             var t3 = tabs.children[2];
-            if (t1) t1.classList.toggle('active', isHome);
-            if (t2) t2.classList.toggle('active', isArc);
-            if (t3) t3.classList.toggle('active', isQD);
+            // [NH_FIX_V133] 移除了强制高亮
+            // [NH_FIX_V133] 移除了强制高亮
+            // [NH_FIX_V133] 移除了强制高亮
             return;
         }
 
@@ -17622,6 +17739,8 @@ document.addEventListener('visibilitychange', function () {
 
     function bindOnce() {
         if (!onZmail()) return;
+        var list = document.getElementById('zm163-inbox-list');
+        if (!list) return;
 
         var comp = $id('zmail-compose-btn');
         if (comp && !comp.__zmBound) {
@@ -17707,6 +17826,8 @@ document.addEventListener('visibilitychange', function () {
 
     function bindOnce() {
         if (!onZmail()) return;
+        var list = document.getElementById('zm163-inbox-list');
+        if (!list) return;
 
         // 写邮件按钮
         var comp = $id('zmail-compose-btn');
@@ -20103,7 +20224,6 @@ var glyphs = String.fromCharCode(0xFFFD, 35, 37, 38, 64, 36, 63, 33, 42)
 &lt;div class=&quot;nh-act-links&quot; style=&quot;margin-top:28px;margin-left:auto;margin-right:auto;max-width:720px;box-sizing:border-box;padding:12px 18px;background:#faf7f0;border-left:2px solid #d8c8b0;border-radius:2px;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:13px;line-height:1.9;&quot;&gt;
 &lt;div style=&quot;color:#8b0000;letter-spacing:2px;margin-bottom:8px;font-size:12.5px;&quot;&gt;相关文档&lt;/div&gt;
 &lt;div&gt;· &lt;&lt;link &quot;关于旧教学楼临时封锁的通知&quot; &quot;公告:旧教学楼封锁&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;2015 年 9 月失联事件 · 时间线&quot; &quot;失联时间线&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
 &lt;/div&gt;
 &lt;div class=&quot;footer-time&quot;&gt;
 页面访问量：&lt;&lt;print $visitCount&gt;&gt;
@@ -21854,6 +21974,8 @@ if (window.dh &amp;&amp; dh.ready) { dh.ready(dhFooterInit, &quot;#onlineCount&q
 
     function bindOnce() {
         if (!onZmail()) return;
+        var list = document.getElementById('zm163-inbox-list');
+        if (!list) return;
 
         /* 顶部 tab 点击 */
         var tabs = document.querySelectorAll('.zm163-tab');
@@ -22343,7 +22465,6 @@ D 的最后两行，是林晚补上的。）&lt;/p&gt;
 
 &lt;div class=&quot;nh-act-links&quot; style=&quot;margin-top:28px;margin-left:auto;margin-right:auto;max-width:720px;box-sizing:border-box;padding:12px 18px;background:#faf7f0;border-left:2px solid #d8c8b0;border-radius:2px;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:13px;line-height:1.9;&quot;&gt;
 &lt;div style=&quot;color:#8b0000;letter-spacing:2px;margin-bottom:8px;font-size:12.5px;&quot;&gt;相关文档&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;2015 年 9 月失联事件 · 时间线&quot; &quot;失联时间线&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
 &lt;/div&gt;
 &lt;p style=&quot;text-align:center;margin:20px 0;&quot;&gt;
   &lt;&lt;link &quot;← 返回首页&quot; &quot;内网首页&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;
@@ -23037,169 +23158,177 @@ D 的最后两行，是林晚补上的。）&lt;/p&gt;
 &lt;&lt;link "重新登录"&gt;&gt;&lt;&lt;run Engine.restart()&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/p&gt;
 &lt;&lt;/timed&gt;&gt;
 </tw-passagedata>
-<tw-passagedata pid="9110" name="失联时间线" tags="资料 事件 时间线 2015" position="0,0" size="100,100">
-&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play(&apos;内网首页&apos;)&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;失联时间线&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:&apos;Consolas&apos;,monospace;&quot;&gt;# 事件  # 2015&lt;/span&gt;&lt;/div&gt;
-
-&lt;h3 class=&quot;school-title&quot;&gt; 2015 年 9 月失联事件 · 时间线&lt;/h3&gt;
-&lt;hr&gt;
-
-&lt;p class=&quot;fade-text&quot;&gt;本时间线由内网存档数据交叉比对整理，部分节点来自旧服务器残片。&lt;/p&gt;
-
-&lt;div style=&quot;background:#fbf7f0;border:1px solid #e0d8c8;border-radius:3px;padding:20px 24px;margin:20px 0;font-family:Consolas,&apos;Courier New&apos;,monospace;font-size:13px;line-height:2;color:#3a2a1a;&quot;&gt;
-
-&lt;p&gt;&lt;b&gt;9月01日&lt;/b&gt;　　后勤处发布《秋季校园安全隐患排查通知》&lt;/p&gt;
-&lt;p&gt;&lt;b&gt;9月05日&lt;/b&gt;　　教务处发布《2015 级秋季学期选课工作安排》&lt;/p&gt;
-&lt;p&gt;&lt;b&gt;9月10日&lt;/b&gt;　　图书馆发布《逾期图书催还通知》&lt;/p&gt;
-&lt;p&gt;&lt;b&gt;9月14日&lt;/b&gt;　　22:13　&lt;span style=&quot;color:#8b0000;&quot;&gt;地下室门禁记录：6 人进入 B102&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;　　　　　　22:21　&lt;span style=&quot;color:#8b0000;&quot;&gt;门禁记录：5 人离开&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;　　　　　　22:47　火警触发&lt;/p&gt;
-&lt;p&gt;　　　　　　22:50　消防到场&lt;/p&gt;
-&lt;p&gt;&lt;b&gt;9月15日&lt;/b&gt;　　凌晨　旧教学楼封锁&lt;/p&gt;
-&lt;p&gt;　　　　　　23:20　&lt;span style=&quot;color:#8b0000;&quot;&gt;一个账号最后一次登录内网&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;&lt;b&gt;9月16日&lt;/b&gt;　　后勤处发布《旧教学楼失火通报》&lt;/p&gt;
-&lt;p&gt;&lt;b&gt;9月17日&lt;/b&gt;　　保卫处发布《关于 5 名学生失联情况的通报》&lt;/p&gt;
-&lt;p&gt;&lt;b&gt;9月18日&lt;/b&gt;　　03:14　&lt;span style=&quot;color:#8b0000;&quot;&gt;五人学籍被批量封存&lt;/span&gt;&lt;/p&gt;
-
-&lt;/div&gt;
-
-&lt;p&gt;· &lt;b&gt;门禁 5 人，监控 6 人&lt;/b&gt;。9 月 14 日 22:13 进入地下室的人数，两个系统记录了不同的数字。&lt;/p&gt;
-&lt;p&gt;· &lt;b&gt;学籍封存数量&lt;/b&gt;。失踪通报只提到 5 名学生，但 9 月 18 日的封存操作，实际处理的是 &lt;b&gt;6&lt;/b&gt; 个学号。&lt;/p&gt;
-
-&lt;p class=&quot;fade-text&quot;&gt;（这份时间线最初出现在 2015 年 9 月下旬，来源不明。后被内网备份保留。）&lt;/p&gt;
-
-
-&lt;div class=&quot;nh-act-links&quot; style=&quot;margin-top:28px;margin-left:auto;margin-right:auto;max-width:720px;box-sizing:border-box;padding:12px 18px;background:#faf7f0;border-left:2px solid #d8c8b0;border-radius:2px;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:13px;line-height:1.9;&quot;&gt;
-&lt;div style=&quot;color:#8b0000;letter-spacing:2px;margin-bottom:8px;font-size:12.5px;&quot;&gt;相关文档&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;5 个人，还是 6 个人？&quot; &quot;第六个人&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class=&quot;footer-time&quot;&gt;
-页面访问量：&lt;&lt;print $visitCount&gt;&gt;
-&lt;br&gt;
-系统时间：2015-09-15 00:00
-&lt;/div&gt;
-</tw-passagedata>
-<tw-passagedata pid="9111" name="第六个人" tags="资料 事件 人物" position="0,0" size="100,100">
-&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play(&apos;内网首页&apos;)&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;第六个人&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:&apos;Consolas&apos;,monospace;&quot;&gt;# 事件  # 人物&lt;/span&gt;&lt;/div&gt;
-
-&lt;h3 class=&quot;school-title&quot;&gt; 第六个人&lt;/h3&gt;
-&lt;hr&gt;
-
-&lt;p&gt;失联通报：&lt;b&gt;5 人&lt;/b&gt;。&lt;/p&gt;
-&lt;p&gt;火灾报告：&lt;b&gt;1 人失联&lt;/b&gt;。&lt;/p&gt;
-
-&lt;p style=&quot;margin-top:18px;&quot;&gt;5 + 1 = 6。&lt;/p&gt;
-
-&lt;p style=&quot;margin-top:18px;&quot;&gt;但失踪名单上，找不到第 6 个名字。&lt;/p&gt;
-
-&lt;p style=&quot;margin-top:24px;&quot;&gt;我在内网上翻了一整晚，找到了一些"不应该存在"的东西：&lt;/p&gt;
-
-&lt;div style=&quot;background:#fbf7f0;border:1px solid #e0d8c8;border-radius:3px;padding:16px 22px;margin:18px 0;line-height:2;&quot;&gt;
-&lt;p style=&quot;margin:0 0 10px;&quot;&gt;· 一份文学社的招新公示，名单里有 &lt;b&gt;6 个人&lt;/b&gt;。&lt;/p&gt;
-&lt;p style=&quot;margin:0 0 10px;&quot;&gt;· 一份图书馆的逾期清单，有一本书的借阅人，&lt;b&gt;不在失踪名单上&lt;/b&gt;。&lt;/p&gt;
-&lt;p style=&quot;margin:0 0 10px;&quot;&gt;· 一本 2015 年的诗刊，目录第 7 期，&lt;b&gt;署名被刮掉了&lt;/b&gt;。&lt;/p&gt;
-&lt;p style=&quot;margin:0;&quot;&gt;· 一份学籍档案，&lt;b&gt;同一个学号，被反复覆盖过&lt;/b&gt;。&lt;/p&gt;
-&lt;/div&gt;
-
-&lt;p&gt;它们都属于同一个人。&lt;/p&gt;
-
-&lt;p style=&quot;margin-top:18px;&quot;&gt;但我不知道她是谁。&lt;/p&gt;
-
-&lt;p class=&quot;fade-text&quot; style=&quot;margin-top:24px;&quot;&gt;
-—— 如果你也在找这个人，从下面这些页面开始。&lt;/p&gt;
-
-&lt;p style=&quot;margin-top:24px;&quot;&gt;你把这些线索串起来，得到一个不太可能的结论——&lt;/p&gt;
-&lt;p style=&quot;font-size:16px;color:#8b0000;letter-spacing:2px;&quot;&gt;&lt;&lt;link &quot;那场火，可能不是意外。&quot; &quot;意外？&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/p&gt;
-
-&lt;div class=&quot;nh-act-links&quot; style=&quot;margin-top:20px;margin-left:auto;margin-right:auto;max-width:720px;box-sizing:border-box;padding:12px 18px;background:#faf7f0;border-left:2px solid #d8c8b0;border-radius:2px;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:13px;line-height:1.9;&quot;&gt;
-&lt;div style=&quot;color:#8b0000;letter-spacing:2px;margin-bottom:8px;font-size:12.5px;&quot;&gt;相关档案&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;文学社主页&quot; &quot;文学社主页&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;《青野诗刊》2015 秋季号&quot; &quot;诗刊&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;图书馆逾期催还通知&quot; &quot;公告:图书催还&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;苏言档案&quot; &quot;苏言档案&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;span style=&quot;color:#a89880;font-size:11.5px;&quot;&gt;（这个名字是我从服务器残片里拼出来的，不确定是不是她的本名）&lt;/span&gt;&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;p class=&quot;fade-text&quot; style=&quot;margin-top:28px;font-size:12px;&quot;&gt;
-备注：本页面非原始页面，由民间悬案爱好者「ARC-CC」搜集整理而来。&lt;/p&gt;
-
-&lt;div class=&quot;footer-time&quot;&gt;
-页面访问量：&lt;&lt;print $visitCount&gt;&gt;
-&lt;br&gt;
-系统时间：2015-09-15 00:00
-&lt;/div&gt;
-</tw-passagedata>
-<tw-passagedata pid="9112" name="意外？" tags="资料 事件 2015" position="0,0" size="100,100">
-&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play(&apos;内网首页&apos;)&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;意外？&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:&apos;Consolas&apos;,monospace;&quot;&gt;# 事件  # 2015&lt;/span&gt;&lt;/div&gt;
-
-&lt;h3 class=&quot;school-title&quot;&gt; 那场火，真的是意外吗？&lt;/h3&gt;
-&lt;hr&gt;
-
-&lt;p&gt;官方结论：&lt;b&gt;线路老化引燃堆放书籍&lt;/b&gt;，属意外事故。&lt;/p&gt;
-
-&lt;p style=&quot;margin-top:16px;&quot;&gt;但有几处对不上。&lt;/p&gt;
-
-&lt;div style=&quot;background:#fbf7f0;border:1px solid #e0d8c8;border-radius:3px;padding:18px 24px;margin:22px 0;line-height:2;&quot;&gt;
-
-&lt;p style=&quot;margin:0 0 14px;&quot;&gt;
-&lt;b&gt;一、起火时间&lt;/b&gt;&lt;br&gt;
-官方说 22:00 之后。&lt;br&gt;
-但门禁记录显示，22:21 有人从 B102 出来。&lt;br&gt;
-22:47 才触发火警。&lt;br&gt;
-中间空了 &lt;b&gt;26 分钟&lt;/b&gt;。
-&lt;/p&gt;
-
-&lt;p style=&quot;margin:0 0 14px;&quot;&gt;
-&lt;b&gt;二、进出人数&lt;/b&gt;&lt;br&gt;
-门禁记录：&lt;b&gt;5 人进入，5 人离开&lt;/b&gt;。&lt;br&gt;
-监控画面：&lt;b&gt;6 人进入，5 人离开&lt;/b&gt;。&lt;br&gt;
-多出来的那个人，没有在门禁上出现过，也没有在火警后出来。
-&lt;/p&gt;
-
-&lt;p style=&quot;margin:0 0 14px;&quot;&gt;
-&lt;b&gt;三、口供&lt;/b&gt;&lt;br&gt;
-5 个学生的口供完全一致：&lt;br&gt;
-"就我们五个，活动结束就走了。"&lt;br&gt;
-"从来都是五个。"&lt;br&gt;
-—— 太一致了。一致到像是背过的。
-&lt;/p&gt;
-
-&lt;p style=&quot;margin:0;&quot;&gt;
-&lt;b&gt;四、现场&lt;/b&gt;&lt;br&gt;
-调查报告里写着：起火点周边有&lt;b&gt;拉扯、移位痕迹&lt;/b&gt;。&lt;br&gt;
-但结论仍然写"意外"。&lt;br&gt;
-物证残片已经被归档，存入校内服务器备份——&lt;b&gt;再也没有公开过&lt;/b&gt;。
-&lt;/p&gt;
-
-&lt;/div&gt;
-
-&lt;p style=&quot;margin-top:24px;&quot;&gt;如果那晚不是"意外"，&lt;/p&gt;
-&lt;p&gt;那第 6 个人，是&lt;b&gt;被留在了里面&lt;/b&gt;。&lt;/p&gt;
-
-&lt;p style=&quot;margin-top:24px;&quot;&gt;她把火警按响之前，写下了一段手稿。&lt;/p&gt;
-
-&lt;p class=&quot;fade-text&quot; style=&quot;margin-top:20px;color:#8b0000;&quot;&gt;
-—— 完整的细节，在这几份原始档案里。&lt;/p&gt;
-
-&lt;div class=&quot;nh-act-links&quot; style=&quot;margin-top:20px;margin-left:auto;margin-right:auto;max-width:720px;box-sizing:border-box;padding:12px 18px;background:#faf7f0;border-left:2px solid #d8c8b0;border-radius:2px;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:13px;line-height:1.9;&quot;&gt;
-&lt;div style=&quot;color:#8b0000;letter-spacing:2px;margin-bottom:8px;font-size:12.5px;&quot;&gt;原始档案&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;地下室使用说明（含门禁记录）&quot; &quot;地下室&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;当晚监控片段&quot; &quot;监控录像&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;2015-09-16 询问笔录&quot; &quot;2015笔录&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;旧教学楼失火通报&quot; &quot;旧教学楼失火&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;消防事故调查报告&quot; &quot;消防事故调查报告&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;苏言残稿&quot; &quot;苏言残稿&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;p style=&quot;margin-top:28px;font-size:16px;&quot;&gt;&lt;&lt;link &quot;如果你要问的是「谁应该阻止这一切」——&quot; &quot;名如其人&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/p&gt;
-
-&lt;p class=&quot;fade-text&quot; style=&quot;margin-top:28px;font-size:12px;&quot;&gt;
-备注：本页面非原始页面，由民间悬案爱好者「ARC-CC」搜集整理而来。&lt;/p&gt;
-
-&lt;div class=&quot;footer-time&quot;&gt;
-页面访问量：&lt;&lt;print $visitCount&gt;&gt;
-&lt;br&gt;
-系统时间：2015-09-15 00:00
-&lt;/div&gt;
-</tw-passagedata>
+<tw-passagedata pid="9110" name="失联时间线" tags="资料 论坛 泉都" position="0,0" size="100,100">
+&lt;style&gt;
+.qd-wrap { max-width: 880px; margin: 0 auto; font-family: &quot;微软雅黑&quot;, sans-serif; color: #333; background: #f7f4ec; padding-bottom: 40px; }
+.qd-topbar { background: #4a5a6a; color: #e8eef4; padding: 18px 28px; border-bottom: 3px solid #2a3a4a; }
+.qd-logo { font-size: 22px; letter-spacing: 4px; font-weight: 600; }
+.qd-sub { font-size: 12px; opacity: 0.75; margin-top: 4px; letter-spacing: 1px; font-family: Consolas, monospace; }
+.qd-nav { background: #fff; border-bottom: 1px solid #e0d8c8; padding: 0 20px; display: flex; }
+.qd-nav-item { padding: 10px 18px; font-size: 13.5px; color: #666; }
+.qd-nav-item a { color: #2a4a6a; text-decoration: none; cursor: pointer; }
+.qd-nav-item a:hover { color: #8b0000; text-decoration: underline; }
+.qd-body { padding: 20px; }
+.qd-main { background: #fff; border: 1px solid #e0d8c8; border-radius: 3px; padding: 20px 24px; }
+.qd-thread-title { font-size: 18px; color: #2a4a6a; font-weight: 600; line-height: 1.5; margin-bottom: 8px; }
+.qd-thread-meta { font-size: 12px; color: #999; padding-bottom: 12px; border-bottom: 1px solid #e8e0d0; margin-bottom: 18px; font-family: Consolas, monospace; }
+.qd-floor { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px dashed #f0e8d8; }
+.qd-floor:last-of-type { border-bottom: none; }
+.qd-floor-l { flex: 0 0 80px; text-align: center; }
+.qd-floor-avatar { width: 48px; height: 48px; background: #4a5a6a; color: #fff; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 18px; margin: 0 auto 6px; }
+.qd-floor-name { font-size: 12px; color: #4a5a6a; word-break: break-all; }
+.qd-floor-r { flex: 1; min-width: 0; }
+.qd-floor-head { font-size: 11.5px; color: #999; margin-bottom: 8px; font-family: Consolas, monospace; }
+.qd-floor-body { font-size: 14px; line-height: 1.9; color: #333; }
+.qd-floor-body p { margin: 0 0 6px; }
+&lt;/style&gt;
+&lt;div class=&quot;qd-wrap&quot;&gt;
+  &lt;div class=&quot;qd-topbar&quot;&gt;
+    &lt;div class=&quot;qd-logo&quot;&gt;泉都论坛&lt;/div&gt;
+    &lt;div class=&quot;qd-sub&quot;&gt;悬案疑云 · 帖子详情&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;qd-nav&quot;&gt;
+    &lt;span class=&quot;qd-nav-item&quot;&gt;&lt;a data-passage=&quot;泉都论坛&quot; class=&quot;link-internal&quot;&gt;← 返回首页&lt;/a&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;qd-body&quot;&gt;
+    &lt;div class=&quot;qd-main&quot;&gt;
+      &lt;div class=&quot;qd-thread-title&quot;&gt;【整理】南华大学失联案 · 时间线（2015）&lt;/div&gt;
+      &lt;div class=&quot;qd-thread-meta&quot;&gt;楼主：ARC-CC | 2020-09-15 03:14 | 查看 2103 | 回复 31&lt;/div&gt;
+      
+      &lt;div class=&quot;qd-floor&quot;&gt;
+        &lt;div class=&quot;qd-floor-l&quot;&gt;&lt;div class=&quot;qd-floor-avatar&quot;&gt;A&lt;/div&gt;&lt;div class=&quot;qd-floor-name&quot;&gt;ARC-CC&lt;/div&gt;&lt;/div&gt;
+        &lt;div class=&quot;qd-floor-r&quot;&gt;
+          &lt;div class=&quot;qd-floor-head&quot;&gt;1 楼 · 2020-09-15 03:14&lt;/div&gt;
+          &lt;div class=&quot;qd-floor-body&quot;&gt;
+            &lt;p&gt;我花了整整三天，把当年所有能找到的公开资料、贴吧截图、甚至报纸边角料都翻出来了。&lt;/p&gt;
+            &lt;p&gt;结合前几帖的线索，我重新排了一下那晚的时间轴：&lt;/p&gt;
+            &lt;br&gt;
+            &lt;p&gt;&lt;b&gt;【22:13】&lt;/b&gt; 监控显示，6个人进入旧教学楼地下室B102。注意，门禁记录的是5个人，但监控里是6个人影。&lt;/p&gt;
+            &lt;p&gt;&lt;b&gt;【22:21】&lt;/b&gt; 门开了，跑出来5个人。监控里，门内还站着一个黑影，没有跟着出来。&lt;/p&gt;
+            &lt;p&gt;&lt;b&gt;【22:26】&lt;/b&gt; 监控信号开始受到严重干扰，画面出现雪花。走廊尽头出现人影，在靠近镜头。&lt;/p&gt;
+            &lt;p&gt;&lt;b&gt;【22:47】&lt;/b&gt; 火警触发。消防车抵达。&lt;/p&gt;
+            &lt;br&gt;
+            &lt;p&gt;这里有一个&lt;strong&gt;巨大的时间断层&lt;/strong&gt;：从22:26到22:47，整整二十分钟，那个“没出来的黑影”在做什么？那5个跑出来的人，又为什么没有立刻报警？&lt;/p&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</tw-passagedata>
+<tw-passagedata pid="9111" name="第六个人" tags="资料 论坛 泉都" position="0,0" size="100,100">
+&lt;style&gt;
+.qd-wrap { max-width: 880px; margin: 0 auto; font-family: &quot;微软雅黑&quot;, sans-serif; color: #333; background: #f7f4ec; padding-bottom: 40px; }
+.qd-topbar { background: #4a5a6a; color: #e8eef4; padding: 18px 28px; border-bottom: 3px solid #2a3a4a; }
+.qd-logo { font-size: 22px; letter-spacing: 4px; font-weight: 600; }
+.qd-sub { font-size: 12px; opacity: 0.75; margin-top: 4px; letter-spacing: 1px; font-family: Consolas, monospace; }
+.qd-nav { background: #fff; border-bottom: 1px solid #e0d8c8; padding: 0 20px; display: flex; }
+.qd-nav-item { padding: 10px 18px; font-size: 13.5px; color: #666; }
+.qd-nav-item a { color: #2a4a6a; text-decoration: none; cursor: pointer; }
+.qd-nav-item a:hover { color: #8b0000; text-decoration: underline; }
+.qd-body { padding: 20px; }
+.qd-main { background: #fff; border: 1px solid #e0d8c8; border-radius: 3px; padding: 20px 24px; }
+.qd-thread-title { font-size: 18px; color: #2a4a6a; font-weight: 600; line-height: 1.5; margin-bottom: 8px; }
+.qd-thread-meta { font-size: 12px; color: #999; padding-bottom: 12px; border-bottom: 1px solid #e8e0d0; margin-bottom: 18px; font-family: Consolas, monospace; }
+.qd-floor { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px dashed #f0e8d8; }
+.qd-floor:last-of-type { border-bottom: none; }
+.qd-floor-l { flex: 0 0 80px; text-align: center; }
+.qd-floor-avatar { width: 48px; height: 48px; background: #4a5a6a; color: #fff; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 18px; margin: 0 auto 6px; }
+.qd-floor-name { font-size: 12px; color: #4a5a6a; word-break: break-all; }
+.qd-floor-r { flex: 1; min-width: 0; }
+.qd-floor-head { font-size: 11.5px; color: #999; margin-bottom: 8px; font-family: Consolas, monospace; }
+.qd-floor-body { font-size: 14px; line-height: 1.9; color: #333; }
+.qd-floor-body p { margin: 0 0 6px; }
+&lt;/style&gt;
+&lt;div class=&quot;qd-wrap&quot;&gt;
+  &lt;div class=&quot;qd-topbar&quot;&gt;
+    &lt;div class=&quot;qd-logo&quot;&gt;泉都论坛&lt;/div&gt;
+    &lt;div class=&quot;qd-sub&quot;&gt;悬案疑云 · 帖子详情&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;qd-nav&quot;&gt;
+    &lt;span class=&quot;qd-nav-item&quot;&gt;&lt;a data-passage=&quot;泉都论坛&quot; class=&quot;link-internal&quot;&gt;← 返回首页&lt;/a&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;qd-body&quot;&gt;
+    &lt;div class=&quot;qd-main&quot;&gt;
+      &lt;div class=&quot;qd-thread-title&quot;&gt;【分析】5 个人还是 6 个人？我数了三遍&lt;/div&gt;
+      &lt;div class=&quot;qd-thread-meta&quot;&gt;楼主：ARC-CC | 2020-09-15 03:41 | 查看 947 | 回复 18&lt;/div&gt;
+      
+      &lt;div class=&quot;qd-floor&quot;&gt;
+        &lt;div class=&quot;qd-floor-l&quot;&gt;&lt;div class=&quot;qd-floor-avatar&quot;&gt;A&lt;/div&gt;&lt;div class=&quot;qd-floor-name&quot;&gt;ARC-CC&lt;/div&gt;&lt;/div&gt;
+        &lt;div class=&quot;qd-floor-r&quot;&gt;
+          &lt;div class=&quot;qd-floor-head&quot;&gt;1 楼 · 2020-09-15 03:41&lt;/div&gt;
+          &lt;div class=&quot;qd-floor-body&quot;&gt;
+            &lt;p&gt;你们有没有想过，为什么官方通报上只有5个人失联？&lt;/p&gt;
+            &lt;p&gt;林晚、张昊、王佳、李阳、赵晓。这是当年的5人名单。南大校史、市志、当年的报纸，全都是这5个名字。&lt;/p&gt;
+            &lt;br&gt;
+            &lt;p&gt;但是，在2015年9月18日，也就是火灾发生后的第三天，南大内网发生了一次极不正常的&lt;b&gt;“学籍封存”&lt;/b&gt;操作。&lt;/p&gt;
+            &lt;p&gt;这5个人被封存了。但是，封存记录的总数，是&lt;b&gt;6&lt;/b&gt;。&lt;/p&gt;
+            &lt;p&gt;第6个学号是 2015010462。这个人在所有的系统里都被删得干干净净，连失踪名单上都没有她。&lt;/p&gt;
+            &lt;p&gt;可是，图书馆的借阅记录里，有她。文学社的招新公示里，有她。甚至那份没有署名的《第七首诗》，也是她写的。&lt;/p&gt;
+            &lt;br&gt;
+            &lt;p&gt;她叫&lt;b&gt;苏言&lt;/b&gt;。&lt;/p&gt;
+            &lt;p&gt;为什么要把一个死去的受害者，从档案里彻底抹除？那5个人，到底在怕什么？&lt;/p&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</tw-passagedata>
+<tw-passagedata pid="9112" name="意外？" tags="资料 论坛 泉都" position="0,0" size="100,100">
+&lt;style&gt;
+.qd-wrap { max-width: 880px; margin: 0 auto; font-family: &quot;微软雅黑&quot;, sans-serif; color: #333; background: #f7f4ec; padding-bottom: 40px; }
+.qd-topbar { background: #4a5a6a; color: #e8eef4; padding: 18px 28px; border-bottom: 3px solid #2a3a4a; }
+.qd-logo { font-size: 22px; letter-spacing: 4px; font-weight: 600; }
+.qd-sub { font-size: 12px; opacity: 0.75; margin-top: 4px; letter-spacing: 1px; font-family: Consolas, monospace; }
+.qd-nav { background: #fff; border-bottom: 1px solid #e0d8c8; padding: 0 20px; display: flex; }
+.qd-nav-item { padding: 10px 18px; font-size: 13.5px; color: #666; }
+.qd-nav-item a { color: #2a4a6a; text-decoration: none; cursor: pointer; }
+.qd-nav-item a:hover { color: #8b0000; text-decoration: underline; }
+.qd-body { padding: 20px; }
+.qd-main { background: #fff; border: 1px solid #e0d8c8; border-radius: 3px; padding: 20px 24px; }
+.qd-thread-title { font-size: 18px; color: #2a4a6a; font-weight: 600; line-height: 1.5; margin-bottom: 8px; }
+.qd-thread-meta { font-size: 12px; color: #999; padding-bottom: 12px; border-bottom: 1px solid #e8e0d0; margin-bottom: 18px; font-family: Consolas, monospace; }
+.qd-floor { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px dashed #f0e8d8; }
+.qd-floor:last-of-type { border-bottom: none; }
+.qd-floor-l { flex: 0 0 80px; text-align: center; }
+.qd-floor-avatar { width: 48px; height: 48px; background: #4a5a6a; color: #fff; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 18px; margin: 0 auto 6px; }
+.qd-floor-name { font-size: 12px; color: #4a5a6a; word-break: break-all; }
+.qd-floor-r { flex: 1; min-width: 0; }
+.qd-floor-head { font-size: 11.5px; color: #999; margin-bottom: 8px; font-family: Consolas, monospace; }
+.qd-floor-body { font-size: 14px; line-height: 1.9; color: #333; }
+.qd-floor-body p { margin: 0 0 6px; }
+&lt;/style&gt;
+&lt;div class=&quot;qd-wrap&quot;&gt;
+  &lt;div class=&quot;qd-topbar&quot;&gt;
+    &lt;div class=&quot;qd-logo&quot;&gt;泉都论坛&lt;/div&gt;
+    &lt;div class=&quot;qd-sub&quot;&gt;悬案疑云 · 帖子详情&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;qd-nav&quot;&gt;
+    &lt;span class=&quot;qd-nav-item&quot;&gt;&lt;a data-passage=&quot;泉都论坛&quot; class=&quot;link-internal&quot;&gt;← 返回首页&lt;/a&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;qd-body&quot;&gt;
+    &lt;div class=&quot;qd-main&quot;&gt;
+      &lt;div class=&quot;qd-thread-title&quot;&gt;【分析】那场火，不可能是意外&lt;/div&gt;
+      &lt;div class=&quot;qd-thread-meta&quot;&gt;楼主：ARC-CC | 2020-09-15 04:07 | 查看 1287 | 回复 24&lt;/div&gt;
+      
+      &lt;div class=&quot;qd-floor&quot;&gt;
+        &lt;div class=&quot;qd-floor-l&quot;&gt;&lt;div class=&quot;qd-floor-avatar&quot;&gt;A&lt;/div&gt;&lt;div class=&quot;qd-floor-name&quot;&gt;ARC-CC&lt;/div&gt;&lt;/div&gt;
+        &lt;div class=&quot;qd-floor-r&quot;&gt;
+          &lt;div class=&quot;qd-floor-head&quot;&gt;1 楼 · 2020-09-15 04:07&lt;/div&gt;
+          &lt;div class=&quot;qd-floor-body&quot;&gt;
+            &lt;p&gt;那天的《消防事故调查报告》我搞到了一份复印件。&lt;/p&gt;
+            &lt;p&gt;官方的结论是“电路老化，引燃旧报纸”。但这根本经不起推敲。&lt;/p&gt;
+            &lt;p&gt;第一，地下室是密集书库，常年阴冷潮湿，旧报纸怎么可能那么巧就在那天晚上被电火花引燃？&lt;/p&gt;
+            &lt;p&gt;第二，事后那5个学生的笔录，口径太一致了。警察问什么，他们就答什么，情绪异常稳定，连字句都不带差的。像是提前排练过。&lt;/p&gt;
+            &lt;p&gt;第三，如果真的是意外，为什么跑出来的5个人，要把苏言的存在彻底抹杀掉？&lt;/p&gt;
+            &lt;br&gt;
+            &lt;p&gt;我倾向于认为：当晚在地下室，发生了一场激烈的争执。那场火，大概率是在争执中，有人碰倒了电线，或者……有人故意点燃了那些诗稿。&lt;/p&gt;
+            &lt;p&gt;那5个人跑了。把门锁了。把苏言留在了里面。&lt;/p&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</tw-passagedata>
 <tw-passagedata pid="9120" name="泉都论坛" tags="资料 论坛 泉都" position="0,0" size="100,100">
 &lt;div class=&quot;qd-wrap&quot;&gt;
 
@@ -23298,6 +23427,35 @@ D 的最后两行，是林晚补上的。）&lt;/p&gt;
           &lt;td class=&quot;col-stats&quot;&gt;0 / 87&lt;/td&gt;
           &lt;td class=&quot;col-last&quot;&gt;2020-09-15 02:07&lt;br&gt;&lt;span class=&quot;qd-last-by&quot;&gt;by admin&lt;/span&gt;&lt;/td&gt;
         &lt;/tr&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;col-icon&quot;&gt;&lt;span class=&quot;qd-tag qd-tag-jing&quot;&gt;精&lt;/span&gt;&lt;/td&gt;
+          &lt;td class=&quot;col-title&quot;&gt;&lt;a data-passage=&quot;失联时间线&quot; class=&quot;link-internal&quot;&gt;【整理】南华大学失联案 · 时间线（2015）&lt;/a&gt;&lt;/td&gt;
+          &lt;td class=&quot;col-author&quot;&gt;ARC-CC&lt;/td&gt;
+          &lt;td class=&quot;col-stats&quot;&gt;31 / 2103&lt;/td&gt;
+          &lt;td class=&quot;col-last&quot;&gt;2020-09-15 03:14&lt;br&gt;&lt;span class=&quot;qd-last-by&quot;&gt;by ARC-CC&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;col-icon&quot;&gt;&lt;/td&gt;
+          &lt;td class=&quot;col-title&quot;&gt;&lt;a data-passage=&quot;第六个人&quot; class=&quot;link-internal&quot;&gt;【分析】5 个人还是 6 个人？我数了三遍&lt;/a&gt;&lt;/td&gt;
+          &lt;td class=&quot;col-author&quot;&gt;ARC-CC&lt;/td&gt;
+          &lt;td class=&quot;col-stats&quot;&gt;18 / 947&lt;/td&gt;
+          &lt;td class=&quot;col-last&quot;&gt;2020-09-15 03:41&lt;br&gt;&lt;span class=&quot;qd-last-by&quot;&gt;by 静水&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;col-icon&quot;&gt;&lt;/td&gt;
+          &lt;td class=&quot;col-title&quot;&gt;&lt;a data-passage=&quot;意外？&quot; class=&quot;link-internal&quot;&gt;【分析】那场火，不可能是意外&lt;/a&gt;&lt;/td&gt;
+          &lt;td class=&quot;col-author&quot;&gt;ARC-CC&lt;/td&gt;
+          &lt;td class=&quot;col-stats&quot;&gt;24 / 1287&lt;/td&gt;
+          &lt;td class=&quot;col-last&quot;&gt;2020-09-15 04:07&lt;br&gt;&lt;span class=&quot;qd-last-by&quot;&gt;by 老茶壶&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;col-icon&quot;&gt;&lt;/td&gt;
+          &lt;td class=&quot;col-title&quot;&gt;&lt;a data-passage=&quot;名如其人&quot; class=&quot;link-internal&quot;&gt;【分析】那个&quot;沉默&quot;的老师&lt;/a&gt;&lt;/td&gt;
+          &lt;td class=&quot;col-author&quot;&gt;ARC-CC&lt;/td&gt;
+          &lt;td class=&quot;col-stats&quot;&gt;9 / 421&lt;/td&gt;
+          &lt;td class=&quot;col-last&quot;&gt;2020-09-15 04:33&lt;br&gt;&lt;span class=&quot;qd-last-by&quot;&gt;by ARC-CC&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+
         &lt;tr&gt;
           &lt;td class=&quot;col-icon&quot;&gt;&lt;/td&gt;
           &lt;td class=&quot;col-title&quot;&gt;
@@ -23743,6 +23901,9 @@ body[data-passage=&quot;泉都论坛&quot;], .passage-泉都论坛 { background:
       &lt;p&gt;你们有没有想过一个问题：&lt;/p&gt;
       &lt;p&gt;如果名单上第 6 个人真的存在过——&lt;/p&gt;
       &lt;p&gt;那她，为什么被删掉？&lt;/p&gt;
+        &lt;div style=&quot;margin-top:16px;padding:10px 14px;background:#fafcfd;border-left:3px solid #2a5a8a;font-size:12.5px;&quot;&gt;
+          &lt;b&gt;楼主补充：&lt;/b&gt;我把整理好的完整时间线单独发了一帖 → &lt;a data-passage=&quot;失联时间线&quot; class=&quot;link-internal&quot; style=&quot;color:#2a5a8a;text-decoration:underline;&quot;&gt;南华大学失联案 · 时间线（2015）&lt;/a&gt;
+        &lt;/div&gt;
     &lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
@@ -24007,83 +24168,66 @@ body[data-passage=&quot;泉都论坛&quot;], .passage-泉都论坛 { background:
 .qd-footer-note { margin-top: 24px; padding-top: 14px; border-top: 1px dashed #e0d8c0; text-align: center; font-size: 12px; color: #999; line-height: 1.8; }
 &lt;/style&gt;
 </tw-passagedata>
-<tw-passagedata pid="9113" name="名如其人" tags="资料 人物 陈默" position="0,0" size="100,100">
-&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play(&apos;内网首页&apos;)&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;名如其人&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:&apos;Consolas&apos;,monospace;&quot;&gt;# 人物  # 陈默&lt;/span&gt;&lt;/div&gt;
-
-&lt;h3 class=&quot;school-title&quot;&gt; 名如其人&lt;/h3&gt;
-&lt;hr&gt;
-
-&lt;p&gt;那晚，除了进去的 6 个人，还有第 7 个。&lt;/p&gt;
-
-&lt;p style=&quot;margin-top:16px;&quot;&gt;
-他不在名单里。&lt;br&gt;
-他不在监控里。&lt;br&gt;
-他不在火场里。&lt;br&gt;
-但他的名字，藏在每一处"没人管"的缝里。
-&lt;/p&gt;
-
-&lt;p style=&quot;margin-top:24px;font-size:17px;color:#8b0000;letter-spacing:3px;&quot;&gt;
-他的名字，是&lt;b&gt;陈默&lt;/b&gt;。
-&lt;/p&gt;
-
-&lt;p style=&quot;margin-top:6px;color:#5a1a10;&quot;&gt;
-「默」。
-&lt;/p&gt;
-
-&lt;p style=&quot;margin-top:18px;&quot;&gt;中文系讲师。工号 1998010027。&lt;/p&gt;
-
-&lt;p&gt;2015 年 9 月，他短暂担任过文学社的指导老师。任期不到两个月。&lt;/p&gt;
-
-&lt;p&gt;之后，他的社团相关记录，全部被标注为"个人原因"。&lt;/p&gt;
-
-&lt;p&gt;他没有出现在失踪名单上。&lt;/p&gt;
-
-&lt;p&gt;但他知道那晚的一切。&lt;/p&gt;
-
-&lt;p&gt;他唯一的动作，是&lt;b&gt;转过头&lt;/b&gt;。&lt;/p&gt;
-
-&lt;div style=&quot;background:#fbf7f0;border:1px solid #e0d8c8;border-radius:3px;padding:16px 22px;margin:24px 0;line-height:2;&quot;&gt;
-
-&lt;p style=&quot;margin:0 0 12px;&quot;&gt;&lt;b&gt;三个时间点&lt;/b&gt;&lt;/p&gt;
-&lt;p style=&quot;margin:0 0 6px;&quot;&gt;· 2015-09-14 22:13　地下室门禁记录：6 人进入 B102&lt;/p&gt;
-&lt;p style=&quot;margin:0 0 6px;&quot;&gt;· 2015-09-15 23:20　一个账号最后一次登录内网&lt;/p&gt;
-&lt;p style=&quot;margin:0 0 6px;&quot;&gt;· 2015-09-16 09:00　陈默离职申请被"批准"&lt;/p&gt;
-
-&lt;p style=&quot;margin:16px 0 0;color:#8b0000;&quot;&gt;
-三个时间点之间，隔了 25 小时。&lt;br&gt;
-这 25 小时里，他一定想了什么。&lt;br&gt;
-但他没有留下任何文字——除了日志里那一段。
-&lt;/p&gt;
-
-&lt;/div&gt;
-
-&lt;p style=&quot;margin-top:24px;&quot;&gt;他没有杀人。&lt;/p&gt;
-
-&lt;p&gt;他只是在场。&lt;/p&gt;
-
-&lt;p&gt;然后，&lt;b&gt;沉默&lt;/b&gt;。&lt;/p&gt;
-
-&lt;p class=&quot;fade-text&quot; style=&quot;margin-top:24px;color:#8b0000;&quot;&gt;
-—— 如果你想知道他沉默的全部细节：&lt;/p&gt;
-
-&lt;div class=&quot;nh-act-links&quot; style=&quot;margin-top:20px;margin-left:auto;margin-right:auto;max-width:720px;box-sizing:border-box;padding:12px 18px;background:#faf7f0;border-left:2px solid #d8c8b0;border-radius:2px;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:13px;line-height:1.9;&quot;&gt;
-&lt;div style=&quot;color:#8b0000;letter-spacing:2px;margin-bottom:8px;font-size:12.5px;&quot;&gt;相关档案&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;陈默资料&quot; &quot;陈默资料&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;陈默教研日志（未提交）&quot; &quot;陈默教研日志&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;林晚的留言&quot; &quot;林晚的留言&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;第七个书架&quot; &quot;第七个书架&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;客座教授 · 顾承声&quot; &quot;客座教授&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;p class=&quot;fade-text&quot; style=&quot;margin-top:28px;font-size:12px;&quot;&gt;
-备注：本页面非原始页面，由民间悬案爱好者「ARC-CC」搜集整理而来。&lt;/p&gt;
-
-&lt;div class=&quot;footer-time&quot;&gt;
-页面访问量：&lt;&lt;print $visitCount&gt;&gt;
-&lt;br&gt;
-系统时间：2015-09-15 00:00
-&lt;/div&gt;
-</tw-passagedata>
+<tw-passagedata pid="9113" name="名如其人" tags="资料 论坛 泉都" position="0,0" size="100,100">
+&lt;style&gt;
+.qd-wrap { max-width: 880px; margin: 0 auto; font-family: &quot;微软雅黑&quot;, sans-serif; color: #333; background: #f7f4ec; padding-bottom: 40px; }
+.qd-topbar { background: #4a5a6a; color: #e8eef4; padding: 18px 28px; border-bottom: 3px solid #2a3a4a; }
+.qd-logo { font-size: 22px; letter-spacing: 4px; font-weight: 600; }
+.qd-sub { font-size: 12px; opacity: 0.75; margin-top: 4px; letter-spacing: 1px; font-family: Consolas, monospace; }
+.qd-nav { background: #fff; border-bottom: 1px solid #e0d8c8; padding: 0 20px; display: flex; }
+.qd-nav-item { padding: 10px 18px; font-size: 13.5px; color: #666; }
+.qd-nav-item a { color: #2a4a6a; text-decoration: none; cursor: pointer; }
+.qd-nav-item a:hover { color: #8b0000; text-decoration: underline; }
+.qd-body { padding: 20px; }
+.qd-main { background: #fff; border: 1px solid #e0d8c8; border-radius: 3px; padding: 20px 24px; }
+.qd-thread-title { font-size: 18px; color: #2a4a6a; font-weight: 600; line-height: 1.5; margin-bottom: 8px; }
+.qd-thread-meta { font-size: 12px; color: #999; padding-bottom: 12px; border-bottom: 1px solid #e8e0d0; margin-bottom: 18px; font-family: Consolas, monospace; }
+.qd-floor { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px dashed #f0e8d8; }
+.qd-floor:last-of-type { border-bottom: none; }
+.qd-floor-l { flex: 0 0 80px; text-align: center; }
+.qd-floor-avatar { width: 48px; height: 48px; background: #4a5a6a; color: #fff; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 18px; margin: 0 auto 6px; }
+.qd-floor-name { font-size: 12px; color: #4a5a6a; word-break: break-all; }
+.qd-floor-r { flex: 1; min-width: 0; }
+.qd-floor-head { font-size: 11.5px; color: #999; margin-bottom: 8px; font-family: Consolas, monospace; }
+.qd-floor-body { font-size: 14px; line-height: 1.9; color: #333; }
+.qd-floor-body p { margin: 0 0 6px; }
+&lt;/style&gt;
+&lt;div class=&quot;qd-wrap&quot;&gt;
+  &lt;div class=&quot;qd-topbar&quot;&gt;
+    &lt;div class=&quot;qd-logo&quot;&gt;泉都论坛&lt;/div&gt;
+    &lt;div class=&quot;qd-sub&quot;&gt;悬案疑云 · 帖子详情&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;qd-nav&quot;&gt;
+    &lt;span class=&quot;qd-nav-item&quot;&gt;&lt;a data-passage=&quot;泉都论坛&quot; class=&quot;link-internal&quot;&gt;← 返回首页&lt;/a&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;qd-body&quot;&gt;
+    &lt;div class=&quot;qd-main&quot;&gt;
+      &lt;div class=&quot;qd-thread-title&quot;&gt;【分析】那个&quot;沉默&quot;的老师&lt;/div&gt;
+      &lt;div class=&quot;qd-thread-meta&quot;&gt;楼主：ARC-CC | 2020-09-15 04:33 | 查看 421 | 回复 9&lt;/div&gt;
+      
+      &lt;div class=&quot;qd-floor&quot;&gt;
+        &lt;div class=&quot;qd-floor-l&quot;&gt;&lt;div class=&quot;qd-floor-avatar&quot;&gt;A&lt;/div&gt;&lt;div class=&quot;qd-floor-name&quot;&gt;ARC-CC&lt;/div&gt;&lt;/div&gt;
+        &lt;div class=&quot;qd-floor-r&quot;&gt;
+          &lt;div class=&quot;qd-floor-head&quot;&gt;1 楼 · 2020-09-15 04:33&lt;/div&gt;
+          &lt;div class=&quot;qd-floor-body&quot;&gt;
+            &lt;p&gt;大家一直忽略了一个人。陈默，文学社的指导老师。&lt;/p&gt;
+            &lt;p&gt;案发那晚，他不在学校。警方对他的调查也很快就结束了。因为他既不是失联者，也不是嫌疑人。&lt;/p&gt;
+            &lt;p&gt;但是，他的档案里存在极大的矛盾：&lt;/p&gt;
+            &lt;p&gt;2015年9月，他短暂担任了文学社的指导老师，不到两个月就离职了，原因是“个人原因”。&lt;/p&gt;
+            &lt;p&gt;他走得很急，几乎是逃离了南华大学。但可怕的是，他留在内网的账号，却从未真正注销。&lt;/p&gt;
+            &lt;br&gt;
+            &lt;p&gt;系统日志记录，每年的9月15日，那个账号都会自动登入一次。&lt;/p&gt;
+            &lt;p&gt;停留时间：&lt;b&gt;1分17秒&lt;/b&gt;。&lt;/p&gt;
+            &lt;p&gt;他只访问一个页面：&lt;b&gt;旧教学楼失火&lt;/b&gt;。&lt;/p&gt;
+            &lt;br&gt;
+            &lt;p&gt;他为什么每年都要回来看一眼？他在内疚什么？&lt;/p&gt;
+            &lt;p&gt;或者，这份档案的记录人不是他，而是某个“使用他账号”的存在？&lt;/p&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</tw-passagedata>
 </tw-storydata>
 	<script id="script-sugarcube" type="text/javascript">
 	/*! SugarCube JS */
@@ -28252,6 +28396,207 @@ body[data-passage=&quot;泉都论坛&quot;], .passage-泉都论坛 { background:
 })();
 </script>
 <!-- ===== end NH_PROGRESS_WINDOW_V1 ===== -->
+
+<!-- precise-unread removed by redesign.py -->
+<!-- flash-killer removed by redesign.py -->
+
+<!-- ===== NH_ZMAIL_ULTIMATE_FIX ===== -->
+
+<!-- ===== end NH_ZMAIL_ULTIMATE_FIX ===== -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script id="nh-clean-leaked-text">
+(function(){
+    function cleanLeakedText() {
+        var body = document.body;
+        if (!body) return;
+        var children = body.childNodes;
+        for (var i = children.length - 1; i >= 0; i--) {
+            var node = children[i];
+            // 如果是文本节点（nodeType === 3），并且包含我们的特征词
+            if (node.nodeType === 3) {
+                var txt = node.nodeValue || '';
+                if (txt.indexOf('nh-cctv-timer') !== -1 || txt.indexOf('文本字数变动') !== -1 || txt.indexOf('净变动') !== -1) {
+                    body.removeChild(node);
+                    console.log('✂️ [clean-leaked-text] 已斩除顶部裸文本');
+                }
+            }
+        }
+    }
+    // 页面加载完成后立刻清理
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', cleanLeakedText);
+    } else {
+        cleanLeakedText();
+    }
+    // 防止切页时再次出现
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay.nhCleanLeak', function() {
+            setTimeout(cleanLeakedText, 50);
+        });
+    }
+})();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script id="nh-zmail-ultimate">
+(function () {
+    'use strict';
+    window.__nhSetUnread = function(n) {};
+    window.__nhGetUnread = function() { return 0; };
+    var READ_KEY = 'nh_zmail_fixed_reads_final';
+    function getReads() { try { return JSON.parse(localStorage.getItem(READ_KEY) || '[]'); } catch(e) { return []; } }
+    function addRead(id) {
+        if (!id) return; var arr = getReads();
+        if (arr.indexOf(id) === -1) { arr.push(id); localStorage.setItem(READ_KEY, JSON.stringify(arr)); }
+    }
+    var lastUnreadCount = -1;
+    function renderFinalUI() {
+        if (!window.SugarCube || !SugarCube.State || SugarCube.State.passage !== 'ZEmail') return;
+        var list = document.getElementById('zm163-inbox-list'); if (!list) return;
+        var rows = list.querySelectorAll('.zm163-mail'); var reads = getReads(); var count = 0;
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i]; if (row.nodeType !== 1) continue; var id = row.getAttribute('data-mail');
+            if (id && reads.indexOf(id) !== -1) { row.classList.remove('unread'); }
+            else { row.classList.add('unread'); count++; }
+        }
+        if (count === lastUnreadCount) return; lastUnreadCount = count;
+        try {
+            SugarCube.State.variables.zmUnread = count; localStorage.setItem('nh_zmUnread', String(count));
+            ['zm163-inbox-badge', 'zm163-unread-num', 'zm163-home-unread'].forEach(function(bid) {
+                var el = document.getElementById(bid);
+                if (el) { el.textContent = count; if (count === 0 && bid === 'zm163-home-unread') el.style.display = 'none'; }
+            });
+            var toolbar = document.getElementById('zm163-list-toolbar');
+            if (toolbar) {
+                var leftDiv = toolbar.querySelector('.left');
+                if (leftDiv) leftDiv.innerHTML = '有 <b id="zm163-unread-num" style="color:#c00;font-weight:600;">' + count + '</b> 封未读 <span style="color:#1e6fd9;cursor:pointer;margin-left:10px;" id="zm163-mark-all">全部设为已读</span>';
+            }
+            if (typeof window.__nhRefreshTabBadge === 'function') window.__nhRefreshTabBadge();
+        } catch (e) {}
+    }
+    document.addEventListener('click', function (ev) {
+        if (!window.SugarCube || SugarCube.State.passage !== 'ZEmail') return;
+        var el = ev.target;
+        if (el && el.id === 'zm163-mark-all') {
+            var allRows = document.querySelectorAll('#zm163-inbox-list .zm163-mail');
+            for (var i = 0; i < allRows.length; i++) addRead(allRows[i].getAttribute('data-mail'));
+            lastUnreadCount = -1; renderFinalUI(); return;
+        }
+        while (el && el !== document.body) {
+            if (el.classList && el.classList.contains('zm163-mail')) {
+                var id = el.getAttribute('data-mail');
+                if (id && el.classList.contains('unread')) { addRead(id); lastUnreadCount = -1; renderFinalUI(); }
+                break;
+            }
+            el = el.parentNode;
+        }
+    }, true);
+    function watchNewMails() {
+        var list = document.getElementById('zm163-inbox-list'); if (!list) { setTimeout(watchNewMails, 500); return; }
+        if (window.__nhZmailObserver) return;
+        window.__nhZmailObserver = new MutationObserver(function(mutations) {
+            for (var i = 0; i < mutations.length; i++) {
+                if (mutations[i].addedNodes.length > 0) { lastUnreadCount = -1; renderFinalUI(); break; }
+            }
+        });
+        window.__nhZmailObserver.observe(list, { childList: true });
+    }
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay.nhFinalRender', function() {
+            lastUnreadCount = -1; setTimeout(function() { renderFinalUI(); watchNewMails(); }, 50);
+        });
+    }
+})();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script id="nh-master-tab-controller">
+(function () {
+    'use strict';
+    function forceTabHighlight() {
+        var cur = '';
+        try { cur = SugarCube.State.passage; } catch(e) { return; }
+        
+        var tabs = document.querySelectorAll('#lw-tabs .lw-tab');
+        if (!tabs.length) return;
+        
+        var isHome = (cur === '内网首页' || cur === 'Start' || cur === '序幕');
+        var isArc  = (cur === 'ZEmail' || cur === '失联时间线' || cur === '第六个人' || cur === '意外？' || cur === '名如其人');
+        var isQD   = (cur.indexOf('泉都论坛') !== -1 || cur === '失联时间线' || cur === '第六个人' || cur === '意外？' || cur === '名如其人');
+
+        for (var i = 0; i < tabs.length; i++) {
+            var txt = (tabs[i].textContent || '').trim();
+            var shouldActive = false;
+            if (txt === '南华大学官网备份') shouldActive = isHome;
+            else if (txt === 'ZEmail') shouldActive = isArc;
+            else if (txt === '泉都论坛') shouldActive = isQD;
+            
+            if (shouldActive) {
+                tabs[i].classList.add('active');
+            } else {
+                tabs[i].classList.remove('active');
+            }
+        }
+    }
+    setInterval(forceTabHighlight, 250);
+})();
+</script>
+
+
+
+
+
+
+
+
+
 
 </body>
 </html>

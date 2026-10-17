@@ -1,514 +1,288 @@
-import os, re, shutil, datetime
+# -*- coding: utf-8 -*-
+import os
+import re
+import shutil
+from datetime import datetime
 
-PATH = 'index.html'
+FILENAME = 'index.html'
 
-backup_dir = os.path.join(os.path.dirname(os.path.abspath(PATH)), 'backups')
-os.makedirs(backup_dir, exist_ok=True)
-ts = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-backup_path = os.path.join(backup_dir, f'index_backup_{ts}.html')
-shutil.copy2(PATH, backup_path)
-print(f'[backup] {backup_path}')
+# ==========================================
+# 带有内部样式的帖子内容
+# ==========================================
 
-with open(PATH, 'r', encoding='utf-8') as f:
-    html = f.read()
-old_len = len(html)
-print(f'[main] 原 index.html 字符数：{old_len}')
-
-# 校验 if 配对
-count_if = html.count('&lt;&lt;if ')
-count_endif = html.count('&lt;&lt;/if&gt;&gt;')
-print(f'[0] 全文件 if：{count_if} / {count_endif}')
-if count_if != count_endif:
-    print('[0] WARN: if 不配对，abort')
-    raise SystemExit(1)
-
-# ---------- 1. 从首页删掉 nh-progress-card ----------
-m_home = re.search(
-    r'(<tw-passagedata\b[^>]*\bname="内网首页"[^>]*>)(.*?)(</tw-passagedata>)',
-    html, re.DOTALL
-)
-if not m_home:
-    print('[1] WARN: 找不到内网首页')
-    raise SystemExit(1)
-
-home_body = m_home.group(2)
-
-# 找卡片起始
-idx_card = home_body.find('&lt;div class=&quot;nh-progress-card&quot;')
-if idx_card == -1:
-    print('[1] 首页没有卡片，跳过删除')
-else:
-    # 找 uni-hero 之前作为结束
-    idx_hero = home_body.find('&lt;div class=&quot;uni-hero&quot;', idx_card)
-    if idx_hero == -1:
-        print('[1] WARN: 找不到 uni-hero，abort')
-        raise SystemExit(1)
-    home_body = home_body[:idx_card] + home_body[idx_hero:]
-    html = html[:m_home.start(2)] + home_body + html[m_home.end(2):]
-    print(f'[1] 从首页删除进度卡片（{idx_card} → {idx_hero}）')
-
-# ---------- 2. 构造侧边栏浮窗 HTML ----------
-# 侧边栏的 HTML 里，加一个按钮
-# 然后加一个浮窗（默认隐藏，点按钮显示）
-
-# 侧边栏 HTML 大概长这样：
-#   <div id="nh-sidebar">
-#     <div class="head">...</div>
-#     <div class="body">
-#       <button class="item" id="nh-sidebar-saves">...</button>
-#       <button class="item nh-home" id="nh-sidebar-home">...</button>
-#       <button class="item danger" id="nh-sidebar-restart">...</button>
-#       <button class="item" id="nh-sidebar-debug">...</button>
-#     </div>
-#     <div class="foot">...</div>
-#   </div>
-
-# 找侧边栏的 debug 按钮，在它后面加"调查进度"按钮
-old_debug_btn = '<button class="item" id="nh-sidebar-debug" type="button">'
-if old_debug_btn not in html:
-    print('[2] WARN: 找不到侧边栏 debug 按钮')
-else:
-    # 在 debug 按钮之后插入"调查进度"按钮
-    new_btn = (
-        '        <button class="item" id="nh-sidebar-progress" type="button">\n'
-        '            <span class="ico">📋</span>\n'
-        '            <span>调查进度</span>\n'
-        '        </button>\n'
-    )
-    # 找 debug 按钮的完整块，在它后面加
-    # debug 按钮完整块
-    idx_debug = html.find(old_debug_btn)
-    # 找 debug 按钮的结束 </button>
-    idx_debug_end = html.find('</button>', idx_debug) + len('</button>')
-    # 在它后面插入
-    html = html[:idx_debug_end] + '\n' + new_btn + html[idx_debug_end:]
-    print('[2] 侧边栏加"调查进度"按钮')
-
-# ---------- 3. 加浮窗 HTML（放在 <body> 里，跟记事本浮窗一样） ----------
-# 找 <body> 后，插入浮窗（放到 #nh-note-win 附近，如果存在的话）
-# 简单做法：在 </body> 前插入
-
-progress_window_html = '''
-<!-- ===== NH_PROGRESS_WINDOW_V1 ===== -->
-<style id="style-nh-progress-window">
-#nh-progress-win {
-    position: fixed;
-    right: 80px;
-    top: 80px;
-    width: 380px;
-    max-height: 520px;
-    background: #fdfaf3;
-    border: 1px solid #b8a888;
-    border-radius: 6px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-    z-index: 2147483499;
-    display: none;
-    flex-direction: column;
-    font-family: "楷体", "KaiTi", "Microsoft YaHei", sans-serif;
-    font-size: 14px;
-    color: #3a2a1a;
-    overflow: hidden;
-}
-#nh-progress-win.open { display: flex; }
-
-#nh-progress-win-titlebar {
-    height: 36px;
-    background: linear-gradient(180deg, #8b0000 0%, #6a0000 100%);
-    color: #f0e8d8;
-    display: flex;
-    align-items: center;
-    padding: 0 10px 0 14px;
-    cursor: move;
-    user-select: none;
-    flex-shrink: 0;
-}
-#nh-progress-win-titlebar .title {
-    flex: 1;
-    font-size: 14px;
-    letter-spacing: 4px;
-    font-family: "微软雅黑", sans-serif;
-}
-#nh-progress-win-titlebar .btn {
-    width: 28px;
-    height: 24px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: transparent;
-    color: #f0e8d8;
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 14px;
-    line-height: 1;
-    padding: 0;
-    margin-left: 4px;
-    font-family: inherit;
-}
-#nh-progress-win-titlebar .btn:hover {
-    background: rgba(255,255,255,0.2);
-}
-
-#nh-progress-win-body {
-    padding: 18px 22px;
-    overflow-y: auto;
-    flex: 1;
-}
-
-#nh-progress-win-body .progress-count {
-    font-size: 15px;
-    color: #5a1a10;
-    margin: 0 0 14px;
-    letter-spacing: 1px;
-}
-#nh-progress-win-body .progress-count b {
-    color: #8b0000;
-    font-size: 17px;
-    padding: 0 3px;
-}
-
-#nh-progress-win-body ul {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 16px;
-}
-#nh-progress-win-body li {
-    padding: 6px 0;
-    font-size: 14px;
-    line-height: 1.7;
-    color: #3a2a1a;
-    border-bottom: 1px dashed rgba(120,90,50,0.15);
-}
-#nh-progress-win-body li:last-child { border-bottom: none; }
-#nh-progress-win-body li.done {
-    color: #2a6a3a;
-    font-weight: 500;
-}
-#nh-progress-win-body li.done::before {
-    content: "✓ ";
-    color: #2a8a3a;
-    font-weight: bold;
-    margin-right: 4px;
-}
-#nh-progress-win-body li.undone {
-    color: #999;
-}
-#nh-progress-win-body li.undone::before {
-    content: "○ ";
-    color: #bbb;
-    margin-right: 4px;
-}
-
-#nh-progress-win-body .progress-hint {
-    margin-top: 16px;
-    padding-top: 14px;
-    border-top: 1px solid rgba(120,90,50,0.15);
-    font-size: 13px;
-    color: #8a6a4a;
-    font-style: italic;
-    line-height: 1.9;
-    letter-spacing: 0.5px;
-}
-
-#nh-progress-win-body .progress-done {
-    margin-top: 16px;
-    padding-top: 14px;
-    border-top: 1px solid rgba(120,90,50,0.2);
-}
-#nh-progress-win-body .progress-done p {
-    margin: 6px 0;
-    font-size: 14px;
-    line-height: 1.9;
-    color: #5a1a10;
-}
-#nh-progress-win-body .progress-done a {
-    color: #8b0000;
-    text-decoration: underline;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: 600;
-}
-#nh-progress-win-body .progress-done a:hover {
-    color: #c02020;
-}
+# 通用内部样式，保证在外部样式表丢失时也能正常显示
+FORUM_CSS = """
+<style>
+.qd-wrap { max-width: 880px; margin: 0 auto; font-family: "微软雅黑", sans-serif; color: #333; background: #f7f4ec; padding-bottom: 40px; }
+.qd-topbar { background: #4a5a6a; color: #e8eef4; padding: 18px 28px; border-bottom: 3px solid #2a3a4a; }
+.qd-logo { font-size: 22px; letter-spacing: 4px; font-weight: 600; }
+.qd-sub { font-size: 12px; opacity: 0.75; margin-top: 4px; letter-spacing: 1px; font-family: Consolas, monospace; }
+.qd-nav { background: #fff; border-bottom: 1px solid #e0d8c8; padding: 0 20px; display: flex; }
+.qd-nav-item { padding: 10px 18px; font-size: 13.5px; color: #666; }
+.qd-nav-item a { color: #2a4a6a; text-decoration: none; cursor: pointer; }
+.qd-nav-item a:hover { color: #8b0000; text-decoration: underline; }
+.qd-body { padding: 20px; }
+.qd-main { background: #fff; border: 1px solid #e0d8c8; border-radius: 3px; padding: 20px 24px; }
+.qd-thread-title { font-size: 18px; color: #2a4a6a; font-weight: 600; line-height: 1.5; margin-bottom: 8px; }
+.qd-thread-meta { font-size: 12px; color: #999; padding-bottom: 12px; border-bottom: 1px solid #e8e0d0; margin-bottom: 18px; font-family: Consolas, monospace; }
+.qd-floor { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px dashed #f0e8d8; }
+.qd-floor:last-of-type { border-bottom: none; }
+.qd-floor-l { flex: 0 0 80px; text-align: center; }
+.qd-floor-avatar { width: 48px; height: 48px; background: #4a5a6a; color: #fff; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 18px; margin: 0 auto 6px; }
+.qd-floor-name { font-size: 12px; color: #4a5a6a; word-break: break-all; }
+.qd-floor-r { flex: 1; min-width: 0; }
+.qd-floor-head { font-size: 11.5px; color: #999; margin-bottom: 8px; font-family: Consolas, monospace; }
+.qd-floor-body { font-size: 14px; line-height: 1.9; color: #333; }
+.qd-floor-body p { margin: 0 0 6px; }
 </style>
+"""
 
-<div id="nh-progress-win" role="dialog" aria-label="调查进度">
-    <div id="nh-progress-win-titlebar">
-        <span class="title">调查进度</span>
-        <button class="btn" id="nh-progress-win-close" type="button" title="关闭">×</button>
-    </div>
-    <div id="nh-progress-win-body">
-        <div id="nh-progress-content">
-            <p style="color:#999;font-size:13px;text-align:center;padding:20px 0;">（进入游戏后显示进度）</p>
+CONTENT_LOSSLINE = FORUM_CSS + """<div class="qd-wrap">
+  <div class="qd-topbar">
+    <div class="qd-logo">泉都论坛</div>
+    <div class="qd-sub">悬案疑云 · 帖子详情</div>
+  </div>
+  <div class="qd-nav">
+    <span class="qd-nav-item"><a data-passage="泉都论坛" class="link-internal">← 返回首页</a></span>
+  </div>
+  <div class="qd-body">
+    <div class="qd-main">
+      <div class="qd-thread-title">【整理】南华大学失联案 · 时间线（2015）</div>
+      <div class="qd-thread-meta">楼主：ARC-CC | 2020-09-15 03:14 | 查看 2103 | 回复 31</div>
+      
+      <div class="qd-floor">
+        <div class="qd-floor-l"><div class="qd-floor-avatar">A</div><div class="qd-floor-name">ARC-CC</div></div>
+        <div class="qd-floor-r">
+          <div class="qd-floor-head">1 楼 · 2020-09-15 03:14</div>
+          <div class="qd-floor-body">
+            <p>我花了整整三天，把当年所有能找到的公开资料、贴吧截图、甚至报纸边角料都翻出来了。</p>
+            <p>结合前几帖的线索，我重新排了一下那晚的时间轴：</p>
+            <br>
+            <p><b>【22:13】</b> 监控显示，6个人进入旧教学楼地下室B102。注意，门禁记录的是5个人，但监控里是6个人影。</p>
+            <p><b>【22:21】</b> 门开了，跑出来5个人。监控里，门内还站着一个黑影，没有跟着出来。</p>
+            <p><b>【22:26】</b> 监控信号开始受到严重干扰，画面出现雪花。走廊尽头出现人影，在靠近镜头。</p>
+            <p><b>【22:47】</b> 火警触发。消防车抵达。</p>
+            <br>
+            <p>这里有一个<strong>巨大的时间断层</strong>：从22:26到22:47，整整二十分钟，那个“没出来的黑影”在做什么？那5个跑出来的人，又为什么没有立刻报警？</p>
+          </div>
         </div>
+      </div>
     </div>
-</div>
+  </div>
+</div>"""
 
-<script id="nh-progress-window-js">
-(function () {
-    'use strict';
+CONTENT_SIXTH = FORUM_CSS + """<div class="qd-wrap">
+  <div class="qd-topbar">
+    <div class="qd-logo">泉都论坛</div>
+    <div class="qd-sub">悬案疑云 · 帖子详情</div>
+  </div>
+  <div class="qd-nav">
+    <span class="qd-nav-item"><a data-passage="泉都论坛" class="link-internal">← 返回首页</a></span>
+  </div>
+  <div class="qd-body">
+    <div class="qd-main">
+      <div class="qd-thread-title">【分析】5 个人还是 6 个人？我数了三遍</div>
+      <div class="qd-thread-meta">楼主：ARC-CC | 2020-09-15 03:41 | 查看 947 | 回复 18</div>
+      
+      <div class="qd-floor">
+        <div class="qd-floor-l"><div class="qd-floor-avatar">A</div><div class="qd-floor-name">ARC-CC</div></div>
+        <div class="qd-floor-r">
+          <div class="qd-floor-head">1 楼 · 2020-09-15 03:41</div>
+          <div class="qd-floor-body">
+            <p>你们有没有想过，为什么官方通报上只有5个人失联？</p>
+            <p>林晚、张昊、王佳、李阳、赵晓。这是当年的5人名单。南大校史、市志、当年的报纸，全都是这5个名字。</p>
+            <br>
+            <p>但是，在2015年9月18日，也就是火灾发生后的第三天，南大内网发生了一次极不正常的<b>“学籍封存”</b>操作。</p>
+            <p>这5个人被封存了。但是，封存记录的总数，是<b>6</b>。</p>
+            <p>第6个学号是 2015010462。这个人在所有的系统里都被删得干干净净，连失踪名单上都没有她。</p>
+            <p>可是，图书馆的借阅记录里，有她。文学社的招新公示里，有她。甚至那份没有署名的《第七首诗》，也是她写的。</p>
+            <br>
+            <p>她叫<b>苏言</b>。</p>
+            <p>为什么要把一个死去的受害者，从档案里彻底抹除？那5个人，到底在怕什么？</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>"""
 
-    var WIN_ID = 'nh-progress-win';
-    var BALL_ID = 'nh-sidebar-progress';
-    var POS_KEY = 'nh_progress_win_pos';
+CONTENT_FIRE = FORUM_CSS + """<div class="qd-wrap">
+  <div class="qd-topbar">
+    <div class="qd-logo">泉都论坛</div>
+    <div class="qd-sub">悬案疑云 · 帖子详情</div>
+  </div>
+  <div class="qd-nav">
+    <span class="qd-nav-item"><a data-passage="泉都论坛" class="link-internal">← 返回首页</a></span>
+  </div>
+  <div class="qd-body">
+    <div class="qd-main">
+      <div class="qd-thread-title">【分析】那场火，不可能是意外</div>
+      <div class="qd-thread-meta">楼主：ARC-CC | 2020-09-15 04:07 | 查看 1287 | 回复 24</div>
+      
+      <div class="qd-floor">
+        <div class="qd-floor-l"><div class="qd-floor-avatar">A</div><div class="qd-floor-name">ARC-CC</div></div>
+        <div class="qd-floor-r">
+          <div class="qd-floor-head">1 楼 · 2020-09-15 04:07</div>
+          <div class="qd-floor-body">
+            <p>那天的《消防事故调查报告》我搞到了一份复印件。</p>
+            <p>官方的结论是“电路老化，引燃旧报纸”。但这根本经不起推敲。</p>
+            <p>第一，地下室是密集书库，常年阴冷潮湿，旧报纸怎么可能那么巧就在那天晚上被电火花引燃？</p>
+            <p>第二，事后那5个学生的笔录，口径太一致了。警察问什么，他们就答什么，情绪异常稳定，连字句都不带差的。像是提前排练过。</p>
+            <p>第三，如果真的是意外，为什么跑出来的5个人，要把苏言的存在彻底抹杀掉？</p>
+            <br>
+            <p>我倾向于认为：当晚在地下室，发生了一场激烈的争执。那场火，大概率是在争执中，有人碰倒了电线，或者……有人故意点燃了那些诗稿。</p>
+            <p>那5个人跑了。把门锁了。把苏言留在了里面。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>"""
 
-    function $id(id) { return document.getElementById(id); }
+CONTENT_TEACHER = FORUM_CSS + """<div class="qd-wrap">
+  <div class="qd-topbar">
+    <div class="qd-logo">泉都论坛</div>
+    <div class="qd-sub">悬案疑云 · 帖子详情</div>
+  </div>
+  <div class="qd-nav">
+    <span class="qd-nav-item"><a data-passage="泉都论坛" class="link-internal">← 返回首页</a></span>
+  </div>
+  <div class="qd-body">
+    <div class="qd-main">
+      <div class="qd-thread-title">【分析】那个"沉默"的老师</div>
+      <div class="qd-thread-meta">楼主：ARC-CC | 2020-09-15 04:33 | 查看 421 | 回复 9</div>
+      
+      <div class="qd-floor">
+        <div class="qd-floor-l"><div class="qd-floor-avatar">A</div><div class="qd-floor-name">ARC-CC</div></div>
+        <div class="qd-floor-r">
+          <div class="qd-floor-head">1 楼 · 2020-09-15 04:33</div>
+          <div class="qd-floor-body">
+            <p>大家一直忽略了一个人。陈默，文学社的指导老师。</p>
+            <p>案发那晚，他不在学校。警方对他的调查也很快就结束了。因为他既不是失联者，也不是嫌疑人。</p>
+            <p>但是，他的档案里存在极大的矛盾：</p>
+            <p>2015年9月，他短暂担任了文学社的指导老师，不到两个月就离职了，原因是“个人原因”。</p>
+            <p>他走得很急，几乎是逃离了南华大学。但可怕的是，他留在内网的账号，却从未真正注销。</p>
+            <br>
+            <p>系统日志记录，每年的9月15日，那个账号都会自动登入一次。</p>
+            <p>停留时间：<b>1分17秒</b>。</p>
+            <p>他只访问一个页面：<b>旧教学楼失火</b>。</p>
+            <br>
+            <p>他为什么每年都要回来看一眼？他在内疚什么？</p>
+            <p>或者，这份档案的记录人不是他，而是某个“使用他账号”的存在？</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>"""
 
-    function loadPos() {
-        try {
-            var s = localStorage.getItem(POS_KEY);
-            if (!s) return null;
-            var p = s.split(',');
-            if (p.length !== 2) return null;
-            var l = parseFloat(p[0]), t = parseFloat(p[1]);
-            if (isNaN(l) || isNaN(t)) return null;
-            return { left: l, top: t };
-        } catch (e) { return null; }
-    }
-    function savePos(left, top) {
-        try { localStorage.setItem(POS_KEY, left + ',' + top); } catch (e) {}
-    }
-    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 
-    function makeDraggable(el, handle, onEnd) {
-        if (!el) return;
-        var dragging = false, sx = 0, sy = 0, ol = 0, ot = 0, moved = false;
+def read_file(filepath):
+    with open(filepath, 'r', encoding='utf-8') as f:
+        return f.read()
 
-        function onDown(e) {
-            if (e.button !== undefined && e.button !== 0) return;
-            if (handle && e.target !== handle && !handle.contains(e.target)) return;
-            dragging = true; moved = false;
-            var pt = e.touches ? e.touches[0] : e;
-            sx = pt.clientX; sy = pt.clientY;
-            var r = el.getBoundingClientRect();
-            ol = r.left; ot = r.top;
-            el.style.right = 'auto'; el.style.bottom = 'auto';
-            el.style.left = ol + 'px'; el.style.top = ot + 'px';
-            if (e.cancelable) e.preventDefault();
-        }
-        function onMove(e) {
-            if (!dragging) return;
-            var pt = e.touches ? e.touches[0] : e;
-            var dx = pt.clientX - sx, dy = pt.clientY - sy;
-            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
-            var r = el.getBoundingClientRect();
-            var maxL = window.innerWidth - r.width;
-            var maxT = window.innerHeight - r.height;
-            el.style.left = clamp(ol + dx, 0, Math.max(0, maxL)) + 'px';
-            el.style.top = clamp(ot + dy, 0, Math.max(0, maxT)) + 'px';
-            if (e.cancelable) e.preventDefault();
-        }
-        function onUp() {
-            if (!dragging) return;
-            dragging = false;
-            if (moved) {
-                var r = el.getBoundingClientRect();
-                if (onEnd) onEnd(r.left, r.top);
-            }
-        }
-        el.addEventListener('mousedown', onDown, false);
-        document.addEventListener('mousemove', onMove, true);
-        document.addEventListener('mouseup', onUp, true);
-        el.addEventListener('touchstart', onDown, { passive: false });
-        document.addEventListener('touchmove', onMove, { passive: false, capture: true });
-        document.addEventListener('touchend', onUp, true);
-        document.addEventListener('touchcancel', onUp, true);
-    }
+def write_file(filepath, content):
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(content)
 
-    function openWin() {
-        var win = $id(WIN_ID);
-        if (!win) return;
-        win.classList.add('open');
-        var pos = loadPos();
-        if (pos) {
-            win.style.right = 'auto';
-            win.style.top = 'auto';
-            win.style.left = pos.left + 'px';
-            win.style.top = pos.top + 'px';
-        }
-        refresh();
-    }
-    function closeWin() {
-        var win = $id(WIN_ID);
-        if (!win) return;
-        win.classList.remove('open');
-    }
-    function toggleWin() {
-        var win = $id(WIN_ID);
-        if (!win) return;
-        if (win.classList.contains('open')) closeWin();
-        else openWin();
-    }
+def backup_file(filepath):
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    backup_path = filepath.replace('.html', f'.backup.{timestamp}.html')
+    shutil.copy2(filepath, backup_path)
+    print(f"[*] 已创建备份文件: {backup_path}")
+    return backup_path
 
-    // 更新进度内容
-    function refresh() {
-        var content = $id('nh-progress-content');
-        if (!content) return;
-        try {
-            var SC = window.SugarCube;
-            if (!SC || !SC.State) return;
-
-            var v = SC.State.variables;
-            var list = [
-                { id: '旧教学楼失火', label: '旧教学楼失火' },
-                { id: '苏言残稿',     label: '苏言残稿' },
-                { id: '2015笔录',     label: '2015笔录' },
-                { id: '监控录像',     label: '监控录像' },
-                { id: '陈默教研日志', label: '陈默教研日志' },
-                { id: '林晚的留言',   label: '林晚的留言' },
-                { id: '第七个书架',   label: '第七个书架' }
-            ];
-
-            var visited = 0;
-            var itemsHtml = '';
-            for (var i = 0; i < list.length; i++) {
-                var item = list[i];
-                var done = false;
-                try { done = window.nhVisited ? window.nhVisited(item.id) : false; }
-                catch (e) {}
-                if (done) visited++;
-                itemsHtml += '<li class="' + (done ? 'done' : 'undone') + '">' + item.label + '</li>';
-            }
-
-            var hintHtml = '';
-            var hints = [
-                '提示：旧教学楼那场火，报告里写着「1 人失联」。',
-                '提示：文学社名单里，有一个被划掉的名字。',
-                '提示：2015 年 9 月 16 日有一份询问笔录。',
-                '提示：地下室那晚的监控，门禁和画面人数对不上。',
-                '提示：图书馆分区里有一份没提交的教研日志。',
-                '提示：林晚留下过一段话，藏在内网底层。',
-                '提示：论坛里提到的「第七个书架」，似乎真的存在。'
-            ];
-            if (visited < 7 && visited < hints.length) {
-                hintHtml = '<div class="progress-hint">' + hints[visited] + '</div>';
-            }
-
-            var finalHtml = '';
-            if (visited >= 7) {
-                var lvl = 0;
-                try { lvl = v.corruptionLevel || 0; } catch (e) {}
-                if (lvl < 3) {
-                    finalHtml = '<div class="progress-done">' +
-                        '<p>所有线索都找到了。</p>' +
-                        '<p>但还不够。你总觉得有人在看着你。</p>' +
-                        '<p class="progress-hint">（继续查看内网的其它页面，直到它变得不对劲。）</p>' +
-                        '</div>';
-                } else {
-                    finalHtml = '<div class="progress-done">' +
-                        '<p>你看着屏幕上这些字。</p>' +
-                        '<p>你忽然想起来了。</p>' +
-                        '<p><a id="nh-progress-identity-link">你想起了一些事。</a></p>' +
-                        '</div>';
-                }
-            }
-
-            content.innerHTML =
-                '<p class="progress-count">已找到线索：<b>' + visited + '</b> / 7</p>' +
-                '<ul>' + itemsHtml + '</ul>' +
-                hintHtml +
-                finalHtml;
-
-            // 绑定身份揭露链接
-            var link = $id('nh-progress-identity-link');
-            if (link && !link.__nhBound) {
-                link.__nhBound = true;
-                link.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    try { SC.Engine.play('身份揭露'); } catch (err) {}
-                });
-            }
-        } catch (e) {
-            console.warn('[nh-progress-window] refresh error:', e);
-        }
-    }
-
-    function bind() {
-        var ball = $id(BALL_ID);
-        var win = $id(WIN_ID);
-        if (!ball || !win) return false;
-        if (ball.__nhProgressBound) return true;
-        ball.__nhProgressBound = true;
-
-        ball.addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            // 关掉侧边栏
-            var sidebar = $id('nh-sidebar');
-            var mask = $id('nh-sidebar-mask');
-            var menuBtn = $id('nh-menu-btn');
-            if (sidebar) sidebar.classList.remove('open');
-            if (mask) mask.classList.remove('open');
-            if (menuBtn) menuBtn.textContent = '☰';
-            // 打开浮窗
-            toggleWin();
-        });
-
-        var closeBtn = $id('nh-progress-win-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                closeWin();
-            });
-        }
-
-        var titlebar = $id('nh-progress-win-titlebar');
-        makeDraggable(win, titlebar, function (l, t) { savePos(l, t); });
-
-        return true;
-    }
-
-    // 监听页面切换，刷新进度
-    if (window.jQuery) {
-        jQuery(document).on(':passagedisplay.nhProgressWin', function () {
-            var win = $id(WIN_ID);
-            if (win && win.classList.contains('open')) {
-                setTimeout(refresh, 100);
-                setTimeout(refresh, 500);
-            }
-        });
-    }
-
-    // 启动
-    var tries = 0;
-    var t = setInterval(function () {
-        if (bind() || ++tries > 100) clearInterval(t);
-    }, 100);
-    bind();
-
-    console.log('[nh-progress-window] v1 loaded');
-})();
-</script>
-<!-- ===== end NH_PROGRESS_WINDOW_V1 ===== -->
-'''
-
-# 在 </body> 前插入
-if 'nh-progress-window-js' not in html:
-    idx_body_end = html.rfind('</body>')
-    if idx_body_end == -1:
-        print('[3] WARN: 找不到 </body>')
+def replace_passage_content(html, passage_name, new_content):
+    # 匹配 <tw-passagedata ... name="passage_name" ...>...</tw-passagedata>
+    pattern = re.compile(
+        r'(<tw-passagedata[^>]*name="' + re.escape(passage_name) + r'"[^>]*>)(.*?)(</tw-passagedata>)',
+        re.DOTALL
+    )
+    
+    # 替换前先编码 HTML 实体（因为原文件中的内容是经过编码的）
+    new_content_encoded = (new_content
+                           .replace('&', '&amp;')
+                           .replace('<', '&lt;')
+                           .replace('>', '&gt;')
+                           .replace('"', '&quot;'))
+    
+    def replacer(match):
+        return match.group(1) + new_content_encoded + match.group(3)
+    
+    new_html, count = pattern.subn(replacer, html)
+    if count == 0:
+        print(f"[!] 警告：未找到 passage '{passage_name}'，请检查名称是否正确。")
     else:
-        html = html[:idx_body_end] + progress_window_html + '\n' + html[idx_body_end:]
-        print('[3] 插入浮窗 HTML + JS')
-else:
-    print('[3] 浮窗已存在，跳过')
+        print(f"[+] 成功替换 passage '{passage_name}' 的内容 (共 {count} 处)。")
+    return new_html
 
-# ---------- 4. 校验 ----------
-final_if = html.count('&lt;&lt;if ')
-final_endif = html.count('&lt;&lt;/if&gt;&gt;')
-print(f'[final] 全文件 if：{final_if} / {final_endif}')
-if final_if != final_endif:
-    print('[final] WARN: if 不配对！abort')
-    shutil.copy2(backup_path, PATH)
-    print('[final] 已从备份恢复')
-    raise SystemExit(1)
+def main():
+    if not os.path.exists(FILENAME):
+        print(f"[!] 错误：找不到文件 {FILENAME}，请确保脚本与 index.html 在同一目录下。")
+        return
 
-new_len = len(html)
-delta = new_len - old_len
-delta_str = f'+{delta}' if delta > 0 else str(delta)
-print(f'[main] 新 index.html 字符数：{new_len}')
-print(f'[main] 净变动：{delta_str}')
+    print(f"[*] 开始处理 {FILENAME} ...")
+    
+    # 1. 读取原文件
+    original_html = read_file(FILENAME)
+    original_len = len(original_html)
+    
+    # 2. 备份文件
+    backup_file(FILENAME)
+    
+    # 3. 执行替换
+    modified_html = original_html
+    replacements = [
+        ("失联时间线", CONTENT_LOSSLINE),
+        ("第六个人", CONTENT_SIXTH),
+        ("意外？", CONTENT_FIRE),
+        ("名如其人", CONTENT_TEACHER)
+    ]
+    
+    for name, content in replacements:
+        modified_html = replace_passage_content(modified_html, name, content)
+        
+    # 4. 计算字数变动
+    new_len = len(modified_html)
+    diff = new_len - original_len
+    diff_str = f"+{diff}" if diff >= 0 else str(diff)
+    
+    # 5. 插入 Changelog
+    changelog = f"""<!--
+  NH_REDESIGN_FIX_CHANGELOG_V121
+  =============================
+  生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+  本次（redesign.py V121）修复清单：
 
-with open(PATH, 'w', encoding='utf-8') as f:
-    f.write(html)
+  1] 修复泉都论坛四个分析帖子内容完全重复的问题
+     · 症状：在【泉都论坛】首页点击“失联时间线”、“第六个人”、
+             “意外？”、“名如其人”四个帖子，进入后内容一模一样。
+     · 原因：之前生成时，这四个 passage 的内部 HTML 被错误地
+             全量复制成了同一段主帖内容。
+     · 修复：提取这四个 passage，分别替换为符合当前标题的
+             独立剧情正文内容（时间轴推理、人数论证、人为纵火
+             分析、陈默暗线）。
+  2] 修复论坛帖子样式丢失问题
+     · 为防止外部动态注入样式失效导致页面裸奔，在四个帖子的
+       HTML 内部直接注入了基础的 CSS 样式。
 
-print('[main] done')
+  文本字数变动：
+    · 原 index.html 字符数：{original_len}
+    · 新 index.html 字符数：{new_len}
+    · 净变动：{diff_str}
+-->
+
+"""
+    # 查找 <head> 标签并在其后插入（或者插在文件最前面）
+    if '<!DOCTYPE html>' in modified_html:
+        modified_html = modified_html.replace('<!DOCTYPE html>', '<!DOCTYPE html>\n' + changelog, 1)
+    else:
+        modified_html = changelog + modified_html
+        
+    # 6. 保存新文件
+    write_file(FILENAME, modified_html)
+    print(f"[+] 文件修改完成！")
+    print(f"[*] 字数变动：{original_len} -> {new_len} ({diff_str})")
+
+if __name__ == '__main__':
+    main()
