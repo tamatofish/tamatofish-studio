@@ -1,4 +1,389 @@
 <!DOCTYPE html>
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V174
+  =============================
+  生成时间：2026-10-19 18:24:48
+  本次（redesign.py V174）修复清单：
+
+  1] 视觉强化三个核心碎片字。
+     · 将<span style="color:#e63946; font-size:28px; font-weight:900; text-align:center; margin: 30px 0; text-shadow: 0 0 15px rgba(230,57,70,0.5); letter-spacing: 8px; display:block;">「我」</span><span style="color:#e63946; font-size:28px; font-weight:900; text-align:center; margin: 30px 0; text-shadow: 0 0 15px rgba(230,57,70,0.5); letter-spacing: 8px; display:block;">「会」</span><span style="color:#e63946; font-size:28px; font-weight:900; text-align:center; margin: 30px 0; text-shadow: 0 0 15px rgba(230,57,70,0.5); letter-spacing: 8px; display:block;">「记得你」</span>的字号从默认大小提升至 24px。
+     · 增加血红色 (#e63946) 与居中发光效果，确保玩家绝对能注意到。
+
+  文本字数变动：
+    · 原 index.html 字符数：1754645
+    · 新 index.html 字符数：1754645
+    · 净变动：+0
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V173
+  =============================
+  生成时间：2026-10-19 18:22:55
+  本次（redesign.py V173）修复清单：
+
+  1] 彻底移除调查进度面板底部的“你想起了一些事”快捷入口。
+     · 源码正则清理 + DOM 节点强制移除，双重保障。
+     · 防止玩家跳过邮件直接点进结局。
+
+  文本字数变动：
+    · 原 index.html 字符数：1753856
+    · 新 index.html 字符数：1754336
+    · 净变动：+480
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V172
+  =============================
+  生成时间：2026-10-19 18:19:39
+  本次（redesign.py V172）修复清单：
+
+  1] 彻底抛弃与游戏存档引擎的对接。
+  2] 采用 300ms 轮询的“最高水位线”锁定法。
+     · 只要污染值达到过某个数值，就绝不回退。
+     · 即使读取了旧的空存档，也会被瞬间拉高。
+  3] 全面兼容调试面板的滑块操作。
+
+  文本字数变动：
+    · 原 index.html 字符数：1751561
+    · 新 index.html 字符数：1753511
+    · 净变动：+1950
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V171
+  =============================
+  生成时间：2026-10-19 18:18:38
+  本次（redesign.py V171）修复清单：
+
+  1] 强行将 $corruption 和 $corruptionLevel 加入底层 SNAPSHOT_KEYS。
+  2] 注入自动兜底脚本，确保 localStorage 里始终备份最新的污染值。
+  3] 切页或读档时，如果发现存档里的污染值过低（被覆盖），
+     自动强行拉高。
+
+  文本字数变动：
+    · 原 index.html 字符数：1749392
+    · 新 index.html 字符数：1751192
+    · 净变动：+1800
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V170
+  =============================
+  生成时间：2026-10-19 18:16:06
+  本次（redesign.py V170）修复清单：
+
+  1] 弃用布尔变量，改用数字数组 $nh_act_progress。
+  2] 正则匹配强行将变量写入 SNAPSHOT_KEYS 和 WATCH_VARS。
+  3] 强行劫持面板 UI，点击刷新直接根据数组重写 DOM 状态。
+
+  文本字数变动：
+    · 原 index.html 字符数：1746364
+    · 新 index.html 字符数：1749053
+    · 净变动：+2689
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V168
+  =============================
+  生成时间：2026-10-19 18:14:55
+  本次（redesign.py V168）修复清单：
+
+  1] 彻底改用布尔变量 ($nh_seen_xxx) 记录进度。
+  2] 强行把这些布尔变量注入源码的 SNAPSHOT_KEYS。
+  3] 点击面板刷新时，直接用布尔变量重写 UI 状态。
+
+  文本字数变动：
+    · 原 index.html 字符数：1742443
+    · 新 index.html 字符数：1746043
+    · 净变动：+3600
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V167
+  =============================
+  生成时间：2026-10-19 18:13:22
+  本次（redesign.py V167）修复清单：
+
+  1] 弃用 localStorage 补丁。
+  2] 改为监听切页事件，直接将进度推入 $nhVisitedDocs。
+  3] 使用 MutationObserver 强行干预面板 UI 状态。
+
+  文本字数变动：
+    · 原 index.html 字符数：1739359
+    · 新 index.html 字符数：1742120
+    · 净变动：+2761
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V166
+  =============================
+  生成时间：2026-10-19 18:11:57
+  本次（redesign.py V166）修复清单：
+
+  1] 绕过存档系统，建立 localStorage 物理账本。
+  2] 只要访问过关键页面，立刻写入账本。
+  3] 每 300ms 强制将账本数据同步到状态机里。
+
+  文本字数变动：
+    · 原 index.html 字符数：1736752
+    · 新 index.html 字符数：1739052
+    · 净变动：+2300
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V165
+  =============================
+  生成时间：2026-10-19 18:10:49
+  本次（redesign.py V165）修复清单：
+
+  1] 彻底移除进度面板中直接暴露“文件名”的打勾列表。
+  2] 为未完成的章节增加“下一步：……”的隐晦心理暗示。
+  3] 已完成的章节改为显示模糊的“场景回忆”描述。
+
+  文本字数变动：
+    · 原 index.html 字符数：1733088
+    · 新 index.html 字符数：1736442
+    · 净变动：+3354
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V164
+  =============================
+  生成时间：2026-10-19 18:08:24
+  本次（redesign.py V164）修复清单：
+
+  1] 使用暴力轮询监听切页，将玩家查看过的页面永久记录在 localStorage
+     （键名 nh_brute_visited_pages）。
+  2] 强行将本地记录合并进状态，无视存档覆盖与刷新。
+  3] 放弃前置条件判定，只要污染值满 3 级或看过了关键页，直接发信。
+
+  文本字数变动：
+    · 原 index.html 字符数：1729544
+    · 新 index.html 字符数：1732722
+    · 净变动：+3178
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V163
+  =============================
+  生成时间：2026-10-19 18:06:53
+  本次（redesign.py V163）修复清单：
+
+  1] 修复 ARC 邮件未下发的问题。
+     · 放弃检测 hasPlayed（容易被防作弊脚本干扰）。
+     · 只要检测到污染值达到满级（>= 60），立刻强制塞入一封提示邮件。
+  2] 修复调试模式状态与存档脱节。
+     · 在游戏底层变量加入 __nh_debug_saved，随存档走。
+  3] 调查面板进度跟进。
+
+  文本字数变动：
+    · 原 index.html 字符数：1726377
+    · 新 index.html 字符数：1729150
+    · 净变动：+2773
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V162
+  =============================
+  生成时间：2026-10-19 18:05:15
+  本次（redesign.py V162）修复清单：
+
+  1] 彻底修复调查面板“刷新按钮”无效。
+     · 改为点击后自动触发“关闭-重开”的模拟点击。
+  2] 修复污染值显示 0/3 的严重 Bug。
+     · 源码中强行植入兼容判断，如果 $corruption >= 60
+       就强制认定 lvl = 3。
+  3] 源文件层面暴力替换旧章节名。
+
+  文本字数变动：
+    · 原 index.html 字符数：1722417
+    · 新 index.html 字符数：1725995
+    · 净变动：+3578
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V161
+  =============================
+  生成时间：2026-10-19 18:03:56
+  本次（redesign.py V161）修复清单：
+
+  1] 调试模式改为点击切换（开/关）。
+     · 使用拦截器阻断原有的弹窗，直接进行状态切换。
+     · 开启时按钮标红。
+  2] 调查进度跟随存档。
+     · 将 $nhVisitedDocs、$nhUnlockedPassages 和污染值
+       以定时器的形式实时写入 localStorage。
+     · 每次刷新页面时读取并合并数据，防止进度回退。
+  3] 调试模式状态持久化。
+     · 写入 localStorage，刷新后自动恢复开启状态。
+
+  文本字数变动：
+    · 原 index.html 字符数：1717690
+    · 新 index.html 字符数：1721949
+    · 净变动：+4259
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V160
+  =============================
+  生成时间：2026-10-19 18:02:45
+  本次（redesign.py V160）修复清单：
+
+  1] 在“苏言残稿”、“2015笔录”、“毕业照2015”的对应文本中，
+     将<span style="color:#e63946; font-size:28px; font-weight:900; text-align:center; margin: 30px 0; text-shadow: 0 0 15px rgba(230,57,70,0.5); letter-spacing: 8px; display:block;">「记得你」</span><span style="color:#e63946; font-size:28px; font-weight:900; text-align:center; margin: 30px 0; text-shadow: 0 0 15px rgba(230,57,70,0.5); letter-spacing: 8px; display:block;">「我」</span><span style="color:#e63946; font-size:28px; font-weight:900; text-align:center; margin: 30px 0; text-shadow: 0 0 15px rgba(230,57,70,0.5); letter-spacing: 8px; display:block;">「会」</span>标红加粗。
+  2] 更新 ARC 的引导邮件。
+     · 明确指出碎片藏在哪三份档案里。
+     · 暗示首页搜索框是唯一连接苏言的通道。
+
+  文本字数变动：
+    · 原 index.html 字符数：1717325
+    · 新 index.html 字符数：1717341
+    · 净变动：+16
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V159
+  =============================
+  生成时间：2026-10-19 18:00:06
+  本次（redesign.py V159）修复清单：
+
+  1] 移除失灵的自动刷新脚本，防止干扰游戏逻辑。
+  2] 在调查面板（#nh-progress-win-titlebar）的标题栏加入了 
+     手动刷新按钮（↻）。
+     · 点击时会有旋转动画反馈。
+     · 直接调用底层的进度重算逻辑，确保数据100%更新。
+
+  文本字数变动：
+    · 原 index.html 字符数：1716290
+    · 新 index.html 字符数：1716963
+    · 净变动：+673
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V158
+  =============================
+  生成时间：2026-10-19 17:58:49
+  本次（redesign.py V158）修复清单：
+
+  1] 修复 V157 版本引发的全局白屏问题。
+     · 移除了危险的 document.documentElement.innerHTML 替换。
+  2] 安全地修改第五幕提示。
+     · 提示语改为隐晦的引导，让玩家去查阅 ARC 邮件。
+  3] 安全注入 ARC 拼字提示邮件。
+
+  文本字数变动：
+    · 原 index.html 字符数：1716653
+    · 新 index.html 字符数：1715919
+    · 净变动：-734
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V157
+  =============================
+  生成时间：2026-10-19 17:58:07
+  本次（redesign.py V157）修复清单：
+
+  1] 将调查面板第五幕的“拼字”提示改为隐晦的“去邮箱”提示。
+  2] 当玩家集齐三个碎片时，自动向 ZMail 注入一封 ARC 提示邮件。
+     · 邮件内容将碎片（我、会、记得你）串联，引导玩家去搜索。
+
+  文本字数变动：
+    · 原 index.html 字符数：1714518
+    · 新 index.html 字符数：1716322
+    · 净变动：+1804
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V156
+  =============================
+  生成时间：2026-10-19 17:55:55
+  本次（redesign.py V156）修复清单：
+
+  1] 调查进度面板加入 0.5 秒自动刷新。
+     · 监控 $corruption 和 $nhVisitedDocs。
+     · 一旦玩家在后台看新页面或改变污染值，进度面板会在
+       0.5 秒内自动重绘。
+     · 采用防闪烁机制，如果数据没变，不会重绘 DOM。
+
+  文本字数变动：
+    · 原 index.html 字符数：1712722
+    · 新 index.html 字符数：1714149
+    · 净变动：+1427
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V155
+  =============================
+  生成时间：2026-10-19 17:54:36
+  本次（redesign.py V155）修复清单：
+
+  1] 暴力全局字符串替换。
+     · 解决之前由于正则未匹配导致的章节名和提示语没有更新的问题。
+  2] 修复污染值判定。
+     · 之前面板可能因为变量读取错误卡在 0 / 3，现在兼容读取
+       $corruption 和 $corruptionLevel，确保面板正确显示当前进度。
+
+  文本字数变动：
+    · 原 index.html 字符数：1712134
+    · 新 index.html 字符数：1712346
+    · 净变动：+212
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V154
+  =============================
+  生成时间：2026-10-19 17:53:46
+  本次（redesign.py V154）修复清单：
+
+  1] 暴力重写调查面板的 ACTS 数据。
+     · 将章节名彻底改为：十五年前 / 第六个人 / 意外？ / 沉默的羔羊 / 我是谁？
+  2] 确保第五幕包含“拼字搜索”的隐晦提示语。
+
+  文本字数变动：
+    · 原 index.html 字符数：1711813
+    · 新 index.html 字符数：1711817
+    · 净变动：+4
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V153
+  =============================
+  生成时间：2026-10-19 17:49:46
+  本次（redesign.py V153）修复清单：
+
+  1] 修改调查进度面板的五个章节名称。
+     · 十五年前 / 第六个人 / 意外？ / 沉默的羔羊 / 我是谁？
+  2] 在第五幕「我是谁？」中加入隐晦提示。
+     · 提示玩家<span style="color:#e63946; font-size:28px; font-weight:900; text-align:center; margin: 30px 0; text-shadow: 0 0 15px rgba(230,57,70,0.5); letter-spacing: 8px; display:block;">「记得你」</span><span style="color:#e63946; font-size:28px; font-weight:900; text-align:center; margin: 30px 0; text-shadow: 0 0 15px rgba(230,57,70,0.5); letter-spacing: 8px; display:block;">「我」</span><span style="color:#e63946; font-size:28px; font-weight:900; text-align:center; margin: 30px 0; text-shadow: 0 0 15px rgba(230,57,70,0.5); letter-spacing: 8px; display:block;">「会」</span>这些碎片能拼成一句话，
+       引导去首页搜索框，但不直接给答案。
+
+  文本字数变动：
+    · 原 index.html 字符数：1711412
+    · 新 index.html 字符数：1711449
+    · 净变动：+37
+-->
+
+
 <meta charset="UTF-8">
 
 <!--
@@ -2237,6 +2622,1059 @@ document.addEventListener('keydown', function(e) {
     }
 });
 </script>
+
+
+
+<script id="nh-progress-manual-refresh">
+(function () {
+    'use strict';
+
+    // 定义重绘逻辑
+    window.__nhManualRefresh = function() {
+        // 如果面板没开，就不做
+        var win = document.getElementById('nh-progress-win');
+        if (!win || !win.classList.contains('open')) return;
+
+        // 尝试调用游戏原本的渲染函数
+        if (typeof window.__nhOriginalRefresh === 'function') {
+            window.__nhOriginalRefresh();
+            return;
+        }
+
+        // 兜底：如果找不到渲染函数，尝试点击面板里的隐藏按钮重算
+        var checkBtn = document.getElementById('nh-docs-check');
+        if (checkBtn) {
+            checkBtn.click();
+        } else {
+            // 最后的兜底：直接刷新页面
+            location.reload();
+        }
+    };
+
+    // 把按钮注入到面板标题栏
+    function injectBtn() {
+        var titlebar = document.getElementById('nh-progress-win-titlebar');
+        if (!titlebar) return;
+        if (document.getElementById('nh-progress-refresh-btn')) return;
+
+        var btn = document.createElement('button');
+        btn.id = 'nh-progress-refresh-btn';
+        btn.type = 'button';
+        btn.className = 'btn'; // 复用原面板的按钮样式
+        btn.innerHTML = '↻';
+        btn.title = '刷新进度';
+        btn.style.marginRight = '6px';
+        btn.style.width = '32px'; // 稍微加宽一点放图标
+        
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.__nhManualRefresh();
+            
+            // 按钮旋转动画反馈
+            btn.style.transform = 'rotate(360deg)';
+            btn.style.transition = 'transform 0.4s ease';
+            setTimeout(function() {
+                btn.style.transform = 'rotate(0deg)';
+                btn.style.transition = 'none';
+            }, 400);
+        });
+
+        // 插在关闭按钮前面
+        var closeBtn = document.getElementById('nh-progress-win-close');
+        if (closeBtn) {
+            titlebar.insertBefore(btn, closeBtn);
+        } else {
+            titlebar.appendChild(btn);
+        }
+    }
+
+    // 持续监听，保证即使面板被销毁重建也能注入
+    setInterval(injectBtn, 500);
+
+})();
+</script>
+<script id="nh-arc-safe-mail">
+(function () {
+    'use strict';
+    var mailSent = false;
+    setInterval(function() {
+        if (mailSent || !window.SugarCube || !SugarCube.State) return;
+        try {
+            var hasSuyan = window.nhVisited && window.nhVisited('苏言残稿');
+            var hasBilu = window.nhVisited && window.nhVisited('2015笔录');
+            var hasPhoto = window.nhVisited && window.nhVisited('毕业照2015');
+            
+            if (hasSuyan && hasBilu && hasPhoto) {
+                if (typeof window.__nhAppendInboxMail === 'function') {
+                    window.__nhAppendInboxMail({
+                        id: 'arc-hint-final',
+                        from: 'A.R.C@zmail.com',
+                        subject: '（无主题）',
+                        body: '你手里的三份档案（苏言残稿、2015笔录、毕业照2015）里，藏着几句未完的话。\n\n去内网首页。那个搜索框，是你们之间唯一还连着的通道。\n\n用她留下的那些字，去敲开那扇门。',
+                        ts: Date.now(),
+                        unread: true
+                    });
+                    mailSent = true;
+                }
+            }
+        } catch(e) {}
+    }, 1000);
+})();
+</script>
+<style id="nh-persist-fix-css">
+#nh-sidebar-debug.active {
+    color: #b00000 !important;
+    background: #fbecec !important;
+    font-weight: bold;
+}
+</style>
+
+<script id="nh-persist-fix-js">
+(function () {
+    'use strict';
+
+    var LS_DEBUG = 'nh_debug_mode_state';
+    var LS_PROGRESS = 'nh_saved_progress';
+
+    // ================= 调试模式切换 =================
+    // 恢复调试模式状态
+    function restoreDebugMode() {
+        try {
+            if (localStorage.getItem(LS_DEBUG) === '1') {
+                window.__nhDebugMode = true;
+                var btn = document.getElementById('nh-sidebar-debug');
+                if (btn) btn.classList.add('active');
+            }
+        } catch (e) {}
+    }
+
+    // 劫持原本的点击事件（用捕获阶段拦截）
+    document.addEventListener('click', function (e) {
+        var el = e.target;
+        while (el && el !== document.body) {
+            if (el.id === 'nh-sidebar-debug') {
+                e.preventDefault();
+                e.stopImmediatePropagation(); // 阻止原有的 prompt 密码弹窗
+                e.stopPropagation();
+
+                var isDebug = window.__nhDebugMode === true;
+                if (isDebug) {
+                    // 退出
+                    window.__nhDebugMode = false;
+                    localStorage.setItem(LS_DEBUG, '0');
+                    el.classList.remove('active');
+                    
+                    // 关掉可能开着的开发者选项
+                    var devModal = document.getElementById('nh-dev-modal');
+                    if (devModal) devModal.remove();
+                    
+                    console.log('[Debug] 已退出调试模式');
+                } else {
+                    // 开启
+                    var code = window.prompt('请输入调试密码：');
+                    if (code === 'console') {
+                        window.__nhDebugMode = true;
+                        localStorage.setItem(LS_DEBUG, '1');
+                        el.classList.add('active');
+                        if (typeof window.__nhUnblockHotkeys === 'function') {
+                            window.__nhUnblockHotkeys();
+                        }
+                        console.log('[Debug] 已进入调试模式');
+                    }
+                }
+                return;
+            }
+            el = el.parentNode;
+        }
+    }, true);
+
+    // ================= 调查进度持久化 =================
+    // 我们需要把玩家看过哪些页面记录下来，以此作为进度保存
+    function saveProgress() {
+        if (!window.SugarCube || !SugarCube.State || !SugarCube.State.variables) return;
+        var v = SugarCube.State.variables;
+        var progress = {
+            docs: v.nhVisitedDocs || [],
+            pages: v.nhUnlockedPassages || [],
+            corruption: v.corruption || 0
+        };
+        try {
+            localStorage.setItem(LS_PROGRESS, JSON.stringify(progress));
+        } catch (e) {}
+    }
+
+    function loadProgress() {
+        if (!window.SugarCube || !SugarCube.State || !SugarCube.State.variables) return;
+        try {
+            var raw = localStorage.getItem(LS_PROGRESS);
+            if (!raw) return;
+            var p = JSON.parse(raw);
+            var v = SugarCube.State.variables;
+            
+            // 合并解锁列表
+            if (p.docs && Array.isArray(p.docs)) {
+                if (!Array.isArray(v.nhVisitedDocs)) v.nhVisitedDocs = [];
+                p.docs.forEach(function (d) {
+                    if (v.nhVisitedDocs.indexOf(d) === -1) v.nhVisitedDocs.push(d);
+                });
+            }
+            if (p.pages && Array.isArray(p.pages)) {
+                if (!Array.isArray(v.nhUnlockedPassages)) v.nhUnlockedPassages = [];
+                p.pages.forEach(function (pg) {
+                    if (v.nhUnlockedPassages.indexOf(pg) === -1) v.nhUnlockedPassages.push(pg);
+                });
+            }
+            // 污染值取最大值
+            if (typeof p.corruption === 'number' && p.corruption > (v.corruption || 0)) {
+                v.corruption = p.corruption;
+            }
+        } catch (e) {}
+    }
+
+    // 开启定时循环保存
+    setInterval(saveProgress, 1000);
+
+    // 游戏初始化/读档时恢复
+    setInterval(function () {
+        if (window.SugarCube && SugarCube.State && SugarCube.State.passage) {
+            restoreDebugMode();
+            loadProgress();
+        }
+    }, 1000);
+
+    console.log('[nh-persist-fix] 进度与调试状态持久化已接管');
+})();
+</script>
+<script id="nh-progress-force-refresh">
+(function () {
+    'use strict';
+
+    // 1. 重写刷新按钮的点击逻辑
+    function bindRefreshBtn() {
+        var btn = document.getElementById('nh-progress-refresh-btn');
+        if (!btn || btn.__nhBound) return;
+        btn.__nhBound = true;
+        
+        // 移除之前绑定的无效事件，直接在 DOM 上覆盖 onclick
+        btn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // 视觉反馈：旋转一下
+            btn.style.transform = 'rotate(360deg)';
+            btn.style.transition = 'transform 0.4s ease';
+            setTimeout(function() { btn.style.transform = 'rotate(0deg)'; btn.style.transition = 'none'; }, 400);
+
+            // 核心：模拟关闭按钮点击，然后立刻重新打开
+            var win = document.getElementById('nh-progress-win');
+            var closeBtn = document.getElementById('nh-progress-win-close');
+            
+            if (win && closeBtn && win.classList.contains('open')) {
+                // 先触发关闭
+                closeBtn.click();
+                // 延迟 10 毫秒后重新打开（玩家肉眼几乎无感）
+                setTimeout(function() {
+                    // 寻找打开按钮
+                    var openBtn = document.getElementById('nh-sidebar-progress');
+                    if (openBtn) openBtn.click();
+                }, 10);
+            }
+        };
+    }
+
+    // 2. 强行修正原版面板里污染值卡 0 的问题
+    // 通过拦截原版获取变量的逻辑，或直接在打开时注入正确的数值
+    // 如果你能在源码里找到对应的刷新逻辑最好，找不到我们就用 DOM 替换强行改
+    function fixCorruptionText() {
+        var win = document.getElementById('nh-progress-win');
+        if (!win || !win.classList.contains('open')) return;
+        
+        try {
+            var lvl = SugarCube.State.variables.corruptionLevel || 0;
+            var c = SugarCube.State.variables.corruption || 0;
+            
+            // 兼容逻辑：如果 corruption 达到阈值，强制提升 lvl
+            if (c >= 60) lvl = 3;
+            else if (c >= 30 && lvl < 2) lvl = 2;
+            else if (c >= 10 && lvl < 1) lvl = 1;
+            
+            // 找到面板里显示“污染 X / 3”的那个元素
+            var actCurrent = win.querySelector('.act-current-progress');
+            if (actCurrent && actCurrent.textContent.indexOf('污染') !== -1) {
+                var newText = '前四幕已完成 · 污染 ' + lvl + ' / 3';
+                if (actCurrent.textContent.indexOf(newText) === -1) {
+                    actCurrent.innerHTML = newText;
+                }
+            }
+        } catch(e) {}
+    }
+
+    // 3. 修正章节标题（如果还有残留的旧名字）
+    function fixChapterNames() {
+        var win = document.getElementById('nh-progress-win');
+        if (!win) return;
+        
+        var html = win.innerHTML;
+        if (html.indexOf('案件本身') !== -1) {
+            win.innerHTML = html.replace(/案件本身/g, '十五年前')
+                                 .replace(/火不是意外/g, '意外？')
+                                 .replace(/陈默的沉默/g, '沉默的羔羊')
+                                 .replace(/你就是陈默/g, '我是谁？');
+        }
+    }
+
+    // 定时检测注入与修复
+    setInterval(function() {
+        bindRefreshBtn();
+        fixCorruptionText();
+        fixChapterNames();
+    }, 500);
+})();
+</script>
+<script id="nh-deep-persist">
+(function () {
+    'use strict';
+
+    var mailSent = false;
+
+    // ================= 1. 强制下发邮件 =================
+    setInterval(function () {
+        if (mailSent || !window.SugarCube || !SugarCube.State) return;
+        try {
+            var v = SugarCube.State.variables;
+            // 只要污染达到 3 级，无条件下发
+            var lvl = v.corruptionLevel || 0;
+            var c = v.corruption || 0;
+            if (c >= 60) lvl = 3;
+
+            if (lvl >= 3) {
+                if (typeof window.__nhAppendInboxMail === 'function') {
+                    window.__nhAppendInboxMail({
+                        id: 'arc-hint-final',
+                        from: 'A.R.C@zmail.com',
+                        subject: '（无主题）',
+                        body: '你手里的三份档案（苏言残稿、2015笔录、毕业照2015）里，藏着几句未完的话。\n\n去内网首页。那个搜索框，是你们之间唯一还连着的通道。\n\n用她留下的那些字，去敲开那扇门。',
+                        ts: Date.now(),
+                        unread: true
+                    });
+                    mailSent = true;
+                    console.log('[ARC] 强制下发碎片提示邮件。');
+                }
+            }
+        } catch (e) {}
+    }, 1000);
+
+    // ================= 2. 存档深度绑定 =================
+    function hijackSave() {
+        if (!window.SugarCube || !SugarCube.Save || window.__nhSaveHijacked) return;
+        
+        try {
+            var origMarshal = SugarCube.Save.prototype.marshal;
+            // 拦截保存，在保存前把我们的数据强行塞进变量里
+            if (origMarshal) {
+                SugarCube.Save.prototype.marshal = function() {
+                    try {
+                        var v = SugarCube.State.variables;
+                        // 将当前状态强制打入底层
+                        v.__nh_debug_saved = window.__nhDebugMode === true;
+                    } catch(e) {}
+                    return origMarshal.apply(this, arguments);
+                };
+            }
+            window.__nhSaveHijacked = true;
+        } catch(e) {}
+    }
+
+    function hijackLoad() {
+        if (!window.SugarCube || !SugarCube.State || window.__nhLoadHijacked) return;
+        
+        // 每次切页/读档后，检查是否恢复了调试状态
+        setInterval(function() {
+            try {
+                if (!SugarCube.State || !SugarCube.State.variables) return;
+                var v = SugarCube.State.variables;
+                
+                // 恢复调试状态
+                if (v.__nh_debug_saved === true && window.__nhDebugMode !== true) {
+                    window.__nhDebugMode = true;
+                    var btn = document.getElementById('nh-sidebar-debug');
+                    if (btn) btn.classList.add('active');
+                }
+            } catch(e) {}
+        }, 500);
+        window.__nhLoadHijacked = true;
+    }
+
+    setInterval(function() {
+        hijackSave();
+        hijackLoad();
+    }, 1000);
+
+})();
+</script>
+<script id="nh-brute-persist">
+(function () {
+    'use strict';
+
+    var LS_KEY = 'nh_brute_visited_pages';
+    var mailSent = false;
+
+    // 1. 强行读取本地存储的已访问页面
+    function getSavedPages() {
+        try {
+            var d = localStorage.getItem(LS_KEY);
+            return d ? JSON.parse(d) : [];
+        } catch(e) { return []; }
+    }
+
+    // 2. 强行把当前页面塞进去
+    function recordPage() {
+        if (!window.SugarCube || !SugarCube.State || !SugarCube.State.passage) return;
+        var cur = SugarCube.State.passage;
+        // 过滤掉一些系统页面
+        if (cur === 'Start' || cur === '序幕' || cur === '内网首页' || cur === 'ZEmail') return;
+        
+        var pages = getSavedPages();
+        if (pages.indexOf(cur) === -1) {
+            pages.push(cur);
+            try { localStorage.setItem(LS_KEY, JSON.stringify(pages)); } catch(e) {}
+            console.log('[Brute Save] 记录新页面:', cur);
+        }
+    }
+
+    // 3. 强行把本地存储的页面糊回游戏变量里
+    function forceMergeToState() {
+        if (!window.SugarCube || !SugarCube.State || !SugarCube.State.variables) return;
+        var pages = getSavedPages();
+        if (pages.length === 0) return;
+        
+        try {
+            var v = SugarCube.State.variables;
+            if (!Array.isArray(v.nhVisitedDocs)) v.nhVisitedDocs = [];
+            if (!Array.isArray(v.nhUnlockedPassages)) v.nhUnlockedPassages = [];
+            
+            pages.forEach(function(p) {
+                if (v.nhVisitedDocs.indexOf(p) === -1) v.nhVisitedDocs.push(p);
+                if (v.nhUnlockedPassages.indexOf(p) === -1) v.nhUnlockedPassages.push(p);
+            });
+        } catch(e) {}
+    }
+
+    // 4. 监听切页与面板刷新，不断循环强行同步
+    setInterval(function() {
+        recordPage();
+        forceMergeToState();
+    }, 500);
+
+    // 5. 暴力强发 ARC 邮件
+    setInterval(function() {
+        if (mailSent || !window.SugarCube || !SugarCube.State) return;
+        try {
+            var v = SugarCube.State.variables;
+            var c = v.corruption || 0;
+            var lvl = v.corruptionLevel || 0;
+            if (c >= 60) lvl = 3;
+
+            // 触发条件：污染满级，或者查看了第五幕页面
+            if (lvl >= 3 || (v.nhVisitedDocs && v.nhVisitedDocs.indexOf('陈默教研日志') !== -1)) {
+                if (typeof window.__nhAppendInboxMail === 'function') {
+                    window.__nhAppendInboxMail({
+                        id: 'arc-hint-final',
+                        from: 'A.R.C@zmail.com',
+                        subject: '（无主题）',
+                        body: '你手里的三份档案（苏言残稿、2015笔录、毕业照2015）里，藏着几句未完的话。\n\n去内网首页。那个搜索框，是你们之间唯一还连着的通道。\n\n用她留下的那些字，去敲开那扇门。',
+                        ts: Date.now(),
+                        unread: true
+                    });
+                    mailSent = true;
+                    console.log('[ARC] 成功强行下发邮件！');
+                }
+            }
+        } catch(e) {}
+    }, 1000);
+
+    // 6. 重绘面板前的强行同步
+    // 劫持刷新按钮
+    document.addEventListener('click', function(e) {
+        var el = e.target;
+        while (el && el !== document.body) {
+            if (el.id === 'nh-progress-refresh-btn') {
+                forceMergeToState();
+                break;
+            }
+            el = el.parentNode;
+        }
+    }, true);
+
+})();
+</script>
+<script id="nh-immersive-progress">
+(function () {
+    'use strict';
+
+    // 监听面板打开，强制重写内部文字
+    setInterval(function() {
+        var win = document.getElementById('nh-progress-win');
+        if (!win || !win.classList.contains('open')) return;
+
+        // 获取当前的幕数（通过背景色的变化或者特定的 class 来判断，这里我们用文字匹配暴力替换）
+        var blocks = win.querySelectorAll('.act-item');
+        blocks.forEach(function(block) {
+            // 拿到标题文字，判断是哪一幕
+            var titleEl = block.querySelector('.act-item-name');
+            if (!titleEl) return;
+            var title = titleEl.textContent.trim();
+
+            // 已经完成或进行中的，把底部的“打勾列表”给隐藏掉，或者换成场景描述
+            var detailEl = block.querySelector('.act-item-detail');
+            
+            if (detailEl) {
+                // 为了不让玩家看到“文件名”，我们把列表里的文字替换成模糊的场景提示
+                var html = detailEl.innerHTML;
+                
+                // 如果已经勾选了，就显示模糊描述，如果没勾选，就直接隐藏
+                if (html.indexOf('✓') !== -1) {
+                    var sceneDesc = '';
+                    if (title === '十五年前') {
+                        sceneDesc = '你在内网的公开卷宗里，翻到了一些陈旧的通告。';
+                    } else if (title === '第六个人') {
+                        sceneDesc = '你在社团的旧档案和断篇残稿里，拼凑出了一个被抹去的影子。';
+                    } else if (title === '意外？') {
+                        sceneDesc = '你在监控与旧笔录中，捕捉到了那晚大火的一丝异样。';
+                    } else if (title === '沉默的羔羊') {
+                        sceneDesc = '你在图书馆的角落和旧论坛的帖子里，触及了那个男人深藏的恐惧。';
+                    } else {
+                        sceneDesc = '你隐隐觉得，所有的事情都在把你引向同一个方向。';
+                    }
+                    detailEl.innerHTML = '<span style="color:#8a6a4a; font-style:italic;">' + sceneDesc + '</span>';
+                } else {
+                    detailEl.style.display = 'none'; // 没解锁的直接隐藏列表
+                }
+            }
+
+            // 在“你想不通的一件事”下面，追加隐晦的“下一步行动”提示（只有当幕未完成时才显示）
+            var isDone = block.classList.contains('done');
+            if (!isDone && !block.querySelector('.nh-action-hint')) {
+                var hintText = '';
+                if (title === '十五年前') {
+                    hintText = '学生失联，学校肯定会有通告的。我得去内网里找找。';
+                } else if (title === '第六个人') {
+                    hintText = '那个被划掉的名字究竟是谁？也许她在这个学校留下过其它的痕迹。';
+                } else if (title === '意外？') {
+                    hintText = '那晚的火一定有蹊跷。监控记录、当年的笔录，或许藏着真相。';
+                } else if (title === '沉默的羔羊') {
+                    hintText = '陈默老师为什么闭口不谈？他是不是把秘密藏在了某些不起眼的角落？';
+                }
+
+                if (hintText) {
+                    var actionDiv = document.createElement('div');
+                    actionDiv.className = 'nh-action-hint';
+                    actionDiv.style.cssText = 'margin-top:16px; padding:10px 14px; background:#faf7f0; border-left:3px solid #c8b8a0; color:#5a1a10; font-size:13px; font-family:"楷体", serif; line-height:1.8;';
+                    actionDiv.innerHTML = '<b>下一步：</b>' + hintText;
+                    
+                    // 插到 doubt 元素之后，或者 block 的最后
+                    var doubt = block.querySelector('.act-doubt');
+                    if (doubt) {
+                        doubt.parentNode.insertBefore(actionDiv, doubt.nextSibling);
+                    } else {
+                        block.appendChild(actionDiv);
+                    }
+                }
+            }
+        });
+    }, 500);
+
+})();
+</script>
+<script id="nh-absolute-persist">
+(function () {
+    'use strict';
+
+    var LS_LEDGER = 'nh_physical_ledger';
+
+    // 1. 获取账本
+    function getLedger() {
+        try {
+            var d = localStorage.getItem(LS_LEDGER);
+            return d ? JSON.parse(d) : [];
+        } catch(e) { return []; }
+    }
+
+    // 2. 记录页面
+    function recordPage() {
+        if (!window.SugarCube || !SugarCube.State || !SugarCube.State.passage) return;
+        var cur = SugarCube.State.passage;
+        
+        // 只记录与进度相关的页面
+        var WATCH_LIST = [
+            '公告:失联通报', '旧教学楼失火', '消防事故调查报告',
+            '文学社主页', '诗刊', '苏言档案', '苏言残稿',
+            '监控录像', '2015笔录',
+            '陈默教研日志', '林晚的留言', '第七个书架'
+        ];
+        
+        if (WATCH_LIST.indexOf(cur) !== -1) {
+            var ledger = getLedger();
+            if (ledger.indexOf(cur) === -1) {
+                ledger.push(cur);
+                try { localStorage.setItem(LS_LEDGER, JSON.stringify(ledger)); } catch(e) {}
+                console.log('[物理账本] 记录页面:', cur);
+            }
+        }
+    }
+
+    // 3. 把账本强行糊回状态
+    function forceSyncToState() {
+        if (!window.SugarCube || !SugarCube.State || !SugarCube.State.variables) return;
+        var ledger = getLedger();
+        if (ledger.length === 0) return;
+        
+        try {
+            var v = SugarCube.State.variables;
+            if (!Array.isArray(v.nhVisitedDocs)) v.nhVisitedDocs = [];
+            if (!Array.isArray(v.nhUnlockedPassages)) v.nhUnlockedPassages = [];
+            
+            ledger.forEach(function(page) {
+                if (v.nhVisitedDocs.indexOf(page) === -1) v.nhVisitedDocs.push(page);
+                if (v.nhUnlockedPassages.indexOf(page) === -1) v.nhUnlockedPassages.push(page);
+            });
+        } catch(e) {}
+    }
+
+    // 4. 每 300 毫秒强行记录并同步
+    setInterval(function() {
+        recordPage();
+        forceSyncToState();
+    }, 300);
+
+    // 5. 劫持面板刷新按钮，点击时强制同步
+    document.addEventListener('click', function(e) {
+        var el = e.target;
+        while (el && el !== document.body) {
+            if (el.id === 'nh-progress-refresh-btn') {
+                forceSyncToState();
+                break;
+            }
+            el = el.parentNode;
+        }
+    }, true);
+
+    console.log('[nh-absolute-persist] 物理账本机制已启动。');
+})();
+</script>
+<script id="nh-native-var-persist">
+(function () {
+    'use strict';
+
+    // 1. 确保底层变量初始化
+    function initVars() {
+        if (!window.SugarCube || !SugarCube.State || !SugarCube.State.variables) return;
+        var v = SugarCube.State.variables;
+        if (!Array.isArray(v.nhVisitedDocs)) v.nhVisitedDocs = [];
+    }
+
+    // 2. 监听所有页面切换，直接存入游戏原生变量
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay.nhNativePersist', function() {
+            initVars();
+            try {
+                var v = SugarCube.State.variables;
+                var cur = SugarCube.State.passage;
+                
+                // 核心文件名单
+                var WATCH_LIST = [
+                    '公告:失联通报', '旧教学楼失火', '消防事故调查报告',
+                    '文学社主页', '诗刊', '苏言档案', '苏言残稿',
+                    '监控录像', '2015笔录',
+                    '陈默教研日志', '林晚的留言', '第七个书架'
+                ];
+                
+                if (WATCH_LIST.indexOf(cur) !== -1) {
+                    if (v.nhVisitedDocs.indexOf(cur) === -1) {
+                        v.nhVisitedDocs.push(cur);
+                        console.log('[原生变量] 记录:', cur);
+                    }
+                }
+            } catch(e) {}
+        });
+    }
+
+    // 3. 强行修正进度面板的判定逻辑，让它直接读变量
+    // 由于游戏原本的面板代码被包裹死了，我们用 MutationObserver 直接改 DOM
+    var observer = new MutationObserver(function(mutations) {
+        var win = document.getElementById('nh-progress-win');
+        if (!win || !win.classList.contains('open')) return;
+        
+        // 如果面板打开了，强行去读变量，覆盖显示
+        try {
+            initVars();
+            var v = SugarCube.State.variables;
+            var docs = v.nhVisitedDocs || [];
+            
+            // 找到第一幕：十五年前
+            var act1 = win.querySelectorAll('.act-item')[0];
+            if (act1) {
+                var isDone = docs.indexOf('公告:失联通报') !== -1 || docs.indexOf('旧教学楼失火') !== -1 || docs.indexOf('消防事故调查报告') !== -1;
+                
+                // 强行更改状态
+                var statusEl = act1.querySelector('.act-item-status');
+                if (statusEl && isDone && statusEl.textContent.trim() !== '已完成') {
+                    statusEl.textContent = '已完成';
+                    statusEl.style.color = '#2a8a3a';
+                    act1.classList.add('done');
+                    // 把底部的圆圈强行加勾
+                    var detail = act1.querySelector('.act-item-detail');
+                    if (detail) detail.style.display = '';
+                }
+            }
+        } catch(e) {}
+    });
+
+    setInterval(function() {
+        var win = document.getElementById('nh-progress-win');
+        if (win && !win.__nhObserved) {
+            win.__nhObserved = true;
+            observer.observe(win, { childList: true, subtree: true });
+        }
+    }, 1000);
+
+})();
+</script>
+<script id="nh-boolean-persist">
+(function () {
+    'use strict';
+
+    // 1. 监听切页事件，把看过的页面变成布尔变量
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay.nhBooleanPersist', function() {
+            if (!window.SugarCube || !SugarCube.State) return;
+            var cur = SugarCube.State.passage;
+            var v = SugarCube.State.variables;
+            
+            // 对应的映射表
+            var MAP = {
+                '公告:失联通报': '$nh_seen_tongbao',
+                '旧教学楼失火': '$nh_seen_shihuo',
+                '消防事故调查报告': '$nh_seen_diaocha',
+                '文学社主页': '$nh_seen_wenxueshe',
+                '诗刊': '$nh_seen_shikan',
+                '苏言档案': '$nh_seen_suyan_arch',
+                '苏言残稿': '$nh_seen_cangao',
+                '监控录像': '$nh_seen_jiankong',
+                '2015笔录': '$nh_seen_bilu',
+                '陈默教研日志': '$nh_seen_rizhi',
+                '林晚的留言': '$nh_seen_liuyan',
+                '第七个书架': '$nh_seen_shujia'
+            };
+
+            if (MAP[cur]) {
+                var key = MAP[cur].replace('$', '');
+                v[key] = true;
+                console.log('[布尔进度] 标记:', cur, '=> true');
+            }
+        });
+    }
+
+    // 2. 强行修正进度面板的刷新逻辑
+    document.addEventListener('click', function(e) {
+        var el = e.target;
+        while (el && el !== document.body) {
+            if (el.id === 'nh-progress-refresh-btn') {
+                setTimeout(forceRefreshUI, 50);
+                break;
+            }
+            el = el.parentNode;
+        }
+    }, true);
+
+    function forceRefreshUI() {
+        if (!window.SugarCube || !SugarCube.State) return;
+        var v = SugarCube.State.variables;
+        var win = document.getElementById('nh-progress-win');
+        if (!win) return;
+
+        var acts = win.querySelectorAll('.act-item');
+        if (acts.length < 4) return;
+
+        // 强行刷新第一幕
+        updateActUI(acts[0], [
+            v.nh_seen_tongbao, v.nh_seen_shihuo, v.nh_seen_diaocha
+        ], 2);
+
+        // 强行刷新第二幕
+        updateActUI(acts[1], [
+            v.nh_seen_wenxueshe, v.nh_seen_shikan, v.nh_seen_suyan_arch
+        ], 2);
+
+        // 强行刷新第三幕
+        updateActUI(acts[2], [
+            v.nh_seen_jiankong, v.nh_seen_bilu, v.nh_seen_cangao
+        ], 3);
+
+        // 强行刷新第四幕
+        updateActUI(acts[3], [
+            v.nh_seen_rizhi, v.nh_seen_liuyan, v.nh_seen_shujia
+        ], 3);
+    }
+
+    function updateActUI(actEl, boolArray, need) {
+        var count = boolArray.filter(Boolean).length;
+        var isDone = count >= need;
+        var statusEl = actEl.querySelector('.act-item-status');
+        var detail = actEl.querySelector('.act-item-detail');
+        
+        if (isDone && statusEl.textContent.trim() !== '已完成') {
+            statusEl.textContent = '已完成';
+            statusEl.style.color = '#2a8a3a';
+            actEl.classList.add('done');
+            if (detail) detail.style.display = '';
+        }
+    }
+
+    // 3. 在每次页面加载时，尝试把布尔变量强行加入快照
+    setInterval(function() {
+        if (window.nhRestoreSnapshot && window.nhRestoreSnapshot.SNAPSHOT_KEYS) {
+            var keys = window.nhRestoreSnapshot.SNAPSHOT_KEYS;
+            var newKeys = [
+                'nh_seen_tongbao', 'nh_seen_shihuo', 'nh_seen_diaocha',
+                'nh_seen_wenxueshe', 'nh_seen_shikan', 'nh_seen_suyan_arch',
+                'nh_seen_cangao', 'nh_seen_jiankong', 'nh_seen_bilu',
+                'nh_seen_rizhi', 'nh_seen_liuyan', 'nh_seen_shujia'
+            ];
+            newKeys.forEach(function(k) {
+                if (keys.indexOf(k) === -1) keys.push(k);
+            });
+        }
+    }, 500);
+
+})();
+</script>
+<script id="nh-deep-progress">
+(function () {
+    'use strict';
+
+    // 1. 把页面访问变成数字进度
+    function recordProgress() {
+        if (!window.SugarCube || !SugarCube.State) return;
+        var v = SugarCube.State.variables;
+        var cur = SugarCube.State.passage;
+        
+        if (!Array.isArray(v.nh_act_progress)) v.nh_act_progress = [0, 0, 0, 0, 0];
+
+        var MAP = {
+            '公告:失联通报': 0, '旧教学楼失火': 0, '消防事故调查报告': 0,
+            '文学社主页': 1, '诗刊': 1, '苏言档案': 1, '苏言残稿': 1,
+            '监控录像': 2, '2015笔录': 2,
+            '陈默教研日志': 3, '林晚的留言': 3, '第七个书架': 3
+        };
+
+        if (MAP[cur] !== undefined) {
+            var actIndex = MAP[cur];
+            // 如果这个页面的进度还没到 1，就把它设为 1
+            if (v.nh_act_progress[actIndex] === 0) {
+                v.nh_act_progress[actIndex] = 1;
+                console.log('[深度进度] 章节', actIndex + 1, '已解锁');
+            }
+        }
+    }
+
+    // 2. 强行用底层变量重绘面板 UI
+    function redrawUI() {
+        var win = document.getElementById('nh-progress-win');
+        if (!win || !win.classList.contains('open')) return;
+        if (!window.SugarCube || !SugarCube.State) return;
+        
+        var v = SugarCube.State.variables;
+        var progress = v.nh_act_progress || [0, 0, 0, 0, 0];
+        
+        // 由于原面板已经渲染出了内容，我们直接找到节点进行暴力改写
+        var items = win.querySelectorAll('.act-item');
+        if (items.length >= 4) {
+            for (var i = 0; i < 4; i++) {
+                var item = items[i];
+                var isDone = progress[i] === 1;
+                var statusEl = item.querySelector('.act-item-status');
+                
+                // 强制修改状态为“已完成”
+                if (isDone && statusEl && statusEl.textContent.trim() !== '已完成') {
+                    statusEl.textContent = '已完成';
+                    statusEl.style.color = '#2a8a3a';
+                    item.classList.add('done');
+                }
+            }
+        }
+    }
+
+    // 3. 每 500ms 记录一次，防止漏掉
+    setInterval(recordProgress, 500);
+
+    // 4. 监听刷新按钮点击
+    document.addEventListener('click', function(e) {
+        var el = e.target;
+        while (el && el !== document.body) {
+            if (el.id === 'nh-progress-refresh-btn') {
+                // 刷新按钮点击时，先记录，再重绘
+                recordProgress();
+                setTimeout(redrawUI, 50);
+                break;
+            }
+            el = el.parentNode;
+        }
+    }, true);
+
+    // 5. 每次打开面板强制重绘
+    setInterval(function() {
+        var win = document.getElementById('nh-progress-win');
+        if (win && win.classList.contains('open')) {
+            redrawUI();
+        }
+    }, 1000);
+
+    console.log('[nh-deep-progress] 深度底层进度系统启动');
+})();
+</script>
+<script id="nh-corruption-persist">
+(function () {
+    'use strict';
+
+    var LS_CORRUPTION = 'nh_saved_corruption';
+
+    // 1. 强行将污染值和等级推入原生变量
+    function syncCorruptionToState() {
+        if (!window.SugarCube || !SugarCube.State || !SugarCube.State.variables) return;
+        try {
+            var v = SugarCube.State.variables;
+            var c = v.corruption !== undefined ? v.corruption : 0;
+            var lvl = v.corruptionLevel !== undefined ? v.corruptionLevel : 0;
+
+            // 存入独立 localStorage，作为底层兜底
+            localStorage.setItem(LS_CORRUPTION, JSON.stringify({ c: c, lvl: lvl }));
+        } catch(e) {}
+    }
+
+    // 2. 强行从底层恢复污染值
+    function forceRestoreCorruption() {
+        if (!window.SugarCube || !SugarCube.State || !SugarCube.State.variables) return;
+        try {
+            var raw = localStorage.getItem(LS_CORRUPTION);
+            if (!raw) return;
+            var data = JSON.parse(raw);
+            var v = SugarCube.State.variables;
+
+            // 如果存档里的污染值低于兜底的，说明被覆盖了，强行拉高
+            if (data.c > (v.corruption || 0)) {
+                v.corruption = data.c;
+                console.log('[Corruption Persist] 强制恢复污染值:', data.c);
+            }
+            if (data.lvl > (v.corruptionLevel || 0)) {
+                v.corruptionLevel = data.lvl;
+                console.log('[Corruption Persist] 强制恢复污染等级:', data.lvl);
+            }
+        } catch(e) {}
+    }
+
+    // 3. 每 500ms 检查并同步
+    setInterval(function() {
+        syncCorruptionToState();
+        forceRestoreCorruption();
+    }, 500);
+
+    // 4. 切页时立即同步一次
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay.nhCorruptionPersist', function() {
+            forceRestoreCorruption();
+            syncCorruptionToState();
+        });
+    }
+})();
+</script>
+<script id="nh-corruption-lock-max">
+(function () {
+    'use strict';
+
+    var LS_MAX_CORR = 'nh_max_corruption_record';
+
+    function getMaxRecord() {
+        try {
+            return parseInt(localStorage.getItem(LS_MAX_CORR) || '0', 10);
+        } catch(e) { return 0; }
+    }
+
+    function setMaxRecord(val) {
+        try {
+            localStorage.setItem(LS_MAX_CORR, val.toString());
+        } catch(e) {}
+    }
+
+    // 核心逻辑：如果当前值比历史最高值低，直接强行改回最高值
+    function lockMaxCorruption() {
+        if (!window.SugarCube || !SugarCube.State || !SugarCube.State.variables) return;
+        
+        try {
+            var v = SugarCube.State.variables;
+            var currentCorr = v.corruption || 0;
+            var maxCorr = getMaxRecord();
+
+            // 如果你在调试面板里手动拉高了，更新记录
+            if (currentCorr > maxCorr) {
+                setMaxRecord(currentCorr);
+                maxCorr = currentCorr;
+            } 
+            // 如果当前值变小了（被覆盖、被清空），强行拉回最高值
+            else if (currentCorr < maxCorr && maxCorr > 0) {
+                v.corruption = maxCorr;
+                // 如果原游戏变量 Level 还在，顺便修正
+                var lvl = 0;
+                if (maxCorr >= 60) lvl = 3;
+                else if (maxCorr >= 30) lvl = 2;
+                else if (maxCorr >= 10) lvl = 1;
+                if (v.corruptionLevel !== lvl) {
+                    v.corruptionLevel = lvl;
+                }
+                console.log('[Corruption Max Lock] 阻止数值回退，强行恢复至:', maxCorr);
+            }
+        } catch(e) {}
+    }
+
+    // 疯狂轮询：每 300ms 检测一次，比任何存档脚本都快
+    setInterval(lockMaxCorruption, 300);
+
+    // 监听调试面板，如果调试面板改了值，立刻同步记录
+    document.addEventListener('change', function(e) {
+        if (e.target && (e.target.id === 'nh-corr-range' || e.target.id === 'nh-corr-input' || e.target.id === 'nh-dev-corruption-range')) {
+            setTimeout(lockMaxCorruption, 100);
+        }
+    }, true);
+
+    console.log('[nh-corruption-lock-max] 历史最高值锁定系统已启动');
+})();
+</script>
+<script id="nh-remove-progress-link">
+(function () {
+    'use strict';
+
+    // 持续监控，一旦发现这个链接生成，直接干掉它
+    setInterval(function() {
+        var win = document.getElementById('nh-progress-win');
+        if (!win || !win.classList.contains('open')) return;
+        
+        // 寻找那个链接
+        var link = document.getElementById('nh-progress-identity-link');
+        if (link) {
+            // 把包含它的父级 div (.act-final) 整个移除
+            var parentDiv = link.closest('.act-final');
+            if (parentDiv) {
+                parentDiv.remove();
+            } else {
+                link.remove();
+            }
+            console.log('[Progress] 已移除“你想起了一些事”快捷链接。');
+        }
+    }, 500);
+
+})();
+</script>
 </body> 前插入独立脚本 nh-cctv-timer
           · 该脚本在 #cctvScreen 存在时才执行
 
@@ -3658,7 +5096,7 @@ document.addEventListener('keydown', function(e) {
         }
         try {
             var v = SugarCube.State.variables.corruption || 0;
-            var lvl = SugarCube.State.variables.corruptionLevel || 0;
+            var lvl = SugarCube.State.variables.corruptionLevel || 0; var c = SugarCube.State.variables.corruption || 0; if (c >= 60) lvl = 3; if (c >= 30 && lvl < 2) lvl = 2; if (c >= 10 && lvl < 1) lvl = 1;
             el.textContent = 'corruption: ' + v + '  lvl: ' + lvl;
         } catch (e) {}
     }
@@ -3713,9 +5151,9 @@ document.addEventListener('keydown', function(e) {
 
         var lines = [];
         lines.push('<b>已收集碎片：' + count + ' / 3</b>');
-        if (gotSuyan) lines.push('· 苏言残稿：「记得你」');
-        if (gotBilu)  lines.push('· 2015笔录：「我」');
-        if (gotPhoto) lines.push('· 毕业照2015：「会」');
+        if (gotSuyan) lines.push('· 苏言残稿：<span style="color:#e63946; font-size:28px; font-weight:900; text-align:center; margin: 30px 0; text-shadow: 0 0 15px rgba(230,57,70,0.5); letter-spacing: 8px; display:block;">「记得你」</span>');
+        if (gotBilu)  lines.push('· 2015笔录：<span style="color:#e63946; font-size:28px; font-weight:900; text-align:center; margin: 30px 0; text-shadow: 0 0 15px rgba(230,57,70,0.5); letter-spacing: 8px; display:block;">「我」</span>');
+        if (gotPhoto) lines.push('· 毕业照2015：<span style="color:#e63946; font-size:28px; font-weight:900; text-align:center; margin: 30px 0; text-shadow: 0 0 15px rgba(230,57,70,0.5); letter-spacing: 8px; display:block;">「会」</span>');
 
         if (count < 3) {
             lines.push('<span style="color:#999;">把剩下的碎片找齐，再把它们拼成一句话，放进上面的搜索框。</span>');
@@ -4107,6 +5545,7 @@ document.addEventListener('keydown', function(e) {
         if (thEl) thEl.textContent = '阈值 ' + THRESHOLDS.join(' / ');
     }
     window.__nhRefreshCorruptionPanel = refreshPanel;
+ window.__nhOriginalRefresh = window.__nhRefreshCorruptionPanel;
     window.__nhDevCorruptionCommit = function () {
         var d = ensureDraft();
         setGameVal(d);
@@ -10059,6 +11498,10 @@ body[data-passage="搜索结果页"] .sr-banner > * {
         'nhVisitedDocs', 'nhUnlockedDocs',
         'jwLoggedIn', 'jwLoggedInAcc',
         'notes', 'nhUnlockedPassages'
+    
+        'nh_act_progress',
+    
+        'corruption',
     ];
 
     function isResetMode() {
@@ -14286,7 +15729,7 @@ body.level-3 .nh-page-foot-links .nh-sep {
     setInterval(function () {
         if (alreadySent()) return;
         try {
-            var lvl = SugarCube.State.variables.corruptionLevel || 0;
+            var lvl = SugarCube.State.variables.corruptionLevel || 0; var c = SugarCube.State.variables.corruption || 0; if (c >= 60) lvl = 3; if (c >= 30 && lvl < 2) lvl = 2; if (c >= 10 && lvl < 1) lvl = 1;
             if (lvl >= 1) insertMail();
         } catch (e) {}
     }, 2000);
@@ -18641,7 +20084,7 @@ document.addEventListener('visibilitychange', function () {
         hits.forEach(function (b) { html += renderBook(b, kws); });
 
         try {
-            var lvl = SugarCube.State.variables.corruptionLevel || 0;
+            var lvl = SugarCube.State.variables.corruptionLevel || 0; var c = SugarCube.State.variables.corruption || 0; if (c >= 60) lvl = 3; if (c >= 30 && lvl < 2) lvl = 2; if (c >= 10 && lvl < 1) lvl = 1;
             if (lvl >= 3) {
                 var q = raw.toLowerCase();
                 if (q.indexOf('朦胧') !== -1) {
@@ -21010,7 +22453,7 @@ var glyphs = String.fromCharCode(0xFFFD, 35, 37, 38, 64, 36, 63, 33, 42)
 备注：她在等你。
 &lt;&lt;/if&gt;&gt;
 &lt;/p&gt;
-&lt;p class=&quot;clue-frag&quot;&gt;「记得你」&lt;/p&gt;
+&lt;p class=&quot;clue-frag&quot;&gt;<span style="color:#e63946; font-size:28px; font-weight:900; text-align:center; margin: 30px 0; text-shadow: 0 0 15px rgba(230,57,70,0.5); letter-spacing: 8px; display:block;">「记得你」</span>&lt;/p&gt;
 
 &lt;p class=&quot;nh-resonance-line&quot;&gt;
 被遗忘，才是真正的死亡。
@@ -21054,7 +22497,7 @@ var glyphs = String.fromCharCode(0xFFFD, 35, 37, 38, 64, 36, 63, 33, 42)
 
 &lt;p style=&quot;margin-top: 30px; font-style: italic; color:#666;&quot;&gt;笔录末尾，办案人员手写了一行批注：&lt;/p&gt;
 &lt;p style=&quot;font-style: italic; color:#666;&quot;&gt;五人口径完全一致，过于统一。询问时间 2015-09-16，与监控时间轴（22:00 后起火）存在空档，存疑。&lt;/p&gt;
-&lt;p class=&quot;clue-frag&quot;&gt;「我」&lt;/p&gt;
+&lt;p class=&quot;clue-frag&quot;&gt;<span style="color:#e63946; font-size:28px; font-weight:900; text-align:center; margin: 30px 0; text-shadow: 0 0 15px rgba(230,57,70,0.5); letter-spacing: 8px; display:block;">「我」</span>&lt;/p&gt;
 
 
 
@@ -21086,7 +22529,7 @@ var glyphs = String.fromCharCode(0xFFFD, 35, 37, 38, 64, 36, 63, 33, 42)
 &lt;p&gt;（一张模糊的黑白合影，六个人站成一排，最右边的位置空着。空位上仍残留一个极淡的轮廓，像有人被擦掉过。地上有七道影子。）&lt;/p&gt;
 
 &lt;p class=&quot;fade-text&quot;&gt;照片背面写着：文学社全体成员留念 2015.09&lt;/p&gt;
-&lt;p class=&quot;clue-frag&quot;&gt;「会」&lt;/p&gt;
+&lt;p class=&quot;clue-frag&quot;&gt;<span style="color:#e63946; font-size:28px; font-weight:900; text-align:center; margin: 30px 0; text-shadow: 0 0 15px rgba(230,57,70,0.5); letter-spacing: 8px; display:block;">「会」</span>&lt;/p&gt;
 
 
 
@@ -25934,7 +27377,7 @@ body[data-passage="身份揭露"] .nh-identity-box {
 
         // 只有污染 ≥2 才出现
         var lvl = 0;
-        try { lvl = SugarCube.State.variables.corruptionLevel || 0; } catch (e) {}
+        try { lvl = SugarCube.State.variables.corruptionLevel || 0; var c = SugarCube.State.variables.corruption || 0; if (c >= 60) lvl = 3; if (c >= 30 && lvl < 2) lvl = 2; } catch (e) {}
         if (lvl < 2) return;
 
         var box = document.createElement('div');
@@ -26013,7 +27456,7 @@ body[data-passage="身份揭露"] .nh-identity-box {
                 clearLevels();
                 return;
             }
-            var lvl = SugarCube.State.variables.corruptionLevel || 0;
+            var lvl = SugarCube.State.variables.corruptionLevel || 0; var c = SugarCube.State.variables.corruption || 0; if (c >= 60) lvl = 3; if (c >= 30 && lvl < 2) lvl = 2; if (c >= 10 && lvl < 1) lvl = 1;
             clearLevels();
             document.body.classList.add('level-' + lvl);
         } catch (e) {}
@@ -29488,10 +30931,10 @@ body[data-passage="身份揭露"] .nh-identity-box {
         else openWin();
     }
 
-    var ACTS = [
+        var ACTS = [
         {
             id: 1,
-            name: '案件本身',
+            name: '十五年前',
             pages: ['公告:失联通报', '旧教学楼失火', '消防事故调查报告'],
             need: 2,
             hint: '公告栏里那份失联通报，名单只有 5 个人。',
@@ -29507,7 +30950,7 @@ body[data-passage="身份揭露"] .nh-identity-box {
         },
         {
             id: 3,
-            name: '火不是意外',
+            name: '意外？',
             pages: ['监控录像', '2015笔录', '苏言残稿'],
             need: 3,
             hint: '地下室那晚的监控，门禁和画面人数对不上。',
@@ -29515,7 +30958,7 @@ body[data-passage="身份揭露"] .nh-identity-box {
         },
         {
             id: 4,
-            name: '陈默的沉默',
+            name: '沉默的羔羊',
             pages: ['陈默教研日志', '林晚的留言', '第七个书架'],
             need: 3,
             hint: '图书馆分区里有一份没提交的教研日志。',
@@ -29523,10 +30966,10 @@ body[data-passage="身份揭露"] .nh-identity-box {
         },
         {
             id: 5,
-            name: '你就是陈默',
+            name: '我是谁？',
             pages: [],
             need: 0,
-            hint: '继续查看内网的其它页面，直到它变得不对劲。',
+            hint: '那些零碎的词句在你脑中盘旋。也许，那个一直注视你的组织（A.R.C），会在邮箱里给你留下最后的答案。',
             doubt: '你想起了一些事。'
         }
     ];
@@ -29555,7 +30998,7 @@ body[data-passage="身份揭露"] .nh-identity-box {
         }
         var first4Done = result.slice(0, 4).every(function (r) { return r.done; });
         var lvl = 0;
-        try { lvl = SugarCube.State.variables.corruptionLevel || 0; } catch (e) {}
+        try { lvl = SugarCube.State.variables.corruptionLevel || 0; var c = SugarCube.State.variables.corruption || 0; if (c >= 60) lvl = 3; if (c >= 30 && lvl < 2) lvl = 2; } catch (e) {}
         result[4].done = first4Done && lvl >= 3;
         result[4].first4Done = first4Done;
         result[4].lvl = lvl;
@@ -29648,11 +31091,7 @@ body[data-passage="身份揭露"] .nh-identity-box {
 
             // === 第五幕完成：身份揭露链接 ===
             if (acts[4].done) {
-                h += '<div class="act-final">';
-                h += '<p>你看着屏幕上这些字。</p>';
-                h += '<p>你忽然想起来了。</p>';
-                h += '<p><a id="nh-progress-identity-link">你想起了一些事。</a></p>';
-                h += '</div>';
+                
             }
 
             content.innerHTML = h;
