@@ -1,15 +1,257 @@
 # -*- coding: utf-8 -*-
 import os
+import re
 import shutil
 from datetime import datetime
 
 # ==========================================
-# NH_REDESIGN_FIX_V178
-# 本次修复：
-# 修复字数0变动的BUG，直接对裸文本进行样式注入。
+# NH_REDESIGN_FIX_V194
+# 本次更新：
+# 1. 深度润色任务清单文案，使其充满悬疑与内心独白感。
+# 2. 去除“直接指明文件名”的生硬提示。
 # ==========================================
 
 FILENAME = 'index.html'
+
+GLOBAL_SCRIPT = """<script id="nh-checklist-progress">
+(function () {
+    'use strict';
+
+    // 核心文案修改：将直白的任务描述改为隐晦的内心独白
+    var ACTS = [
+        { 
+            id: 1, name: '十五年前', 
+            tasks: [
+                { page: '公告:失联通报', text: '去公告栏翻翻当年的通报，看看那次事件到底怎么了。' },
+                { page: '旧教学楼失火', text: '官方通报里对那场火灾的描述，似乎藏着什么没说清楚的东西。' },
+                { page: '消防事故调查报告', text: '如果那真的是一场意外，也许我该找找那份事故调查报告。' }
+            ]
+        },
+        { 
+            id: 2, name: '第六个人', 
+            tasks: [
+                { page: '文学社主页', text: '旧社团的成员名单里，总觉得少了一个影子。' },
+                { page: '诗刊', text: '她留下的那些字，会不会被印在某一期的社刊里？' },
+                { page: '苏言档案', text: '她被从历史里抹去了，但我能在教务系统的底层找到她的残档吗？' }
+            ]
+        },
+        { 
+            id: 3, name: '意外？', 
+            tasks: [
+                { page: '监控录像', text: '旧教学楼地下室的安防记录里，也许拍到了什么不该出现的东西。' },
+                { page: '2015笔录', text: '那些跑出来的人，在警方面前到底说了什么？' },
+                { page: '苏言残稿', text: '图书馆的某个角落，似乎封存着她未完成的手稿。' }
+            ]
+        },
+        { 
+            id: 4, name: '沉默的羔羊', 
+            tasks: [
+                { page: '陈默教研日志', text: '当年那位老师，为什么在这件事后突然选择了沉默？' },
+                { page: '林晚的留言', text: '林晚留在这个世界上的最后几句话，在什么地方？' },
+                { page: '第七个书架', text: '所有的线索都指向了旧教学楼地下室的深处。' }
+            ]
+        },
+        { 
+            id: 5, name: '我是谁？', 
+            tasks: [
+                { page: '身份揭露', text: '邮箱里应该有一封来自 A.R.C 的密令。而那个该死的网页搜索框，或许能敲开真相的大门。' }
+            ]
+        }
+    ];
+
+    function isVisited(targetPage) {
+        if (!window.SugarCube || !SugarCube.State) return false;
+        if (SugarCube.State.passage === targetPage) return true;
+        try {
+            if (SugarCube.State.hasPlayed(targetPage)) return true;
+        } catch(e) {}
+        try {
+            var v = SugarCube.State.variables;
+            if (Array.isArray(v.nhVisitedDocs) && v.nhVisitedDocs.indexOf(targetPage) !== -1) return true;
+            if (Array.isArray(v.nhUnlockedPassages) && v.nhUnlockedPassages.indexOf(targetPage) !== -1) return true;
+        } catch(e) {}
+        try {
+            var raw = localStorage.getItem('nh_true_physical_ledger');
+            if (raw) {
+                var arr = JSON.parse(raw);
+                if (arr.indexOf(targetPage) !== -1) return true;
+            }
+        } catch(e) {}
+        return false;
+    }
+
+    function render() {
+        var body = document.getElementById('nh-custom-progress-body');
+        if (!body) return;
+        
+        var html = '';
+        var prevDone = true; 
+
+        ACTS.forEach(function(act, idx) {
+            var count = 0;
+            act.tasks.forEach(function(task) {
+                if (isVisited(task.page)) count++;
+            });
+
+            var isDone = false;
+            if (idx === 4) {
+                isDone = prevDone; 
+            } else {
+                isDone = (count >= act.tasks.length);
+            }
+
+            var isCurrent = prevDone && !isDone;
+            var cls = isDone ? 'done' : (isCurrent ? 'current' : 'locked');
+            
+            html += '<div class="nh-c-act ' + cls + '">';
+            html += '<div class="nh-c-act-title"><span class="nh-c-act-num">' + (idx+1) + '</span>' + act.name + '</div>';
+            
+            if (isCurrent || isDone) {
+                html += '<div style="margin-top:12px; padding:10px; background:#fff5f5; border-left:3px solid #c83535; border-radius:2px; font-size:13.5px; color:#5a1a10; line-height:1.8;">';
+                
+                if (isCurrent) {
+                    html += '<div style="color:#c83535; font-weight:bold; margin-bottom:6px;">我在想……</div>';
+                } else {
+                    html += '<div style="color:#2a8a3a; font-weight:bold; margin-bottom:6px;">我已经弄清了这些事：</div>';
+                }
+
+                act.tasks.forEach(function(task) {
+                    var visited = isVisited(task.page);
+                    var icon = visited ? '☑' : '☐';
+                    var color = visited ? '#2a8a3a' : '#8a6a4a';
+                    var style = visited ? 'text-decoration: line-through; opacity: 0.7;' : '';
+                    html += '<div style="color:' + color + '; ' + style + ' margin-bottom:4px;">' + icon + ' ' + task.text + '</div>';
+                });
+                
+                html += '</div>';
+            } else if (!isDone) {
+                html += '<div style="color:#aaa; font-style:italic; margin-top:10px;">请先理清上一章的头绪。</div>';
+            }
+
+            html += '</div>';
+            if (!isDone) prevDone = false;
+        });
+
+        body.innerHTML = html;
+    }
+
+    function openPanel() {
+        var panel = document.getElementById('nh-custom-progress');
+        if (!panel) return;
+        panel.classList.add('open');
+        render();
+    }
+    function closePanel() {
+        var panel = document.getElementById('nh-custom-progress');
+        if (panel) panel.classList.remove('open');
+    }
+
+    document.addEventListener('click', function(e) {
+        var el = e.target;
+        while (el && el !== document.body) {
+            if (el.id === 'nh-sidebar-progress') {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                e.stopPropagation();
+                
+                var sidebar = document.getElementById('nh-sidebar');
+                var mask = document.getElementById('nh-sidebar-mask');
+                var menuBtn = document.getElementById('nh-menu-btn');
+                if (sidebar) sidebar.classList.remove('open');
+                if (mask) mask.classList.remove('open');
+                if (menuBtn) menuBtn.textContent = '☰';
+                
+                openPanel();
+                return;
+            }
+            el = el.parentNode;
+        }
+    }, true);
+
+    setTimeout(function() {
+        var closeBtn = document.getElementById('nh-custom-progress-close');
+        if (closeBtn) closeBtn.onclick = closePanel;
+        
+        var refreshBtn = document.getElementById('nh-custom-progress-refresh');
+        if (refreshBtn) {
+            refreshBtn.onclick = function() {
+                refreshBtn.style.transform = 'rotate(360deg)';
+                refreshBtn.style.transition = 'transform 0.4s';
+                setTimeout(function(){ refreshBtn.style.transform = 'rotate(0deg)'; refreshBtn.style.transition = 'none'; }, 400);
+                render();
+            };
+        }
+
+        if (window.jQuery) {
+            jQuery(document).on(':passagedisplay.nhCustomTracker', function() {
+                var panel = document.getElementById('nh-custom-progress');
+                if (panel && panel.classList.contains('open')) {
+                    setTimeout(render, 100);
+                }
+            });
+        }
+
+        var panel = document.getElementById('nh-custom-progress');
+        if (!panel) return;
+
+        var isDragging = false;
+        var startX, startY, initialLeft, initialTop;
+
+        panel.addEventListener('mousedown', function(e) {
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.tagName === 'INPUT' || e.target.closest('button')) return;
+            isDragging = true;
+            panel.style.transform = 'none';
+            startX = e.clientX;
+            startY = e.clientY;
+            var rect = panel.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+            panel.style.left = initialLeft + 'px';
+            panel.style.top = initialTop + 'px';
+            panel.style.margin = '0';
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            var dx = e.clientX - startX;
+            var dy = e.clientY - startY;
+            panel.style.left = (initialLeft + dx) + 'px';
+            panel.style.top = (initialTop + dy) + 'px';
+        });
+
+        document.addEventListener('mouseup', function() { isDragging = false; });
+
+        panel.addEventListener('touchstart', function(e) {
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.tagName === 'INPUT' || e.target.closest('button')) return;
+            isDragging = true;
+            panel.style.transform = 'none';
+            var touch = e.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+            var rect = panel.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+            panel.style.left = initialLeft + 'px';
+            panel.style.top = initialTop + 'px';
+            panel.style.margin = '0';
+        }, { passive: true });
+
+        document.addEventListener('touchmove', function(e) {
+            if (!isDragging) return;
+            var touch = e.touches[0];
+            var dx = touch.clientX - startX;
+            var dy = touch.clientY - startY;
+            panel.style.left = (initialLeft + dx) + 'px';
+            panel.style.top = (initialTop + dy) + 'px';
+        }, { passive: true });
+
+        document.addEventListener('touchend', function() { isDragging = false; });
+
+    }, 1000);
+
+})();
+</script>"""
 
 def read_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
@@ -26,37 +268,15 @@ def backup_file(filepath):
     print(f"[*] 已创建备份文件: {backup_path}")
     return backup_path
 
-def force_fix_text(html):
-    # 极其醒目的样式：大红字、加粗、居中、发光
-    style_str = 'color:#e63946; font-size:28px; font-weight:900; text-align:center; margin: 30px 0; text-shadow: 0 0 15px rgba(230,57,70,0.5); letter-spacing: 8px; display:block;'
+def inject_panels(html):
+    # 替换最新的脚本
+    html = re.sub(r'<script id="nh-checklist-progress">.*?</script>', '', html, flags=re.DOTALL)
     
-    count = 0
-    
-    # 把「我」、「会」、「记得你」强行用 <span> 包裹
-    # 注意：只替换带「」括号的，防止把剧情里正常的“我”也变红
-    def replace_text(text, target):
-        nonlocal count
-        if target in text:
-            # 检查是否已经被替换过，防止重复嵌套
-            if f'<span style="{style_str}">{target}</span>' in text:
-                return text
-            count += text.count(target)
-            return text.replace(target, f'<span style="{style_str}">{target}</span>')
-        return text
-
-    # 1. 替换「我」（这里小心，如果有 `&lt;span&gt;` 的转义，最好连带着一起清掉）
-    html = html.replace('&lt;span style="color:#e63946; font-size:24px; font-weight:bold; text-align:center; margin: 30px 0; text-shadow: 0 0 10px rgba(230,57,70,0.4); letter-spacing: 4px;"&gt;「我」&lt;/span&gt;', '「我」')
-    html = replace_text(html, '「我」')
-    
-    # 2. 替换「会」
-    html = html.replace('&lt;span style="color:#e63946; font-size:24px; font-weight:bold; text-align:center; margin: 30px 0; text-shadow: 0 0 10px rgba(230,57,70,0.4); letter-spacing: 4px;"&gt;「会」&lt;/span&gt;', '「会」')
-    html = replace_text(html, '「会」')
-    
-    # 3. 替换「记得你」
-    html = html.replace('&lt;span style="color:#e63946; font-size:24px; font-weight:bold; text-align:center; margin: 30px 0; text-shadow: 0 0 10px rgba(230,57,70,0.4); letter-spacing: 4px;"&gt;「记得你」&lt;/span&gt;', '「记得你」')
-    html = replace_text(html, '「记得你」')
-
-    return html, count
+    if '</body>' in html:
+        html = html.replace('</body>', GLOBAL_SCRIPT + '\n</body>', 1)
+    else:
+        html = html + '\n' + GLOBAL_SCRIPT
+    return html
 
 def main():
     if not os.path.exists(FILENAME):
@@ -68,18 +288,14 @@ def main():
     original_len = len(original_html)
     
     backup_file(FILENAME)
-    
-    modified_html, count = force_fix_text(original_html)
-    
-    if count > 0:
-        print(f"[+] 成功！共找到并修改了 {count} 处碎片文本，已强行注入大红字样式。")
-    else:
-        print("[!] 依然没找到「我」、「会」、「记得你」的文本。")
-    
+    modified_html = inject_panels(original_html)
+        
     new_len = len(modified_html)
+    diff = new_len - original_len
+    
     write_file(FILENAME, modified_html)
+    print(f"[+] 文件修改完成！")
     print(f"[*] 字数变动：{original_len} -> {new_len}")
-    print("[*] 请回浏览器强制刷新 (Ctrl + F5) 查看效果。")
 
 if __name__ == '__main__':
     main()

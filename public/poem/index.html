@@ -3675,6 +3675,540 @@ document.addEventListener('keydown', function(e) {
 
 })();
 </script>
+<script id="nh-perfect-reset">
+(function () {
+    'use strict';
+
+    // 监听所有点击事件，捕获“重新开始”
+    document.addEventListener('click', function(e) {
+        var el = e.target;
+        var isRestart = false;
+        
+        // 寻找包含“重新开始”或 ID 匹配的按钮
+        while (el && el !== document.body) {
+            if (el.id === 'nh-sidebar-restart' || el.id === 'nh-sidebar-restart-v2') {
+                isRestart = true;
+                break;
+            }
+            if (el.textContent && el.textContent.trim() === '重新开始') {
+                isRestart = true;
+                break;
+            }
+            el = el.parentNode;
+        }
+
+        if (isRestart) {
+            console.log('[Perfect Reset] 检测到重新开始，正在清除底层缓存...');
+            
+            // 1. 清除我们之前加的最高污染值锁定
+            try { localStorage.removeItem('nh_max_corruption_record'); } catch(err) {}
+            try { localStorage.removeItem('nh_saved_corruption'); } catch(err) {}
+            try { localStorage.removeItem('nh_saved_progress'); } catch(err) {}
+            try { localStorage.removeItem('nh_unlocked_docs'); } catch(err) {}
+            try { localStorage.removeItem('nh_unlocked_passages'); } catch(err) {}
+            try { localStorage.removeItem('nh_physical_ledger'); } catch(err) {}
+
+            // 2. 清除强制注入的邮件
+            try {
+                var v = SugarCube.State.variables;
+                if (v.zmInboxExtra) {
+                    // 过滤掉我们注入的专门用于结局的提示邮件
+                    v.zmInboxExtra = v.zmInboxExtra.filter(function(mail) {
+                        return mail.id !== 'arc-hint-final' && mail.id !== 'arc-final-warning' && mail.id !== 'arc-pollution-mail';
+                    });
+                }
+                // 3. 重置污染值和进度
+                v.corruption = 0;
+                v.corruptionLevel = 0;
+                v.nhVisitedDocs = [];
+                v.nhUnlockedPassages = [];
+                v.nh_act_progress = [0, 0, 0, 0, 0];
+                v.zmUnread = 0;
+                
+                // 4. 清除快照缓存
+                if (SugarCube.Save && SugarCube.Save.browser) {
+                    SugarCube.Save.browser.clear();
+                }
+            } catch(err) {
+                console.log('[Perfect Reset] 状态清理出错:', err);
+            }
+        }
+    }, true); // 使用捕获阶段，确保在最早期拦截并清理
+})();
+</script>
+<script id="nh-perfect-reset-v2">
+(function () {
+    'use strict';
+
+    // 1. 监听“重新开始”按钮点击
+    document.addEventListener('click', function(e) {
+        var el = e.target;
+        var isRestart = false;
+        while (el && el !== document.body) {
+            if (el.id === 'nh-sidebar-restart' || el.id === 'nh-sidebar-restart-v2' || (el.textContent && el.textContent.trim() === '重新开始')) {
+                isRestart = true;
+                break;
+            }
+            el = el.parentNode;
+        }
+
+        if (isRestart) {
+            console.log('[Perfect Reset] 正在执行深度重置...');
+            // 清理我们之前加的本地缓存
+            ['nh_max_corruption_record', 'nh_saved_corruption', 'nh_saved_progress', 
+             'nh_unlocked_docs', 'nh_unlocked_passages', 'nh_physical_ledger'].forEach(function(k) {
+                try { localStorage.removeItem(k); } catch(err) {}
+            });
+
+            // 清理内存里的变量
+            try {
+                var v = SugarCube.State.variables;
+                v.corruption = 0;
+                v.corruptionLevel = 0;
+                v.nhVisitedDocs = [];
+                v.nhUnlockedPassages = [];
+                v.nh_act_progress = [0, 0, 0, 0, 0];
+                
+                // 清理邮箱
+                v.zmInboxExtra = []; 
+                v.zmUnread = 0; // 必须清空未读，否则系统判定已经发过信了
+                v.readMails = []; // 清空已读记录
+            } catch(err) {}
+        }
+    }, true);
+
+    // 2. 拦截污染值恢复脚本，如果当前变量里污染值明确是 0（刚重置），就删掉本地锁
+    setInterval(function() {
+        try {
+            if (window.SugarCube && SugarCube.State && SugarCube.State.variables) {
+                var v = SugarCube.State.variables;
+                // 如果游戏当前是 0，但我们本地还有锁，说明玩家刚重置，立刻清除本地锁
+                if (v.corruption === 0 && localStorage.getItem('nh_max_corruption_record') !== '0') {
+                    localStorage.setItem('nh_max_corruption_record', '0');
+                    localStorage.setItem('nh_saved_corruption', JSON.stringify({c: 0, lvl: 0}));
+                }
+            }
+        } catch(e) {}
+    }, 500);
+
+})();
+</script>
+<script id="nh-inject-next-step">
+(function () {
+    'use strict';
+
+    function updateProgressUI() {
+        var win = document.getElementById('nh-progress-win');
+        if (!win || !win.classList.contains('open')) return;
+
+        var blocks = win.querySelectorAll('.act-item');
+        blocks.forEach(function(block) {
+            var titleEl = block.querySelector('.act-item-name');
+            if (!titleEl) return;
+            var title = titleEl.textContent.trim();
+
+            var isDone = block.classList.contains('done');
+            
+            // 如果没完成，且还没注入过提示
+            if (!isDone && !block.querySelector('.nh-action-hint')) {
+                var hintText = '';
+                if (title === '十五年前') {
+                    hintText = '学生失联，学校肯定会有通告的。我得去内网里找找。';
+                } else if (title === '第六个人') {
+                    hintText = '那个被划掉的名字究竟是谁？也许她在这个学校留下过其它的痕迹。';
+                } else if (title === '意外？') {
+                    hintText = '那晚的火一定有蹊跷。监控记录、当年的笔录，或许藏着真相。';
+                } else if (title === '沉默的羔羊') {
+                    hintText = '陈默老师为什么闭口不谈？他是不是把秘密藏在了某些不起眼的角落？';
+                }
+
+                if (hintText) {
+                    var actionDiv = document.createElement('div');
+                    actionDiv.className = 'nh-action-hint';
+                    // 复用红色框的样式，强行植入进去
+                    actionDiv.style.cssText = 'margin-top:10px; color:#5a1a10; font-size:13px; font-family:"楷体", serif; line-height:1.8;';
+                    actionDiv.innerHTML = '<b>下一步行动：</b>' + hintText;
+
+                    var doubtBox = block.querySelector('.act-doubt');
+                    if (doubtBox) {
+                        // 把红框的标题改成“下一步行动”
+                        var label = doubtBox.querySelector('.act-doubt-label');
+                        if (label) label.textContent = '下一步行动';
+                        
+                        var text = doubtBox.querySelector('.act-doubt-text');
+                        if (text) {
+                            text.innerHTML = hintText;
+                        }
+                    } else {
+                        // 如果没找到红框，直接追加到尾部
+                        block.appendChild(actionDiv);
+                    }
+                }
+            }
+        });
+    }
+
+    // 高频检测，防止原版脚本覆盖
+    setInterval(updateProgressUI, 300);
+
+})();
+</script>
+<script id="nh-force-red-hint">
+(function () {
+    'use strict';
+
+    function applyHints() {
+        var win = document.getElementById('nh-progress-win');
+        if (!win || !win.classList.contains('open')) return;
+        
+        // 抓取当前所有的幕
+        var blocks = win.querySelectorAll('.act-item');
+        blocks.forEach(function(block, index) {
+            var titleEl = block.querySelector('.act-item-name');
+            if (!titleEl) return;
+            var title = titleEl.textContent.trim();
+            
+            // 如果已经被判定为 done，而且我们已经注入过提示了，就跳过
+            if (block.querySelector('.nh-forced-doubt')) return;
+
+            var hintText = '';
+            if (title === '十五年前') {
+                hintText = '学生失联，学校肯定会有通告的。我得去内网里找找。';
+            } else if (title === '第六个人') {
+                hintText = '那个被划掉的名字究竟是谁？也许她在这个学校留下过其它的痕迹。';
+            } else if (title === '意外？') {
+                hintText = '那晚的火一定有蹊跷。监控记录、当年的笔录，或许藏着真相。';
+            } else if (title === '沉默的羔羊') {
+                hintText = '陈默老师为什么闭口不谈？他是不是把秘密藏在了某些不起眼的角落？';
+            } else if (title === '我是谁？') {
+                hintText = '那些零碎的词句在你脑中盘旋。也许，那个一直注视你的组织（A.R.C），会在邮箱里给你留下最后的答案。';
+            }
+
+            // 获取原本的“你想不通”红框
+            var doubtBox = block.querySelector('.act-doubt');
+            
+            if (doubtBox) {
+                // 如果面板是“已完成”，但根据我们底层变量的判断其实还没完成
+                // 我们强行把红框内容换成“下一步行动”
+                var label = doubtBox.querySelector('.act-doubt-label');
+                var text = doubtBox.querySelector('.act-doubt-text');
+                
+                if (label && text) {
+                    // 检查是否满足完成条件（这个检查在上面的源码里已经改了，这里只做展示兜底）
+                    label.textContent = '下一步行动';
+                    text.textContent = hintText;
+                    doubtBox.classList.add('nh-forced-doubt');
+                }
+            }
+        });
+    }
+
+    // 高频轮询，确保即使原版脚本重绘了，我们也能强插进去
+    setInterval(applyHints, 200);
+
+})();
+</script>
+
+
+<style id="nh-new-progress-css">
+#nh-custom-progress {
+    position: fixed; top: 50px; left: 50%; transform: translateX(-50%);
+    width: 500px; max-width: 95vw; max-height: 85vh; background: #fdfaf3;
+    border: 1px solid #b8a888; border-radius: 6px; box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+    z-index: 2147483499; display: none; flex-direction: column;
+    font-family: "楷体", "KaiTi", "Microsoft YaHei", sans-serif;
+    overflow: hidden; box-sizing: border-box;
+}
+#nh-custom-progress.open { display: flex; }
+#nh-custom-progress-titlebar {
+    height: 40px; background: linear-gradient(180deg, #8b0000 0%, #6a0000 100%);
+    color: #f0e8d8; display: flex; align-items: center; padding: 0 10px 0 16px;
+    font-family: "微软雅黑", sans-serif;
+}
+#nh-custom-progress-titlebar .title { flex: 1; font-size: 15px; letter-spacing: 4px; }
+#nh-custom-progress-titlebar .btn {
+    width: 30px; height: 26px; border: 1px solid rgba(255,255,255,0.3);
+    background: transparent; color: #f0e8d8; border-radius: 3px;
+    cursor: pointer; font-size: 14px; margin-left: 8px;
+}
+#nh-custom-progress-titlebar .btn:hover { background: rgba(255,255,255,0.2); }
+#nh-custom-progress-body {
+    padding: 16px; overflow-y: auto; flex: 1; font-size: 14px; color: #3a2a1a;
+}
+.nh-c-act {
+    background: #faf7ee; border: 1px solid #e8dcc0; border-radius: 4px;
+    padding: 12px; margin-bottom: 12px;
+}
+.nh-c-act.done { background: #f0f6ee; border-color: #c8dcc8; }
+.nh-c-act.current { background: #fdf0ee; border-color: #d8b0a8; box-shadow: 0 0 0 1px rgba(139,0,0,0.15); }
+.nh-c-act-title { font-size: 15px; font-weight: bold; display: flex; align-items: center; margin-bottom: 8px; }
+.nh-c-act-num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: #8b0000; color: #fff; border-radius: 50%; font-size: 13px; margin-right: 10px; }
+.nh-c-act.done .nh-c-act-num { background: #2a8a3a; }
+.nh-c-act-hint {
+    margin-top: 10px; padding: 10px 14px; background: #fff5f5; border-left: 3px solid #c83535;
+    font-size: 13.5px; line-height: 1.8; color: #5a1a10;
+}
+.nh-c-act-hint b { color: #c83535; }
+</style>
+
+<div id="nh-custom-progress">
+    <div id="nh-custom-progress-titlebar">
+        <span class="title">调查进度</span>
+        <button class="btn" id="nh-custom-progress-refresh" type="button" title="刷新">↻</button>
+        <button class="btn" id="nh-custom-progress-close" type="button" title="关闭">×</button>
+    </div>
+    <div id="nh-custom-progress-body"></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<script id="nh-checklist-progress">
+(function () {
+    'use strict';
+
+    // 核心文案修改：将直白的任务描述改为隐晦的内心独白
+    var ACTS = [
+        { 
+            id: 1, name: '十五年前', 
+            tasks: [
+                { page: '公告:失联通报', text: '去公告栏翻翻当年的通报，看看那次事件到底怎么了。' },
+                { page: '旧教学楼失火', text: '官方通报里对那场火灾的描述，似乎藏着什么没说清楚的东西。' },
+                { page: '消防事故调查报告', text: '如果那真的是一场意外，也许我该找找那份事故调查报告。' }
+            ]
+        },
+        { 
+            id: 2, name: '第六个人', 
+            tasks: [
+                { page: '文学社主页', text: '旧社团的成员名单里，总觉得少了一个影子。' },
+                { page: '诗刊', text: '她留下的那些字，会不会被印在某一期的社刊里？' },
+                { page: '苏言档案', text: '她被从历史里抹去了，但我能在教务系统的底层找到她的残档吗？' }
+            ]
+        },
+        { 
+            id: 3, name: '意外？', 
+            tasks: [
+                { page: '监控录像', text: '旧教学楼地下室的安防记录里，也许拍到了什么不该出现的东西。' },
+                { page: '2015笔录', text: '那些跑出来的人，在警方面前到底说了什么？' },
+                { page: '苏言残稿', text: '图书馆的某个角落，似乎封存着她未完成的手稿。' }
+            ]
+        },
+        { 
+            id: 4, name: '沉默的羔羊', 
+            tasks: [
+                { page: '陈默教研日志', text: '当年那位老师，为什么在这件事后突然选择了沉默？' },
+                { page: '林晚的留言', text: '林晚留在这个世界上的最后几句话，在什么地方？' },
+                { page: '第七个书架', text: '所有的线索都指向了旧教学楼地下室的深处。' }
+            ]
+        },
+        { 
+            id: 5, name: '我是谁？', 
+            tasks: [
+                { page: '身份揭露', text: '邮箱里应该有一封来自 A.R.C 的密令。而那个该死的网页搜索框，或许能敲开真相的大门。' }
+            ]
+        }
+    ];
+
+    function isVisited(targetPage) {
+        if (!window.SugarCube || !SugarCube.State) return false;
+        if (SugarCube.State.passage === targetPage) return true;
+        try {
+            if (SugarCube.State.hasPlayed(targetPage)) return true;
+        } catch(e) {}
+        try {
+            var v = SugarCube.State.variables;
+            if (Array.isArray(v.nhVisitedDocs) && v.nhVisitedDocs.indexOf(targetPage) !== -1) return true;
+            if (Array.isArray(v.nhUnlockedPassages) && v.nhUnlockedPassages.indexOf(targetPage) !== -1) return true;
+        } catch(e) {}
+        try {
+            var raw = localStorage.getItem('nh_true_physical_ledger');
+            if (raw) {
+                var arr = JSON.parse(raw);
+                if (arr.indexOf(targetPage) !== -1) return true;
+            }
+        } catch(e) {}
+        return false;
+    }
+
+    function render() {
+        var body = document.getElementById('nh-custom-progress-body');
+        if (!body) return;
+        
+        var html = '';
+        var prevDone = true; 
+
+        ACTS.forEach(function(act, idx) {
+            var count = 0;
+            act.tasks.forEach(function(task) {
+                if (isVisited(task.page)) count++;
+            });
+
+            var isDone = false;
+            if (idx === 4) {
+                isDone = prevDone; 
+            } else {
+                isDone = (count >= act.tasks.length);
+            }
+
+            var isCurrent = prevDone && !isDone;
+            var cls = isDone ? 'done' : (isCurrent ? 'current' : 'locked');
+            
+            html += '<div class="nh-c-act ' + cls + '">';
+            html += '<div class="nh-c-act-title"><span class="nh-c-act-num">' + (idx+1) + '</span>' + act.name + '</div>';
+            
+            if (isCurrent || isDone) {
+                html += '<div style="margin-top:12px; padding:10px; background:#fff5f5; border-left:3px solid #c83535; border-radius:2px; font-size:13.5px; color:#5a1a10; line-height:1.8;">';
+                
+                if (isCurrent) {
+                    html += '<div style="color:#c83535; font-weight:bold; margin-bottom:6px;">我在想……</div>';
+                } else {
+                    html += '<div style="color:#2a8a3a; font-weight:bold; margin-bottom:6px;">我已经弄清了这些事：</div>';
+                }
+
+                act.tasks.forEach(function(task) {
+                    var visited = isVisited(task.page);
+                    var icon = visited ? '☑' : '☐';
+                    var color = visited ? '#2a8a3a' : '#8a6a4a';
+                    var style = visited ? 'text-decoration: line-through; opacity: 0.7;' : '';
+                    html += '<div style="color:' + color + '; ' + style + ' margin-bottom:4px;">' + icon + ' ' + task.text + '</div>';
+                });
+                
+                html += '</div>';
+            } else if (!isDone) {
+                html += '<div style="color:#aaa; font-style:italic; margin-top:10px;">请先理清上一章的头绪。</div>';
+            }
+
+            html += '</div>';
+            if (!isDone) prevDone = false;
+        });
+
+        body.innerHTML = html;
+    }
+
+    function openPanel() {
+        var panel = document.getElementById('nh-custom-progress');
+        if (!panel) return;
+        panel.classList.add('open');
+        render();
+    }
+    function closePanel() {
+        var panel = document.getElementById('nh-custom-progress');
+        if (panel) panel.classList.remove('open');
+    }
+
+    document.addEventListener('click', function(e) {
+        var el = e.target;
+        while (el && el !== document.body) {
+            if (el.id === 'nh-sidebar-progress') {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                e.stopPropagation();
+                
+                var sidebar = document.getElementById('nh-sidebar');
+                var mask = document.getElementById('nh-sidebar-mask');
+                var menuBtn = document.getElementById('nh-menu-btn');
+                if (sidebar) sidebar.classList.remove('open');
+                if (mask) mask.classList.remove('open');
+                if (menuBtn) menuBtn.textContent = '☰';
+                
+                openPanel();
+                return;
+            }
+            el = el.parentNode;
+        }
+    }, true);
+
+    setTimeout(function() {
+        var closeBtn = document.getElementById('nh-custom-progress-close');
+        if (closeBtn) closeBtn.onclick = closePanel;
+        
+        var refreshBtn = document.getElementById('nh-custom-progress-refresh');
+        if (refreshBtn) {
+            refreshBtn.onclick = function() {
+                refreshBtn.style.transform = 'rotate(360deg)';
+                refreshBtn.style.transition = 'transform 0.4s';
+                setTimeout(function(){ refreshBtn.style.transform = 'rotate(0deg)'; refreshBtn.style.transition = 'none'; }, 400);
+                render();
+            };
+        }
+
+        if (window.jQuery) {
+            jQuery(document).on(':passagedisplay.nhCustomTracker', function() {
+                var panel = document.getElementById('nh-custom-progress');
+                if (panel && panel.classList.contains('open')) {
+                    setTimeout(render, 100);
+                }
+            });
+        }
+
+        var panel = document.getElementById('nh-custom-progress');
+        if (!panel) return;
+
+        var isDragging = false;
+        var startX, startY, initialLeft, initialTop;
+
+        panel.addEventListener('mousedown', function(e) {
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.tagName === 'INPUT' || e.target.closest('button')) return;
+            isDragging = true;
+            panel.style.transform = 'none';
+            startX = e.clientX;
+            startY = e.clientY;
+            var rect = panel.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+            panel.style.left = initialLeft + 'px';
+            panel.style.top = initialTop + 'px';
+            panel.style.margin = '0';
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            var dx = e.clientX - startX;
+            var dy = e.clientY - startY;
+            panel.style.left = (initialLeft + dx) + 'px';
+            panel.style.top = (initialTop + dy) + 'px';
+        });
+
+        document.addEventListener('mouseup', function() { isDragging = false; });
+
+        panel.addEventListener('touchstart', function(e) {
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.tagName === 'INPUT' || e.target.closest('button')) return;
+            isDragging = true;
+            panel.style.transform = 'none';
+            var touch = e.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+            var rect = panel.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+            panel.style.left = initialLeft + 'px';
+            panel.style.top = initialTop + 'px';
+            panel.style.margin = '0';
+        }, { passive: true });
+
+        document.addEventListener('touchmove', function(e) {
+            if (!isDragging) return;
+            var touch = e.touches[0];
+            var dx = touch.clientX - startX;
+            var dy = touch.clientY - startY;
+            panel.style.left = (initialLeft + dx) + 'px';
+            panel.style.top = (initialTop + dy) + 'px';
+        }, { passive: true });
+
+        document.addEventListener('touchend', function() { isDragging = false; });
+
+    }, 1000);
+
+})();
+</script>
 </body> 前插入独立脚本 nh-cctv-timer
           · 该脚本在 #cctvScreen 存在时才执行
 
@@ -30806,16 +31340,7 @@ body[data-passage="身份揭露"] .nh-identity-box {
 }
 </style>
 
-<div id="nh-progress-win" role="dialog" aria-label="调查进度">
-    <div id="nh-progress-win-titlebar">
-        <span class="title">调查进度</span><span class="drag-hint">（按住拖动）</span>
-        <button class="btn" id="nh-progress-win-close" type="button" title="关闭">×</button>
-    </div>
-    <div id="nh-progress-win-body">
-        <div id="nh-progress-content">
-            <p style="color:#999;font-size:13px;text-align:center;padding:20px 0;">（进入游戏后显示进度）</p>
-        </div>
-    </div>
+
 </div>
 
 <script id="nh-progress-window-js">
@@ -30936,7 +31461,7 @@ body[data-passage="身份揭露"] .nh-identity-box {
             id: 1,
             name: '十五年前',
             pages: ['公告:失联通报', '旧教学楼失火', '消防事故调查报告'],
-            need: 2,
+            need: 3,
             hint: '公告栏里那份失联通报，名单只有 5 个人。',
             doubt: '失联通报说 5 人，火灾报告写「1 人失联」。5 + 1 = 6。第 6 个人，是谁？'
         },
@@ -30944,7 +31469,7 @@ body[data-passage="身份揭露"] .nh-identity-box {
             id: 2,
             name: '第六个人',
             pages: ['文学社主页', '诗刊', '苏言档案'],
-            need: 2,
+            need: 3,
             hint: '文学社名单里有一个被划掉的名字。',
             doubt: '苏言有学号、有借书、有署名。所有名单上都该有她——可失踪名单里，没有她。'
         },
@@ -30968,7 +31493,7 @@ body[data-passage="身份揭露"] .nh-identity-box {
             id: 5,
             name: '我是谁？',
             pages: [],
-            need: 0,
+            need: 3,
             hint: '那些零碎的词句在你脑中盘旋。也许，那个一直注视你的组织（A.R.C），会在邮箱里给你留下最后的答案。',
             doubt: '你想起了一些事。'
         }
