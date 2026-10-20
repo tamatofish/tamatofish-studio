@@ -5,10 +5,10 @@ import shutil
 from datetime import datetime
 
 # ==========================================
-# NH_REDESIGN_FIX_V194
-# 本次更新：
-# 1. 深度润色任务清单文案，使其充满悬疑与内心独白感。
-# 2. 去除“直接指明文件名”的生硬提示。
+# NH_REDESIGN_FIX_V195
+# 本次修复：
+# 1. 强制串行逻辑：前一章没完成，后面的章节全部锁死。
+# 2. 修复已完成章节 UI 标题缺失打勾的问题。
 # ==========================================
 
 FILENAME = 'index.html'
@@ -17,7 +17,6 @@ GLOBAL_SCRIPT = """<script id="nh-checklist-progress">
 (function () {
     'use strict';
 
-    // 核心文案修改：将直白的任务描述改为隐晦的内心独白
     var ACTS = [
         { 
             id: 1, name: '十五年前', 
@@ -94,18 +93,27 @@ GLOBAL_SCRIPT = """<script id="nh-checklist-progress">
             });
 
             var isDone = false;
-            if (idx === 4) {
-                isDone = prevDone; 
-            } else {
-                isDone = (count >= act.tasks.length);
+            // 【核心修复】：只有当上一幕完成时，才允许判定当前幕完成
+            if (prevDone) {
+                if (idx === 4) {
+                    isDone = prevDone; // 第五幕依赖前四幕全完成
+                } else {
+                    isDone = (count >= act.tasks.length);
+                }
             }
 
+            // 只有上一幕完成了，且当前这一幕没完成，才是“正在进行”
             var isCurrent = prevDone && !isDone;
+            
             var cls = isDone ? 'done' : (isCurrent ? 'current' : 'locked');
             
             html += '<div class="nh-c-act ' + cls + '">';
-            html += '<div class="nh-c-act-title"><span class="nh-c-act-num">' + (idx+1) + '</span>' + act.name + '</div>';
             
+            // 标题打勾
+            var titleIcon = isDone ? '<span style="color:#2a8a3a; margin-left:8px;">✔</span>' : '';
+            html += '<div class="nh-c-act-title"><span class="nh-c-act-num">' + (idx+1) + '</span>' + act.name + titleIcon + '</div>';
+            
+            // 内容区域
             if (isCurrent || isDone) {
                 html += '<div style="margin-top:12px; padding:10px; background:#fff5f5; border-left:3px solid #c83535; border-radius:2px; font-size:13.5px; color:#5a1a10; line-height:1.8;">';
                 
@@ -129,6 +137,8 @@ GLOBAL_SCRIPT = """<script id="nh-checklist-progress">
             }
 
             html += '</div>';
+            
+            // 如果这一幕没完成，后面的幕就全部锁死
             if (!isDone) prevDone = false;
         });
 
@@ -269,7 +279,6 @@ def backup_file(filepath):
     return backup_path
 
 def inject_panels(html):
-    # 替换最新的脚本
     html = re.sub(r'<script id="nh-checklist-progress">.*?</script>', '', html, flags=re.DOTALL)
     
     if '</body>' in html:
