@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import type { MeResponse } from '@/lib/types';
 
 const NAV_LINKS = [
   { href: '/#about', label: '关于我们' },
-  { href: '/#contact', label: '合作意向' },
-  { href: '/poem/index.html', label: '网页游戏', external: true },
-  { href: '/staff-login', label: '管理平台' },
+];
+
+// 👇 单独抽离的导航项
+const SERIES_GAMES = [
+  { href: '/utd', label: '长夜之下：第七首诗' }
 ];
 
 interface SiteNavProps {
@@ -48,13 +50,15 @@ function writeCachedMe(data: MeResponse | null) {
 }
 
 export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
-  // 首屏：直接读缓存，避免出现 "…" 闪烁
   const [me, setMe] = useState<MeResponse | null>(() => readCachedMe());
-  // 只要缓存里已有数据，就认为已经"确认过"，直接显示；否则显示 "…"
   const [checked, setChecked] = useState<boolean>(() => readCachedMe() !== null);
-  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  // 判断当前是否在 /utd 页面，如果是，就不让点击 Nav 里的按钮，或者给它高亮显示
+  const isUtdPage = pathname === '/utd';
 
   const handleAnchorClick = (e: React.MouseEvent, href: string) => {
     e.preventDefault();
@@ -67,12 +71,6 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
     }
   };
 
-  const handleChangelogClick = () => {
-    if (!entered) return;
-    if (onOpenChangelog) onOpenChangelog();
-  };
-
-  // 全局鼠标点击：以点击点为圆心生成规则小圆环
   useEffect(() => {
     const canvas = document.createElement('canvas');
     canvas.style.cssText =
@@ -89,6 +87,7 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
       radius: number;
       radiusSpeed: number;
       size: number; alpha: number; life: number;
+      warm: boolean;
     }
     const particles: P[] = [];
     let raf = 0;
@@ -107,6 +106,7 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
           size: 0.6 + Math.random() * 0.7,
           alpha: 0.6 + Math.random() * 0.3,
           life: 1,
+          warm: i % 5 === 0,
         });
       }
     };
@@ -131,7 +131,9 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
 
         ctx.beginPath();
         ctx.arc(x, y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(52,52,58,${p.alpha.toFixed(3)})`;
+        ctx.fillStyle = p.warm
+          ? `rgba(232,112,74,${p.alpha.toFixed(3)})`
+          : `rgba(220,222,226,${p.alpha.toFixed(3)})`;
         ctx.fill();
       }
       raf = requestAnimationFrame(animate);
@@ -154,10 +156,8 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
     };
   }, []);
 
-  // 拉取登录状态
   useEffect(() => {
     let active = true;
-    // 先立即用缓存显示（如果有）
     const cached = readCachedMe();
     if (cached) {
       setMe(cached);
@@ -175,7 +175,6 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
       })
       .catch(() => {
         if (!active) return;
-        // 请求失败：如果本地有缓存就保留，否则显示未登录
         const fallback = readCachedMe();
         setMe(fallback);
         setChecked(true);
@@ -185,13 +184,6 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
       active = false;
     };
   }, [pathname]);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   useEffect(() => {
     if (mobileOpen) {
@@ -204,134 +196,130 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
     };
   }, [mobileOpen]);
 
-  // 已登录时右上角显示的文本：优先用 email
   const loggedInLabel: string | null = me
     ? (me.email && String(me.email).trim()) || '我的账号'
     : null;
 
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? 'border-b border-[#e3e4e8]/70 bg-[#f2f3f5]/80 backdrop-blur-md'
-          : 'border-b border-transparent bg-transparent'
-      }`}
-    >
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="group flex items-center gap-2.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#e8704a] transition-transform duration-300 group-hover:scale-125" />
-          <span className="text-sm font-light tracking-[0.4em] text-[#1b1c1e]">番茄鱼工作室</span>
-        </Link>
+    <header className="fixed inset-x-0 top-0 z-50 flex justify-center pointer-events-none pt-4">
+      
+      <div 
+        className="pointer-events-auto relative flex flex-col items-center"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        
+        {/* 👇 外层：控制物理弹性动效 */}
+        <div
+          className={`
+            relative flex items-center justify-center
+            transition-all duration-700 ease-[cubic-bezier(0.175,0.885,0.32,1.1)]
+            ${isHovered ? 'md:w-auto md:h-12 md:rounded-full' : 'md:w-12 md:h-12 md:rounded-full'}
+            max-md:w-auto max-md:h-12 max-md:rounded-full
+          `}
+          style={{
+            maxWidth: isHovered ? '600px' : '48px',
+          }}
+        >
+          {/* 背景层 */}
+          <div
+            className={`
+              absolute inset-0 rounded-full border border-[#25262a] bg-[#111215]/95 backdrop-blur-xl
+              transition-all duration-700 ease-[cubic-bezier(0.175,0.885,0.32,1.1)]
+              ${isHovered ? 'md:shadow-[0_10px_40px_rgba(0,0,0,0.6)]' : 'md:shadow-[0_4px_15px_rgba(0,0,0,0.4)]'}
+            `}
+          />
 
-        <nav className="hidden items-center gap-10 md:flex">
-          {NAV_LINKS.map((link) => {
-            const isAnchor = link.href.startsWith('/#');
-            const isExternal = (link as { external?: boolean }).external === true;
-            const Component = (isAnchor || isExternal) ? 'a' : Link;
-            return (
-              <Component
-                key={link.href}
-                href={link.href as never}
-                onClick={isAnchor ? (e) => handleAnchorClick(e, link.href) : undefined}
-                className="group relative text-xs font-light tracking-[0.25em] text-[#85888e] transition-colors duration-300 hover:text-[#1b1c1e]"
-              >
-                {link.label}
-                <span className="absolute -bottom-1.5 left-1/2 h-px w-0 -translate-x-1/2 bg-[#1b1c1e] transition-all duration-300 group-hover:w-full" />
-              </Component>
-            );
-          })}
-
-          {/* 更新日志按钮 */}
-          {onOpenChangelog && (
-            <button
-              type="button"
-              onClick={handleChangelogClick}
-              disabled={!entered}
-              className={`group relative text-xs font-light tracking-[0.25em] transition-colors duration-300 ${
-                entered
-                  ? 'text-[#85888e] hover:text-[#1b1c1e]'
-                  : 'cursor-not-allowed text-[#c9ccd1]'
-              }`}
-              title={entered ? '查看更新日志' : '请先进入主页'}
-            >
-              更新日志
-              <span
-                className={`absolute -bottom-1.5 left-1/2 h-px -translate-x-1/2 bg-[#1b1c1e] transition-all duration-300 ${
-                  entered ? 'w-0 group-hover:w-full' : 'w-0'
-                }`}
-              />
-            </button>
-          )}
-        </nav>
-
-        <div className="flex items-center">
-          {!checked ? (
-            <span className="text-xs font-light tracking-[0.2em] text-[#b9bcc2]">…</span>
-          ) : me ? (
-            <Link
-              href={me.role === 'internal' ? '/admin' : '/dashboard'}
-              className="group hidden items-center gap-2 text-xs font-light tracking-[0.2em] text-[#1b1c1e] md:inline-flex"
-              title={loggedInLabel || undefined}
-            >
-              <span className="max-w-[16rem] truncate">{loggedInLabel}</span>
-              <svg
-                width="10"
-                height="10"
-                viewBox="0 0 10 10"
-                fill="none"
-                className="transition-transform duration-300 group-hover:translate-x-0.5"
-              >
-                <path d="M1 5h8M5.5 1.5 9 5l-3.5 3.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-          ) : (
-            <Link
-              href="/login"
-              className="group hidden items-center gap-2 text-xs font-light tracking-[0.2em] text-[#1b1c1e] md:inline-flex"
-            >
-              注册/登录
-              <svg
-                width="10"
-                height="10"
-                viewBox="0 0 10 10"
-                fill="none"
-                className="transition-transform duration-300 group-hover:translate-x-0.5"
-              >
-                <path d="M1 5h8M5.5 1.5 9 5l-3.5 3.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-          )}
-
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="relative flex h-8 w-8 items-center justify-center md:hidden"
-            aria-label="菜单"
+          {/* 👇 内层内容 */}
+          <div
+            className={`
+              relative z-10 flex items-center gap-6 whitespace-nowrap px-6
+              transition-all duration-700 ease-[cubic-bezier(0.175,0.885,0.32,1.1)]
+              ${isHovered ? 'md:opacity-100 md:translate-x-0 md:blur-0' : 'md:opacity-0 md:translate-x-6 md:blur-sm md:pointer-events-none'}
+              opacity-100 translate-x-0 blur-0 pointer-events-auto
+            `}
           >
-            <span
-              className={`absolute h-px w-5 bg-[#1b1c1e] transition-all duration-300 ${
-                mobileOpen ? 'rotate-45' : '-translate-y-1.5'
-              }`}
-            />
-            <span
-              className={`absolute h-px w-5 bg-[#1b1c1e] transition-all duration-300 ${
-                mobileOpen ? 'opacity-0' : 'opacity-100'
-              }`}
-            />
-            <span
-              className={`absolute h-px w-5 bg-[#1b1c1e] transition-all duration-300 ${
-                mobileOpen ? '-rotate-45' : 'translate-y-1.5'
-              }`}
-            />
-          </button>
+            {/* Logo */}
+            <Link href="/" className="group flex items-center gap-2 outline-none">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#e8704a] transition-transform duration-300 group-hover:scale-125 group-hover:shadow-[0_0_8px_#e8704a]" />
+              <span className="text-[13px] font-light tracking-[0.3em] text-[#e8e9eb] transition-colors group-hover:text-white">
+                番茄鱼工作室
+              </span>
+            </Link>
+
+            <div className="h-3.5 w-px bg-[#3a3b40]/60" />
+
+            {/* 导航链接 */}
+            <nav className="flex items-center gap-6">
+              {NAV_LINKS.map((link) => {
+                const isAnchor = link.href.startsWith('/#');
+                const isExternal = (link as { external?: boolean }).external === true;
+                const Component = (isAnchor || isExternal) ? 'a' : Link;
+                return (
+                  <Component
+                    key={link.href}
+                    href={link.href as never}
+                    onClick={isAnchor ? (e) => handleAnchorClick(e, link.href) : undefined}
+                    className="group relative text-xs font-light tracking-[0.25em] text-[#8a8c91] transition-colors duration-300 hover:text-[#e8e9eb] outline-none"
+                  >
+                    {link.label}
+                    <span className="absolute -bottom-1.5 left-1/2 h-px w-0 -translate-x-1/2 bg-[#e8704a] transition-all duration-300 group-hover:w-full" />
+                  </Component>
+                );
+              })}
+
+              {/* 👇 长夜之下系列：直接作为主按钮展示 */}
+              {SERIES_GAMES.map((game) => (
+                <Link
+                  key={game.href}
+                  href={game.href}
+                  // 如果已经在 /utd 页面，点击阻止默认跳转并强制刷新
+                  onClick={(e) => {
+                    if (isUtdPage) {
+                      e.preventDefault();
+                      router.push('/utd');
+                    }
+                  }}
+                  className={`group relative flex items-center gap-1.5 text-xs font-light tracking-[0.25em] transition-all duration-300 outline-none ${
+                    isUtdPage ? 'text-[#e8704a]' : 'text-[#e8e9eb] hover:text-[#e8704a]'
+                  }`}
+                >
+                  <span className={`h-1 w-1 rounded-full shadow-[0_0_6px_#e8704a] transition-colors ${isUtdPage ? 'bg-[#e8704a]' : 'bg-[#e8704a]/80'}`} />
+                  {game.label}
+                  
+                  {/* 只有在当前页面，下划线才常驻 */}
+                  <span className={`absolute -bottom-1.5 left-1/2 h-px -translate-x-1/2 bg-[#e8704a] transition-all duration-300 ${
+                    isUtdPage ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`} />
+                </Link>
+              ))}
+            </nav>
+          </div>
+
+          {/* 未悬浮状态下的小球中心 */}
+          <div 
+            className={`
+              absolute inset-0 flex items-center justify-center pointer-events-none
+              transition-all duration-700 ease-[cubic-bezier(0.175,0.885,0.32,1.1)]
+              ${isHovered ? 'md:opacity-0 md:scale-50 md:blur-sm' : 'md:opacity-100 md:scale-100 md:blur-0'}
+              hidden md:flex
+            `}
+          >
+            <div className="absolute h-6 w-6 rounded-full bg-[#e8704a]/20 animate-ping" style={{ animationDuration: '3s' }} />
+            <div className="absolute h-4 w-4 rounded-full bg-[#e8704a]/30 animate-pulse" />
+            <span className="relative h-2 w-2 rounded-full bg-[#e8704a] shadow-[0_0_10px_#e8704a]" />
+          </div>
+
         </div>
       </div>
 
+      {/* 移动端菜单 */}
       <div
-        className={`overflow-hidden border-t border-[#e3e4e8]/70 bg-[#f2f3f5]/95 backdrop-blur-md transition-all duration-500 md:hidden ${
-          mobileOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        className={`pointer-events-auto absolute left-4 right-4 top-[calc(100%+8px)] overflow-hidden rounded-2xl border border-[#25262a] bg-[#0a0a0b]/95 backdrop-blur-xl transition-all duration-500 md:hidden ${
+          mobileOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0 border-transparent'
         }`}
       >
-        <nav className="flex flex-col px-6 py-4">
+        <nav className="flex flex-col px-6 py-6 gap-6">
           {NAV_LINKS.map((link) => {
             const isAnchor = link.href.startsWith('/#');
             const isExternal = (link as { external?: boolean }).external === true;
@@ -341,56 +329,32 @@ export function SiteNav({ entered = true, onOpenChangelog }: SiteNavProps) {
                 key={link.href}
                 href={link.href as never}
                 onClick={() => setMobileOpen(false)}
-                className="border-b border-[#e3e4e8]/50 py-4 text-xs font-light tracking-[0.3em] text-[#55585e] transition-colors last:border-0 hover:text-[#1b1c1e]"
+                className="text-sm font-light tracking-[0.3em] text-[#a0a2a8] transition-colors hover:text-[#e8e9eb]"
               >
                 {link.label}
               </Component>
             );
           })}
 
-          {/* 移动端更新日志 */}
-          {onOpenChangelog && (
-            <button
-              type="button"
-              onClick={() => {
-                if (!entered) return;
-                setMobileOpen(false);
-                onOpenChangelog();
-              }}
-              disabled={!entered}
-              className={`border-b border-[#e3e4e8]/50 py-4 text-left text-xs font-light tracking-[0.3em] transition-colors ${
-                entered ? 'text-[#55585e] hover:text-[#1b1c1e]' : 'cursor-not-allowed text-[#c9ccd1]'
-              }`}
-            >
-              更新日志
-            </button>
-          )}
-
-          {checked && !me && (
-            <Link
-              href="/login"
-              onClick={() => setMobileOpen(false)}
-              className="mt-2 inline-flex items-center gap-2 py-4 text-xs font-light tracking-[0.3em] text-[#1b1c1e]"
-            >
-              注册/登录
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path d="M1 5h8M5.5 1.5 9 5l-3.5 3.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-          )}
-          {checked && me && (
-            <Link
-              href={me.role === 'internal' ? '/admin' : '/dashboard'}
-              onClick={() => setMobileOpen(false)}
-              className="mt-2 inline-flex items-center gap-2 py-4 text-xs font-light tracking-[0.3em] text-[#1b1c1e]"
-              title={loggedInLabel || undefined}
-            >
-              <span className="max-w-[16rem] truncate">{loggedInLabel}</span>
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path d="M1 5h8M5.5 1.5 9 5l-3.5 3.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-          )}
+          {/* 移动端的系列游戏 */}
+          <div className="flex flex-col gap-4">
+            <span className="text-[10px] font-light tracking-[0.3em] text-[#5a5c62]">网页游戏</span>
+            <div className="flex flex-col gap-3 pl-4 border-l border-[#25262a]">
+              {SERIES_GAMES.map((game) => (
+                <Link
+                  key={game.href}
+                  href={game.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-2 text-xs font-light tracking-wider transition-colors ${
+                    isUtdPage ? 'text-[#e8704a]' : 'text-[#e8e9eb] hover:text-[#e8704a]'
+                  }`}
+                >
+                  <span className="h-1 w-1 rounded-full bg-[#e8704a]" />
+                  {game.label}
+                </Link>
+              ))}
+            </div>
+          </div>
         </nav>
       </div>
     </header>

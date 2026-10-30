@@ -1,11 +1,33 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { SiteNav } from '@/components/site-nav';
 import { ParticleVortex } from '@/components/particle-vortex';
-import { ProductParticleBoxes } from '@/components/product-particle-boxes';
-import { TeamSection } from '@/components/team-section';
-import { InquirySection } from '@/components/inquiry-section';
+
+// 👇 核心优化：动态懒加载耗性能的组件，不阻塞首屏渲染
+const ProductParticleBoxes = dynamic(
+  () => import('@/components/product-particle-boxes').then((mod) => mod.ProductParticleBoxes),
+  { ssr: false }
+);
+
+const TeamSection = dynamic(
+  () => import('@/components/team-section').then((mod) => mod.TeamSection),
+  { 
+    ssr: false,
+    // 加载中的占位骨架屏
+    loading: () => (
+      <div className="flex h-40 items-center justify-center text-xs font-light tracking-widest text-[#9b9ea4]">
+        加载中...
+      </div>
+    )
+  }
+);
+
+const InquirySection = dynamic(
+  () => import('@/components/inquiry-section').then((mod) => mod.InquirySection),
+  { ssr: false }
+);
 
 const STATS = [
   { value: '2023', label: '工作室成立', suffix: '' },
@@ -20,37 +42,9 @@ const TIMELINE = [
   { time: '2026.01 —', text: '以多项目并行的技术验证方式，开发新一代《港湾》，让理想继续生长。' },
 ];
 
-const PRODUCTS = [
-  {
-    name: 'MAGIC',
-    tag: '标准辅助开发平台',
-    audience: '个人开发者 / 初学者',
-    price: '模块 299+',
-    period: '29 RMB / 月',
-    note: '内置数百个常用模块的一般用法与样例，让虚幻引擎的海量节点不再令初学者望而却步。',
-    href: '/magic',
-  },
-  {
-    name: 'MAGIC PRO',
-    tag: '旗舰辅助开发平台',
-    audience: '专业开发者 / 企业用户',
-    price: '模块 699+',
-    period: '999 RMB / 月',
-    note: '在标准版能力之上，支持调用本地部署 AI，为专业团队提供更完整的辅助开发能力。',
-    href: '/magic',
-  },
-  {
-    name: 'MAGIC SE',
-    tag: '即将上线',
-    audience: '学生开发者 / 爱好者',
-    price: '永久免费',
-    period: '敬请期待',
-    note: '面向学生开发者与爱好者的免费版本，让更多人有零门槛开始创作的机会。',
-    href: '/magic',
-  },
-];
+/* 👇 隐藏了 03 MAGIC 产品，数据直接清空 */
+const PRODUCTS: any[] = [];
 
-// ===== 更新日志（直接写在这里，随代码一起上传） =====
 interface ChangelogItem {
   version: string;
   date: string;
@@ -62,32 +56,20 @@ const CHANGELOG: ChangelogItem[] = [
     version: 'v1.0.1B',
     date: '2026-09-26',
     badge: '正式版',
-    entries: [
-      '修复已知问题',
-      '添加日志系统',
-      '优化显示效果和部分界面的操作逻辑',
-    ],
+    entries: ['修复已知问题', '添加日志系统', '优化显示效果和部分界面的操作逻辑'],
   },
   {
     version: 'v1.0.0',
     date: '2026-09-24',
     badge: '正式版',
-    entries: [
-      '官网上线，展示工作室介绍、产品线与团队成员',
-      '访客注册 / 登录系统',
-      '合作意向提交与跟进',
-      '内部文件管理与权限控制',
-    ],
+    entries: ['官网上线，展示工作室介绍、产品线与团队成员', '访客注册 / 登录系统', '合作意向提交与跟进', '内部文件管理与权限控制'],
   },
-  // 后续版本往这里追加，格式照抄即可
 ];
 
 const FOOTER_LINKS = [
   { href: '/', label: '官网首页' },
-  { href: '/login', label: '访客登录' },
   { href: '/register', label: '访客注册' },
   { href: '/staff-login', label: '成员入口' },
-  { href: '/admin-login', label: '管理员入口' },
 ];
 
 export default function Home() {
@@ -98,7 +80,6 @@ export default function Home() {
   const [changelogVisible, setChangelogVisible] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
 
-  // 首屏滚动锁定
   useEffect(() => {
     if (!entered) {
       document.body.style.overflow = 'hidden';
@@ -113,7 +94,6 @@ export default function Home() {
     };
   }, [entered]);
 
-  // 首屏文字跟随鼠标偏移
   useEffect(() => {
     if (entered) return;
     const onMove = (e: MouseEvent) => {
@@ -130,7 +110,6 @@ export default function Home() {
     return () => window.removeEventListener('mousemove', onMove);
   }, [entered]);
 
-  // 更新日志弹窗：禁止背景滚动 + Esc 关闭
   useEffect(() => {
     if (!changelogOpen) return;
     const original = document.body.style.overflow;
@@ -156,7 +135,6 @@ export default function Home() {
     window.setTimeout(() => setChangelogOpen(false), 220);
   };
 
-  // 点击向下箭头：过渡后进入主内容
   const handleEnter = () => {
     if (exiting || entered) return;
     setExiting(true);
@@ -194,9 +172,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#f2f3f5] font-sans text-[#1b1c1e] antialiased">
-      <SiteNav entered={entered} onOpenChangelog={openChangelog} />
+      
+      {entered && <SiteNav entered={entered} onOpenChangelog={openChangelog} />}
 
-      {/* ===== 首屏：粒子漩涡（刷新默认显示） ===== */}
       {!entered && (
         <section
           ref={heroRef}
@@ -237,13 +215,11 @@ export default function Home() {
         </section>
       )}
 
-      {/* ===== 主内容 ===== */}
       <div
         className={`transition-all duration-700 ${
           entered ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-8 opacity-0'
         } ${exiting ? 'scale-105 opacity-0' : ''}`}
       >
-        {/* 数据条 */}
         <section className="border-y border-[#e3e4e8] bg-[#fbfbfc]">
           <div className="mx-auto grid max-w-6xl grid-cols-2 gap-y-8 px-6 py-12 sm:grid-cols-4">
             {STATS.map((s) => (
@@ -254,7 +230,7 @@ export default function Home() {
             ))}
           </div>
         </section>
-        {/* 01 关于我们 */}
+        
         <section id="about" className="mx-auto max-w-6xl px-6 py-24">
           <div className="grid gap-12 lg:grid-cols-[220px_1fr]">
             <div>
@@ -275,7 +251,7 @@ export default function Home() {
             </div>
           </div>
         </section>
-        {/* 02 游戏开发 · 港湾 */}
+        
         <section className="border-t border-[#e3e4e8] bg-[#fbfbfc]">
           <div className="mx-auto max-w-6xl px-6 py-24">
             <div className="grid gap-12 lg:grid-cols-[220px_1fr]">
@@ -303,46 +279,48 @@ export default function Home() {
             </div>
           </div>
         </section>
-        {/* 03 辅助开发平台 MAGIC —— 每个卡片独立粒子框 */}
-        <section className="border-t border-[#e3e4e8]">
-          <div className="mx-auto max-w-6xl px-6 py-24">
-            <div className="grid gap-12 lg:grid-cols-[220px_1fr]">
-              <div>
-                <p className="text-xs font-light tracking-[0.4em] text-[#b9bcc2]">03</p>
-                <h2 className="mt-3 text-2xl font-light tracking-[0.2em] text-[#1b1c1e]">辅助开发平台</h2>
-                <p className="mt-2 text-xs font-light tracking-[0.3em] text-[#9b9ea4]">MAGIC SERIES</p>
-                <div className="mt-4 h-px w-10 bg-[#e8704a]" />
-                <p className="mt-6 max-w-[220px] text-xs font-light leading-6 text-[#9b9ea4]">
-                  为 UE 引擎与部分开发环境设计的开发辅助系统。
-                </p>
-              </div>
-              <div className="grid gap-5 md:grid-cols-3">
-                {PRODUCTS.map((p) => (
-                  <ProductParticleBoxes key={p.name} className="h-full">
-                    <Link
-                      href={p.href}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleProductClick(p.href);
-                      }}
-                      className="flex h-full w-full flex-col bg-white p-7 text-left"
-                    >
-                      <p className="text-lg font-light tracking-wider text-[#1b1c1e]">{p.name}</p>
-                      <p className="mt-1 text-[11px] font-light tracking-[0.2em] text-[#9b9ea4]">{p.tag}</p>
-                      <p className="mt-5 text-xs font-light text-[#85888e]">{p.audience}</p>
-                      <p className="mt-4 text-sm font-light text-[#1b1c1e]">
-                        {p.price}
-                        <span className="ml-2 text-xs text-[#9b9ea4]">{p.period}</span>
-                      </p>
-                      <p className="mt-5 flex-1 text-xs font-light leading-6 text-[#55585e]">{p.note}</p>
-                    </Link>
-                  </ProductParticleBoxes>
-                ))}
+
+        {PRODUCTS.length > 0 && (
+          <section className="border-t border-[#e3e4e8]">
+            <div className="mx-auto max-w-6xl px-6 py-24">
+              <div className="grid gap-12 lg:grid-cols-[220px_1fr]">
+                <div>
+                  <p className="text-xs font-light tracking-[0.4em] text-[#b9bcc2]">03</p>
+                  <h2 className="mt-3 text-2xl font-light tracking-[0.2em] text-[#1b1c1e]">辅助开发平台</h2>
+                  <p className="mt-2 text-xs font-light tracking-[0.3em] text-[#9b9ea4]">MAGIC SERIES</p>
+                  <div className="mt-4 h-px w-10 bg-[#e8704a]" />
+                  <p className="mt-6 max-w-[220px] text-xs font-light leading-6 text-[#9b9ea4]">
+                    为 UE 引擎与部分开发环境设计的开发辅助系统。
+                  </p>
+                </div>
+                <div className="grid gap-5 md:grid-cols-3">
+                  {PRODUCTS.map((p) => (
+                    <ProductParticleBoxes key={p.name} className="h-full">
+                      <Link
+                        href={p.href}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleProductClick(p.href);
+                        }}
+                        className="flex h-full w-full flex-col bg-white p-7 text-left"
+                      >
+                        <p className="text-lg font-light tracking-wider text-[#1b1c1e]">{p.name}</p>
+                        <p className="mt-1 text-[11px] font-light tracking-[0.2em] text-[#9b9ea4]">{p.tag}</p>
+                        <p className="mt-5 text-xs font-light text-[#85888e]">{p.audience}</p>
+                        <p className="mt-4 text-sm font-light text-[#1b1c1e]">
+                          {p.price}
+                          <span className="ml-2 text-xs text-[#9b9ea4]">{p.period}</span>
+                        </p>
+                        <p className="mt-5 flex-1 text-xs font-light leading-6 text-[#55585e]">{p.note}</p>
+                      </Link>
+                    </ProductParticleBoxes>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-        {/* 04 团队 */}
+          </section>
+        )}
+
         <section className="border-t border-[#e3e4e8] bg-[#fbfbfc]">
           <div className="mx-auto max-w-6xl px-6 py-24">
             <div className="grid gap-12 lg:grid-cols-[220px_1fr]">
@@ -355,23 +333,25 @@ export default function Home() {
             </div>
           </div>
         </section>
-        {/* 05 合作意向 */}
-        <section id="contact" className="border-t border-[#e3e4e8]">
-          <div className="mx-auto max-w-6xl px-6 py-24">
-            <div className="grid gap-12 lg:grid-cols-[220px_1fr]">
-              <div>
-                <p className="text-xs font-light tracking-[0.4em] text-[#b9bcc2]">05</p>
-                <h2 className="mt-3 text-2xl font-light tracking-[0.2em] text-[#1b1c1e]">合作意向</h2>
-                <div className="mt-4 h-px w-10 bg-[#e8704a]" />
-                <p className="mt-6 max-w-[220px] text-xs font-light leading-6 text-[#9b9ea4]">
-                  注册成为访客并提交合作意向，工作室会尽快与你联系。
-                </p>
+        
+        {false && (
+          <section id="contact" className="border-t border-[#e3e4e8]">
+            <div className="mx-auto max-w-6xl px-6 py-24">
+              <div className="grid gap-12 lg:grid-cols-[220px_1fr]">
+                <div>
+                  <p className="text-xs font-light tracking-[0.4em] text-[#b9bcc2]">05</p>
+                  <h2 className="mt-3 text-2xl font-light tracking-[0.2em] text-[#1b1c1e]">合作意向</h2>
+                  <div className="mt-4 h-px w-10 bg-[#e8704a]" />
+                  <p className="mt-6 max-w-[220px] text-xs font-light leading-6 text-[#9b9ea4]">
+                    注册成为访客并提交合作意向，工作室会尽快与你联系。
+                  </p>
+                </div>
+                <InquirySection />
               </div>
-              <InquirySection />
             </div>
-          </div>
-        </section>
-        {/* 底部黑色通栏 */}
+          </section>
+        )}
+        
         <footer className="bg-[#0a0a0b] text-[#8a8a8f]">
           <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-6 py-12 text-center">
             <div className="flex items-center gap-2">
@@ -397,7 +377,6 @@ export default function Home() {
         </footer>
       </div>
 
-      {/* ===== 更新日志弹窗 ===== */}
       {changelogOpen && (
         <div
           onClick={closeChangelog}
@@ -412,10 +391,7 @@ export default function Home() {
               changelogVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
             }`}
           >
-            {/* 顶部装饰线 */}
             <div className="h-px w-full bg-gradient-to-r from-transparent via-[#e8704a]/40 to-transparent" />
-
-            {/* 关闭按钮 */}
             <button
               type="button"
               onClick={closeChangelog}
@@ -426,8 +402,6 @@ export default function Home() {
                 <path d="M18 6 6 18M6 6l12 12" />
               </svg>
             </button>
-
-            {/* 头部 */}
             <div className="px-8 pt-10 pb-6">
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#e8704a]" />
@@ -436,8 +410,6 @@ export default function Home() {
               <h2 className="mt-3 text-2xl font-light tracking-[0.2em] text-[#1b1c1e]">更新日志</h2>
               <p className="mt-2 text-xs font-light text-[#9b9ea4]">记录番茄鱼工作室的每一次进化</p>
             </div>
-
-            {/* 更新列表 */}
             <div className="max-h-[60vh] overflow-y-auto px-8 pb-8">
               {CHANGELOG.length === 0 ? (
                 <p className="py-12 text-center text-xs font-light text-[#9b9ea4]">暂无更新记录</p>
@@ -445,12 +417,10 @@ export default function Home() {
                 <div className="space-y-8">
                   {CHANGELOG.map((item, idx) => (
                     <div key={item.version + item.date} className="relative">
-                      {/* 时间线竖线 */}
                       {idx < CHANGELOG.length - 1 && (
                         <span className="absolute left-[3px] top-3 h-full w-px bg-[#e3e4e8]" />
                       )}
                       <div className="flex gap-4">
-                        {/* 圆点 */}
                         <span className="relative z-10 mt-1.5 h-[7px] w-[7px] shrink-0 rounded-full bg-[#e8704a]" />
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-2">

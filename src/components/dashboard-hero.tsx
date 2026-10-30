@@ -101,7 +101,11 @@ export function DashboardHero({ name, company }: DashboardHeroProps) {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(27, 28, 30, ${alpha.toFixed(3)})`;
+        // 暗色版：浅灰粒子 + 少量暖色点缀
+        const warm = i % 7 === 0;
+        ctx.fillStyle = warm
+          ? `rgba(232, 112, 74, ${(alpha * 0.8).toFixed(3)})`
+          : `rgba(232, 233, 235, ${alpha.toFixed(3)})`;
         ctx.fill();
       }
 
@@ -143,19 +147,19 @@ export function DashboardHero({ name, company }: DashboardHeroProps) {
   return (
     <div
       ref={wrapRef}
-      className="relative mb-8 overflow-hidden border border-[#e3e4e8] bg-white"
+      className="relative mb-8 overflow-hidden border border-[#25262a] bg-[#111215]"
       style={{ minHeight: '180px' }}
     >
       <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 z-0 h-full w-full" />
       <div className="relative z-10 flex flex-col items-start gap-3 px-10 py-12">
         <div className="flex items-center gap-2">
           <span className="h-1.5 w-1.5 rounded-full bg-[#e8704a]" />
-          <span className="text-[10px] font-light tracking-[0.4em] text-[#b9bcc2]">VISITOR</span>
+          <span className="text-[10px] font-light tracking-[0.4em] text-[#5a5c62]">VISITOR</span>
         </div>
-        <h1 className="text-2xl font-light tracking-[0.2em] text-[#1b1c1e] sm:text-3xl">
+        <h1 className="text-2xl font-light tracking-[0.2em] text-[#e8e9eb] sm:text-3xl">
           {name || '未命名'}
         </h1>
-        <p className="text-xs font-light tracking-[0.25em] text-[#85888e]">{displayCompany}</p>
+        <p className="text-xs font-light tracking-[0.25em] text-[#8a8c91]">{displayCompany}</p>
       </div>
     </div>
   );

@@ -1,5 +1,207 @@
 <!DOCTYPE html>
 <!--
+  NH_REDESIGN_FIX_CHANGELOG_V202_LOGIN_LOCK
+  =============================
+  生成时间：2026-10-22 12:53:26
+  本次（redesign.py V202_LOGIN_LOCK）修复清单：
+
+  1]      · 注入超强力登录锁定引擎，彻底防止刷新掉登录。
+
+  文本字数变动：
+    · 原 index.html 字符数：1771734
+    · 新 index.html 字符数：1772949
+    · 净变动：+1215
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V201_LOGIN_FIX
+  =============================
+  生成时间：2026-10-22 12:51:58
+  本次（redesign.py V201_LOGIN_FIX）修复清单：
+
+  1]      · 注入底层登录持久化补丁，彻底解决刷新、关闭网页导致的掉登录问题。
+
+  文本字数变动：
+    · 原 index.html 字符数：1764167
+    · 新 index.html 字符数：1771448
+    · 净变动：+7281
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V189
+  =============================
+  生成时间：2026-10-22 01:05:08
+  本次（redesign.py V189）修复清单：
+
+  1]      · 通过兜底匹配重写了「反复覆盖」提示。
+
+  文本字数变动：
+    · 原 index.html 字符数：1763426
+    · 新 index.html 字符数：1763916
+    · 净变动：+490
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V188
+  =============================
+  生成时间：2026-10-22 01:04:28
+  本次（redesign.py V188）修复清单：
+
+  1]      · 美化“文件底层拼凑”的系统提示，采用暗黑终端风格。
+     · 强制重写「林晚资料」的主体结构，恢复照片及学籍文字。
+
+  文本字数变动：
+    · 原 index.html 字符数：1762813
+    · 新 index.html 字符数：1763134
+    · 净变动：+321
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V187
+  =============================
+  生成时间：2026-10-22 01:03:10
+  本次（redesign.py V187）修复清单：
+
+  1]      · 重构污染值触发器，补齐「苏言档案」的污染值设定，确保所有档案首访仅加值不改级。
+
+  文本字数变动：
+    · 原 index.html 字符数：1762412
+    · 新 index.html 字符数：1762541
+    · 净变动：+129
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V186
+  =============================
+  生成时间：2026-10-22 01:02:41
+  本次（redesign.py V186）修复清单：
+
+  1]      · 修复 nh-corruption-triggers 中直接调用 State 引发的 ReferenceError 崩溃。
+
+  文本字数变动：
+    · 原 index.html 字符数：1761618
+    · 新 index.html 字符数：1762119
+    · 净变动：+501
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V185
+  =============================
+  生成时间：2026-10-22 01:01:52
+  本次（redesign.py V185）修复清单：
+
+  1]      · 修复了「林晚资料」页面由于正则误删导致的渲染崩溃/白屏问题。
+     · 调整了悬浮菜单按钮的位置和尺寸，防止其遮挡正文内容。
+     · 重写了污染值触发器，使用 Twine 原生 State.hasPlayed 保证每个文件仅在首次访问时叠加。
+
+  文本字数变动：
+    · 原 index.html 字符数：1774627
+    · 新 index.html 字符数：1761257
+    · 净变动：-13370
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V184
+  =============================
+  生成时间：2026-10-22 01:00:27
+  本次（redesign.py V184）修复清单：
+
+  1]      · 重写 nh-corruption-core，建立 __nhFiredPages 访问账本，同一文件只加一次污染。
+     · 在“重新开始”的重置逻辑中加入账本清理。
+
+  文本字数变动：
+    · 原 index.html 字符数：1777717
+    · 新 index.html 字符数：1774309
+    · 净变动：-3408
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V183
+  =============================
+  生成时间：2026-10-22 00:59:35
+  本次（redesign.py V183）修复清单：
+
+  1]      · 清理了 6 处直接修改污染等级的旧代码。
+     · 重写等级锁定补丁，彻底禁用“直接修改等级”并增加同页面防刷机制。
+     · 重写污染值触发器，采用映射表机制，确保每个文件一生只加一次污染值。
+
+  文本字数变动：
+    · 原 index.html 字符数：1775518
+    · 新 index.html 字符数：1777382
+    · 净变动：+1864
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V181
+  =============================
+  生成时间：2026-10-22 00:57:03
+  本次（redesign.py V181）修复清单：
+
+  1]      · 清理「陈默资料」底部指向「名如其人」的硬编码链接。
+     · 升级全局 DOM 拦截脚本，彻底抹杀所有遗留的“名如其人/5个人”等跳转链接。
+
+  文本字数变动：
+    · 原 index.html 字符数：1774290
+    · 新 index.html 字符数：1775213
+    · 净变动：+923
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V180
+  =============================
+  生成时间：2026-10-22 00:56:07
+  本次（redesign.py V180）修复清单：
+
+  1]      · 优化「陈默教研日志」底部按钮排列，使用 Flex 布局解决换行错位，统一暗红配色。
+
+  文本字数变动：
+    · 原 index.html 字符数：1773780
+    · 新 index.html 字符数：1774016
+    · 净变动：+236
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V179
+  =============================
+  生成时间：2026-10-22 00:55:00
+  本次（redesign.py V179）修复清单：
+
+  1]      · 重写「陈默教研日志」页面源码，彻底修复排版坍塌及链接裸奔问题。
+
+  文本字数变动：
+    · 原 index.html 字符数：1773402
+    · 新 index.html 字符数：1773516
+    · 净变动：+114
+-->
+
+
+<!--
+  NH_REDESIGN_FIX_CHANGELOG_V178
+  =============================
+  生成时间：2026-10-22 00:54:28
+  本次（redesign.py V178）修复清单：
+
+  1]      · 补全「陈默教研日志」的外部容器样式，修复排版崩塌
+
+  文本字数变动：
+    · 原 index.html 字符数：1773117
+    · 新 index.html 字符数：1773146
+    · 净变动：+29
+-->
+
+
+<!--
   NH_REDESIGN_FIX_CHANGELOG_V174
   =============================
   生成时间：2026-10-19 18:24:48
@@ -1107,6 +1309,30 @@
 
 <html data-init="no-js">
 <head>
+
+<style id="nh-force-nav-show">
+    /* 强行覆盖所有 display: none 规则 */
+    html body #lw-tabs,
+    html body #lw-nav-bar {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    /* 但是，在特定页面依然保持隐藏（如邮箱、身份揭露） */
+    html body[data-passage="ZEmail"] #lw-tabs,
+    html body[data-passage="ZEmail"] #lw-nav-bar,
+    html body[data-passage="身份揭露"] #lw-tabs,
+    html body[data-passage="身份揭露"] #lw-nav-bar,
+    html body[data-passage="结局:献祭"] #lw-tabs,
+    html body[data-passage="结局:献祭"] #lw-nav-bar,
+    html body[data-passage="结局:逃离"] #lw-tabs,
+    html body[data-passage="结局:逃离"] #lw-nav-bar {
+        display: none !important;
+    }
+</style>
+
+
 <!--
   NH_REDESIGN_FIX_CHANGELOG_V120
   =============================
@@ -3737,6 +3963,7 @@ document.addEventListener('keydown', function(e) {
 })();
 </script>
 <script id="nh-perfect-reset-v2">
+
 (function () {
     'use strict';
 
@@ -3775,7 +4002,11 @@ document.addEventListener('keydown', function(e) {
                 v.readMails = []; // 清空已读记录
             } catch(err) {}
         }
-    }, true);
+    
+                if (window.__nhCorruption && window.__nhCorruption.clearHistory) {
+                    window.__nhCorruption.clearHistory();
+                }
+            }, true);
 
     // 2. 拦截污染值恢复脚本，如果当前变量里污染值明确是 0（刚重置），就删掉本地锁
     setInterval(function() {
@@ -3792,6 +4023,7 @@ document.addEventListener('keydown', function(e) {
     }, 500);
 
 })();
+
 </script>
 <script id="nh-inject-next-step">
 (function () {
@@ -4220,6 +4452,318 @@ document.addEventListener('keydown', function(e) {
 
 })();
 </script>
+
+<script id="nh-kill-extra-link">
+
+(function () {
+    'use strict';
+
+    // 需要抹杀的链接特征
+    var BAD_TEXTS = ['他为什么沉默', '名如其人', '5个人', '5 个人', '6个人', '6 个人'];
+    var BAD_TARGETS = ['名如其人', '失联时间线', '第六个人', '意外？']; // 泉都论坛的子页面
+
+    function isBadNode(node) {
+        if (!node) return false;
+        
+        // 1. 如果是文本节点，检查特征字
+        if (node.nodeType === 3) {
+            var txt = node.nodeValue || '';
+            if (BAD_TEXTS.some(function(t) { return txt.indexOf(t) !== -1; })) {
+                // 判断它的父节点是不是链接
+                var p = node.parentNode;
+                if (p && p.tagName === 'A') return true;
+            }
+        }
+
+        // 2. 如果是元素节点（A 标签）
+        if (node.nodeType === 1) {
+            if (node.tagName === 'A') {
+                var text = node.textContent || '';
+                var target = node.getAttribute('data-passage') || '';
+                
+                // 如果包含特定文字，或者 data-passage 指向泉都论坛的子页面
+                if (BAD_TEXTS.some(function(t) { return text.indexOf(t) !== -1; })) return true;
+                if (BAD_TARGETS.indexOf(target) !== -1) return true;
+            }
+            
+            // 如果是 div 或 span 包裹了这类链接，整个移除
+            if (node.tagName === 'DIV' || node.tagName === 'P') {
+                var html = node.innerHTML || '';
+                if (html.indexOf('名如其人') !== -1 && (html.indexOf('他为什么') !== -1 || html.indexOf('5 个人') !== -1 || html.indexOf('6 个人') !== -1)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // 劫持 appendChild
+    var origAppendChild = Node.prototype.appendChild;
+    Node.prototype.appendChild = function (node) {
+        if (isBadNode(node)) {
+            console.log('[Kill Link] 拦截注入:', node.textContent || node.nodeName);
+            return document.createElement('div');
+        }
+        return origAppendChild.call(this, node);
+    };
+
+    // 劫持 insertBefore
+    var origInsertBefore = Node.prototype.insertBefore;
+    Node.prototype.insertBefore = function (newNode, referenceNode) {
+        if (isBadNode(newNode)) {
+            console.log('[Kill Link] 拦截注入:', newNode.textContent || newNode.nodeName);
+            return document.createElement('div');
+        }
+        return origInsertBefore.call(this, newNode, referenceNode);
+    };
+
+    // 劫持 innerHTML
+    var origInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+    Object.defineProperty(Element.prototype, 'innerHTML', {
+        set: function (value) {
+            if (typeof value === 'string' && value.indexOf('名如其人') !== -1) {
+                // 暴力正则替换掉包含特征词的 a 标签
+                var newValue = value.replace(/<a[^>]*>[^<]*他为什么[^<]*<\/a>/g, '');
+                newValue = newValue.replace(/<a[^>]*>[^<]*5\s*个人[^<]*6\s*个人[^<]*<\/a>/g, '');
+                newValue = newValue.replace(/<div[^>]*>[^<]*他为什么沉默[^<]*<\/div>/g, '');
+                
+                if (newValue !== value) {
+                    console.log('[Kill Link] 成功拦截 innerHTML 注入。');
+                    return origInnerHTML.set.call(this, newValue);
+                }
+            }
+            return origInnerHTML.set.call(this, value);
+        },
+        get: function () {
+            return origInnerHTML.get.call(this);
+        }
+    });
+
+    // 终极兜底：DOM 树渲染完后，定时扫一遍页面，把漏网之鱼清理掉
+    setInterval(function() {
+        var links = document.querySelectorAll('a');
+        for (var i = 0; i < links.length; i++) {
+            var a = links[i];
+            var text = a.textContent || '';
+            var target = a.getAttribute('data-passage') || '';
+            if (text.indexOf('他为什么沉默') !== -1 || BAD_TARGETS.indexOf(target) !== -1) {
+                if (a.parentNode) {
+                    console.log('[Kill Link] 兜底清理:', text);
+                    a.parentNode.removeChild(a);
+                }
+            }
+        }
+    }, 500);
+
+    console.log('[nh-kill-extra-link] 底层拦截引擎 V2 已启动。');
+})();
+    
+</script>
+
+
+<script id="nh-kill-leaked-macro">
+(function () {
+    'use strict';
+
+    function cleanLeaked() {
+        // 只在陈默日志页执行
+        if (!window.SugarCube || !SugarCube.State) return;
+        if (SugarCube.State.passage !== '陈默教研日志') return;
+
+        var passages = document.getElementById('passages');
+        if (!passages) return;
+
+        // 遍历 #passages 下所有的文本节点
+        var walker = document.createTreeWalker(passages, NodeFilter.SHOW_TEXT, null);
+        var nodesToRemove = [];
+
+        while (walker.nextNode()) {
+            var node = walker.currentNode;
+            var txt = node.nodeValue || '';
+            // 如果文本里包含了这个宏特征
+            if (txt.indexOf('<<link') !== -1 || txt.indexOf('&lt;&lt;link') !== -1) {
+                nodesToRemove.push(node);
+            }
+        }
+
+        // 清空匹配的文本节点
+        for (var i = 0; i < nodesToRemove.length; i++) {
+            nodesToRemove[i].nodeValue = '';
+        }
+    }
+
+    // 页面加载完成后执行，多试几次，确保能赶上引擎渲染的速度
+    setInterval(cleanLeaked, 200);
+
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay.nhKillMacro', function () {
+            setTimeout(cleanLeaked, 50);
+            setTimeout(cleanLeaked, 200);
+            setTimeout(cleanLeaked, 500);
+        });
+    }
+})();
+</script>
+<script id="nh-corruption-triggers">
+
+(function () {
+    'use strict';
+
+    function currentPassage() {
+        try { return window.SugarCube.State.passage; } catch (e) { return ''; }
+    }
+    
+    function fire() {
+        if (!window.SugarCube || !window.SugarCube.State) return;
+        
+        var core = window.__nhCorruption;
+        if (!core) return;
+        
+        var cur = currentPassage();
+        if (!cur) return;
+
+        // 核心文件污染值映射表（补齐了苏言档案及其他文档）
+        var mapping = {
+            '苏言档案': 3, // <-- 补齐了
+            '苏言残稿': 6, '苏言残稿A': 2, '苏言残稿B': 2, '苏言残稿C': 2, '苏言残稿D': 2,
+            '2015笔录': 6,
+            '毕业照2015': 6,
+            '地下室': 5,
+            '监控录像': 8,
+            '诗刊': 3,
+            '旧教学楼失火': 4,
+            '张昊资料': 2,
+            '王佳资料': 2,
+            '李阳资料': 2,
+            '赵晓资料': 2,
+            '陈默资料': 5,
+            '第七首诗': 15,
+            '陈默教研日志': 10,
+            '林晚的留言': 8,
+            '第七个书架': 10,
+            '消防事故调查报告': 5,
+            '2003年旧档': 5,
+            'B103杂物间': 5
+        };
+
+        if (mapping[cur] !== undefined) {
+            try {
+                // 判定是否首次访问
+                var isFirstVisit = !window.SugarCube.State.hasPlayed(cur);
+                
+                if (isFirstVisit) {
+                    var delta = mapping[cur];
+                    var before = core.get();
+                    var after = before + delta;
+                    
+                    // 直接修改基础数值，由 locklevel 自动推算等级
+                    core.set(after);
+                    
+                    console.log('[nh-corruption] 首次访问文件:', cur, '污染 +', delta, '=>', after);
+                    
+                    document.dispatchEvent(new CustomEvent('nh:corruption-add', {
+                        detail: { key: 'visit:' + cur, delta: delta, before: before, after: after }
+                    }));
+                }
+            } catch (err) {
+                console.warn('[nh-corruption] 触发器执行错误:', err);
+            }
+        }
+    }
+
+    if (window.jQuery) {
+        jQuery(document).on(':passagestart.nhCorruptionTrigger', fire);
+    }
+    setTimeout(fire, 500);
+})();
+    
+</script>
+
+
+
+
+<script id="nh-login-lock-hard">
+(function () {
+    'use strict';
+
+    var LS_LOGIN = 'nh_is_logged_in_locked';
+    var LS_USER = 'nh_username_locked';
+
+    // 1. 监听登录成功（捕获点击事件）
+    document.addEventListener('click', function(ev) {
+        var el = ev.target;
+        while (el && el !== document.body) {
+            if (el.tagName === 'BUTTON' && (el.textContent || '').indexOf('登') !== -1) {
+                setTimeout(function() {
+                    try {
+                        if (window.SugarCube && SugarCube.State && SugarCube.State.variables) {
+                            if (SugarCube.State.variables.loggedIn === true) {
+                                localStorage.setItem(LS_LOGIN, 'true');
+                                localStorage.setItem(LS_USER, SugarCube.State.variables.username || 'admin');
+                                console.log('🔒 [Login Lock] 登录状态已刻入本地');
+                            }
+                        }
+                    } catch(e) {}
+                }, 500); // 延迟等待游戏内部赋值
+                break;
+            }
+            el = el.parentNode;
+        }
+    }, true);
+
+    // 2. 核心：在每个页面即将渲染完成时，强行把变量塞进去
+    function enforceLogin() {
+        if (localStorage.getItem(LS_LOGIN) !== 'true') return;
+        
+        try {
+            if (window.SugarCube && SugarCube.State && SugarCube.State.variables) {
+                var v = SugarCube.State.variables;
+                if (v.loggedIn !== true) {
+                    v.loggedIn = true;
+                    v.username = localStorage.getItem(LS_USER) || 'admin';
+                    console.log('🔒 [Login Lock] 强制恢复登录状态');
+                }
+            }
+        } catch(e) {}
+    }
+
+    // 3. 拦截引擎，在页面渲染的瞬间和之后强制执行
+    if (window.jQuery) {
+        // 监听引擎的所有关键节点
+        jQuery(document).on(':passagestart', enforceLogin);
+        jQuery(document).on(':passagerender', enforceLogin);
+        jQuery(document).on(':passagedisplay', function() {
+            enforceLogin();
+            setTimeout(enforceLogin, 10);
+            setTimeout(enforceLogin, 100);
+            setTimeout(enforceLogin, 500);
+        });
+    }
+
+    // 4. 极限兜底：每 100 毫秒轮询一次（比游戏自身的防作弊还快）
+    setInterval(enforceLogin, 100);
+
+    // 页面加载第一瞬间执行
+    setTimeout(enforceLogin, 0);
+    setTimeout(enforceLogin, 100);
+
+    // 暴露给全局，如果进入 Start 页，强行跳转
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay', function() {
+            try {
+                if (SugarCube.State.passage === 'Start' && localStorage.getItem(LS_LOGIN) === 'true') {
+                    // 发现跳回了登录页，立刻强行跳回首页
+                    console.log('🔒 [Login Lock] 拦截登录页跳转，强入内网首页');
+                    setTimeout(function() {
+                        SugarCube.Engine.play('内网首页');
+                    }, 50);
+                }
+            } catch(e) {}
+        });
+    }
+})();
+</script>
+
 </body> 前插入独立脚本 nh-cctv-timer
           · 该脚本在 #cctvScreen 存在时才执行
 
@@ -5260,50 +5804,43 @@ document.addEventListener('keydown', function(e) {
                 引擎识别 100% 正常。
               · 但 nh-fake-arc 在 <!-- ===== NH_CORRUPTION_CORE_V1 ===== -->
 <script id="nh-corruption-core">
-/* NH_CORRUPTION_CORE_V1：
-   $corruption 是唯一真相，$corruptionLevel 由它派生。
-   任何页面/脚本都不应再直接写 corruptionLevel。 */
+
 (function () {
     'use strict';
 
     var THRESHOLDS = [0, 10, 30, 60];
-
-    var EVENTS = {
-        'linwan.visit.1':   { delta: 8,  once: true },
-        'linwan.visit.2':   { delta: 12, once: true },
-        'linwan.visit.3':   { delta: 20, once: true },
-        'frag.suyan':       { delta: 6,  once: true },
-        'frag.bilu':        { delta: 6,  once: true },
-        'frag.photo':       { delta: 6,  once: true },
-        'scene.basement':   { delta: 5,  once: true },
-        'scene.cctv':       { delta: 8,  once: true },
-        'scene.shiikan':    { delta: 3,  once: true },
-        'scene.fire':       { delta: 4,  once: true },
-        'member.zhanghao':  { delta: 2,  once: true },
-        'member.wangjia':   { delta: 2,  once: true },
-        'member.liyang':    { delta: 2,  once: true },
-        'member.zhaoxiao':  { delta: 2,  once: true },
-        'member.chenmo':    { delta: 5,  once: true },
-        'zmail.sent':       { delta: 3,  once: false },
-        'fakearc.received': { delta: 10, once: true },
-        'poem7.entered':    { delta: 15, once: true }
+    
+    // 核心数据源：页面名 => 污染值增量
+    var PAGE_MAP = {
+        '苏言残稿': 6, '苏言残稿A': 2, '苏言残稿B': 2, '苏言残稿C': 2, '苏言残稿D': 2,
+        '2015笔录': 6,
+        '毕业照2015': 6,
+        '地下室': 5,
+        '监控录像': 8,
+        '诗刊': 3,
+        '旧教学楼失火': 4,
+        '张昊资料': 2,
+        '王佳资料': 2,
+        '李阳资料': 2,
+        '赵晓资料': 2,
+        '陈默资料': 5,
+        '第七首诗': 15,
+        '陈默教研日志': 10,
+        '林晚的留言': 8,
+        '第七个书架': 10,
+        '消防事故调查报告': 5,
+        '2003年旧档': 5,
+        'B103杂物间': 5
     };
 
-    function getFired() {
+    function getFiredPages() {
         try {
             var v = SugarCube.State.variables;
-            if (!(v.__nhCorruptionFired instanceof Array)) {
-                v.__nhCorruptionFired = [];
+            if (!(v.__nhFiredPages instanceof Array)) {
+                v.__nhFiredPages = [];
             }
-            return v.__nhCorruptionFired;
+            return v.__nhFiredPages;
         } catch (e) { return []; }
-    }
-    function markFired(key) {
-        var arr = getFired();
-        if (arr.indexOf(key) === -1) arr.push(key);
-    }
-    function hasFired(key) {
-        return getFired().indexOf(key) !== -1;
     }
 
     function getValue() {
@@ -5313,6 +5850,7 @@ document.addEventListener('keydown', function(e) {
             return v;
         } catch (e) { return 0; }
     }
+
     function setValue(n) {
         try {
             var v = SugarCube.State.variables;
@@ -5330,102 +5868,90 @@ document.addEventListener('keydown', function(e) {
         for (var i = THRESHOLDS.length - 1; i >= 0; i--) {
             if (val >= THRESHOLDS[i]) { lvl = i; break; }
         }
+        // level 由 locklevel 脚本的 getter 强制接管，这里只要保证 UI 更新即可
         try {
-            var v = SugarCube.State.variables;
-            if (v.corruptionLevel !== lvl) {
-                /* [NH_BUGNOTE A1] 以下赋值因 nh-corruption-locklevel 把
-                   corruptionLevel 定义为只读派生属性而永不生效；
-                   由于 getter 已返回新 lvl，本分支通常也不会进入，
-                   因此 nh:corruption-level 事件实际不会派发。
-                   升级提示条（nh-corruption-ui）与 nh-body-level-sync
-                   的事件监听因此处于"永不触发"状态，仅靠轮询兜底。
-                   此处保留原写法不动，仅标注。 */
-                v.corruptionLevel = lvl;
-                console.log('[nh-corruption] level ->', lvl, '(value =', val + ')');
-                try {
-                    document.dispatchEvent(new CustomEvent('nh:corruption-level', {
-                        detail: { level: lvl, value: val }
-                    }));
-                } catch (e) {}
-            }
+            document.dispatchEvent(new CustomEvent('nh:corruption-level', {
+                detail: { level: lvl, value: val }
+            }));
         } catch (e) {}
         return lvl;
     }
 
-    function add(key) {
-        var def = EVENTS[key];
-        if (!def) {
-            console.warn('[nh-corruption] unknown event key:', key);
-            return;
-        }
-        if (def.once && hasFired(key)) return;
-
-        var before = getValue();
-        var after = before + def.delta;
-        setValue(after);
-        if (def.once) markFired(key);
-
-        console.log('[nh-corruption]', key, '+', def.delta,
-                    '=>', before, '→', after,
-                    '(level =', deriveLevel() + ')');
-
-        try {
-            document.dispatchEvent(new CustomEvent('nh:corruption-add', {
-                detail: { key: key, delta: def.delta, before: before, after: after }
-            }));
-        } catch (e) {}
-    }
-
+    // ===== 关键拦截：基于页面的唯一访问 =====
     window.__nhCorruption = {
-        add: add,
+        // 外部如果尝试用 add('frag.suyan')，我们一律重定向到按页面名判断
+        add: function (key) {
+            var cur = '';
+            try { cur = SugarCube.State.passage; } catch(e) {}
+            if (!cur) return;
+
+            var fired = getFiredPages();
+            if (fired.indexOf(cur) !== -1) {
+                // 这个文件已经查过了，不再增加任何污染
+                return; 
+            }
+
+            // 如果这个页面在表里有记录，才允许增加
+            if (PAGE_MAP[cur] !== undefined) {
+                var delta = PAGE_MAP[cur];
+                var before = getValue();
+                var after = before + delta;
+                setValue(after);
+                
+                // 记录到账本
+                fired.push(cur);
+                console.log('[nh-corruption] 文件首次查看，污染 +', delta, '=>', after);
+            }
+        },
         get: getValue,
         set: setValue,
         level: deriveLevel,
         thresholds: THRESHOLDS,
-        events: EVENTS
+        // 用于重置时清空账本
+        clearHistory: function() {
+            try { SugarCube.State.variables.__nhFiredPages = []; } catch(e) {}
+        }
     };
 
     function init() {
-        try {
-            var v = SugarCube.State.variables;
-            if (typeof v.corruption !== 'number') v.corruption = 0;
-            if (!(v.__nhCorruptionFired instanceof Array)) v.__nhCorruptionFired = [];
-            deriveLevel();
-        } catch (e) {}
+        getFiredPages();
+        deriveLevel();
     }
 
     if (window.jQuery) {
-        jQuery(document).on(':passagestart.nhCorruptionCore', init);
         jQuery(document).on(':passagedisplay.nhCorruptionCore', function () {
             setTimeout(init, 30);
-            setTimeout(init, 200);
+            // 页面显示后，触发一次针对当前页面的污染检查
+            if (window.__nhCorruption) window.__nhCorruption.add('visit');
         });
     }
     setTimeout(init, 300);
-    /* [NH_FIX B2] 移除 setInterval(init, 2000) 兜底：
-       init 已在 passagestart / passagedisplay / setTimeout(300) 触发，
-       2 秒轮询属于无谓常驻定时器。 */
 
-    console.log('[nh-corruption-core] loaded, thresholds =', THRESHOLDS.join('/'));
+    console.log('[nh-corruption-core] V184 重构完成，污染值只按文件首访增加。');
 })();
+    
 </script>
 <!-- ===== end NH_CORRUPTION_CORE_V1 ===== -->
 
 <!-- ===== NH_CORRUPTION_LOCKLEVEL_V1 ===== -->
 <script id="nh-corruption-locklevel">
-/* NH_CORRUPTION_LOCKLEVEL_V1：
-   把 $corruptionLevel 变成只读派生属性，忽略外部写入。
-   这样所有 <<set $corruptionLevel to N>> 都不会生效，
-   等级只由 $corruption 派生。 */
+
 (function () {
     'use strict';
 
+    // 1. 锁定等级，使其成为只读属性
     function lock() {
         try {
             if (!window.SugarCube || !SugarCube.State) return false;
             var v = SugarCube.State.variables;
             if (window.__nhLevelLocked) return true;
-            window.__nhLevelLocked = true;
+
+            // 防止重复定义
+            var desc = Object.getOwnPropertyDescriptor(v, 'corruptionLevel');
+            if (desc && desc.get && desc.configurable === false) {
+                window.__nhLevelLocked = true;
+                return true;
+            }
 
             Object.defineProperty(v, 'corruptionLevel', {
                 configurable: true,
@@ -5440,79 +5966,89 @@ document.addEventListener('keydown', function(e) {
                     return lvl;
                 },
                 set: function (n) {
-                    console.log('[nh-corruption] ignored external corruptionLevel =', n);
+                    console.warn('[LockLevel] 拦截非法设置 corruptionLevel =>', n, '。等级只能由污染值推算！');
                 }
             });
-            console.log('[nh-corruption-locklevel] corruptionLevel is now read-only');
+            window.__nhLevelLocked = true;
+            console.log('[nh-corruption-locklevel] 等级已锁定为只读推算属性');
             return true;
         } catch (e) {
-            console.warn('[nh-corruption-locklevel] failed:', e);
+            console.warn('[nh-corruption-locklevel] 锁定失败:', e);
             return true;
         }
     }
 
-    var t = setInterval(function () { if (lock()) clearInterval(t); }, 100);
-    lock();
+    // 2. 同一页面只能加一次（最高水位线逻辑）
+    function initFireList() {
+        try {
+            var v = SugarCube.State.variables;
+            if (!(v.__nhFiredPages instanceof Array)) {
+                v.__nhFiredPages = [];
+            }
+            // 兼容旧版本的数据
+            if (v.__nhCorruptionFired instanceof Array) {
+                v.__nhCorruptionFired.forEach(function(k) {
+                    if (v.__nhFiredPages.indexOf(k) === -1) v.__nhFiredPages.push(k);
+                });
+            }
+        } catch(e) {}
+    }
 
-    /* 读档后 State.variables 会被替换，需重新锁 */
+    // 监听污染值增加事件
+    document.addEventListener('nh:corruption-add', function (ev) {
+        try {
+            var detail = ev.detail || {};
+            var key = detail.key;
+            if (!key) return;
+            
+            initFireList();
+            var v = SugarCube.State.variables;
+            
+            // 如果是基于页面名称的触发，记录在案，防止二次叠加
+            if (key.indexOf('visit:') === 0) {
+                var pageName = key.replace('visit:', '');
+                if (v.__nhFiredPages.indexOf(pageName) === -1) {
+                    v.__nhFiredPages.push(pageName);
+                }
+            }
+        } catch(e) {}
+    });
+
+    // 轮询监控，强制只读与防刷
+    setInterval(function() {
+        lock();
+        try {
+            if (window.SugarCube && SugarCube.State && SugarCube.State.variables) {
+                // 确保 __nhFiredPages 存在
+                if (!(SugarCube.State.variables.__nhFiredPages instanceof Array)) {
+                    SugarCube.State.variables.__nhFiredPages = [];
+                }
+                // 兜底修正：如果被旧存档覆盖导致变成普通属性，重新锁死
+                var desc = Object.getOwnPropertyDescriptor(SugarCube.State.variables, 'corruptionLevel');
+                if (!desc || !desc.get) {
+                    window.__nhLevelLocked = false;
+                    lock();
+                }
+            }
+        } catch(e) {}
+    }, 500);
+
+    // 引擎重启时重置锁定状态
     if (window.jQuery) {
         jQuery(document).on(':passagestart.nhLevelLock', function () {
             window.__nhLevelLocked = false;
             lock();
         });
     }
+    
+    lock();
 })();
+    
 </script>
 <!-- ===== end NH_CORRUPTION_LOCKLEVEL_V1 ===== -->
 
 <!-- ===== NH_CORRUPTION_TRIGGERS_V1 ===== -->
-<script id="nh-corruption-triggers">
-/* NH_CORRUPTION_TRIGGERS_V1：
-   按当前页面 + 访问次数，调用 __nhCorruption.add()。 */
-(function () {
-    'use strict';
 
-    function currentPassage() {
-        try { return SugarCube.State.passage; } catch (e) { return ''; }
-    }
-    function visits(name) {
-        try { return SugarCube.State.variables[name + 'Count'] || 0; } catch (e) { return 0; }
-    }
-    function c() { return window.__nhCorruption; }
-
-    function fire() {
-        var core = c();
-        if (!core) return;
-        var cur = currentPassage();
-        if (!cur) return;
-
-        switch (cur) {
-            /* [NH_LINWAN_NO_POLLUTION_V1]
-               林晚资料不再因访问次数增加污染值。
-               污染等级由其它事件（碎片、场景、假 ARC 等）驱动，
-               林晚资料页的视觉变化改为跟随 corruptionLevel。 */
-            case '苏言残稿':   core.add('frag.suyan');   break;
-            case '2015笔录':   core.add('frag.bilu');    break;
-            case '毕业照2015': core.add('frag.photo');   break;
-            case '地下室':       core.add('scene.basement'); break;
-            case '监控录像':     core.add('scene.cctv');     break;
-            case '诗刊':         core.add('scene.shiikan');  break;
-            case '旧教学楼失火': core.add('scene.fire');     break;
-            case '张昊资料': core.add('member.zhanghao'); break;
-            case '王佳资料': core.add('member.wangjia');  break;
-            case '李阳资料': core.add('member.liyang');   break;
-            case '赵晓资料': core.add('member.zhaoxiao'); break;
-            case '陈默资料': core.add('member.chenmo');   break;
-            case '第七首诗': core.add('poem7.entered'); break;
-        }
-    }
-
-    if (window.jQuery) {
-        jQuery(document).on(':passagestart.nhCorruptionTrigger', fire);
-    }
-    setTimeout(fire, 400);
-})();
-</script>
 <!-- ===== end NH_CORRUPTION_TRIGGERS_V1 ===== -->
 
 <!-- ===== NH_CORRUPTION_ZMAIL_HOOK_V1 ===== -->
@@ -6952,131 +7488,7 @@ document.addEventListener('keydown', function(e) {
 <!-- ===== end NH_PWD_A2_V1 ===== -->
 
 <!-- ===== NH_PWD_A3_V1：陈默教研日志加密段落 ===== -->
-<script id="nh-pwd-a3">
-(function () {
-    'use strict';
 
-    var CORRECT = '1523';
-    var VAR_KEY = 'nh_pwd_a3';
-
-    function onChenmoLog() {
-        try { return SugarCube.State.passage === '陈默教研日志'; } catch (e) { return false; }
-    }
-
-    function buildUI() {
-        var passage = document.querySelector('#passages .passage');
-        if (!passage) return;
-        if (passage.querySelector('.nh-pwd-a3-box')) return;
-
-        var box = document.createElement('div');
-        box.className = 'nh-pwd-a3-box';
-        box.style.cssText = [
-            'margin-top:28px','padding:18px 22px',
-            'background:#0d0000','border:1px solid #8b0000',
-            'border-radius:3px',
-            'font-family:"楷体","KaiTi",serif'
-        ].join(';');
-
-        var unlocked = false;
-        try { unlocked = SugarCube.State.variables[VAR_KEY] === true; } catch (e) {}
-
-        if (unlocked) {
-            box.innerHTML = renderUnlocked();
-            passage.appendChild(box);
-            return;
-        }
-
-        box.innerHTML = [
-            '<p style="color:#ff9a9a;font-size:14px;margin:0 0 12px;',
-            '          letter-spacing:1px;">',
-            '  ·以下内容已加密·',
-            '</p>',
-            '<div style="display:flex;gap:6px;max-width:320px;">',
-            '  <input type="text" id="nh-pwd-a3-input" maxlength="4"',
-            '    style="flex:1;padding:7px 12px;background:#1a0505;',
-            '           color:#ff9a9a;border:1px solid #5a1818;',
-            '           border-radius:2px;font-size:13px;font-family:inherit;"',
-            '    placeholder="4 位数字">',
-            '  <button type="button" id="nh-pwd-a3-btn"',
-            '    style="background:#8b0000;color:#fff;border:none;',
-            '           padding:7px 22px;border-radius:2px;cursor:pointer;',
-            '           font-size:13px;font-family:inherit;letter-spacing:2px;">',
-            '    解密',
-            '  </button>',
-            '</div>',
-            '<p id="nh-pwd-a3-msg" style="margin:10px 0 0;font-size:12.5px;color:#7a4040;min-height:1em;"></p>'
-        ].join('');
-
-        passage.appendChild(box);
-
-        var input = box.querySelector('#nh-pwd-a3-input');
-        var btn = box.querySelector('#nh-pwd-a3-btn');
-        var msg = box.querySelector('#nh-pwd-a3-msg');
-
-        function submit() {
-            var v = (input.value || '').trim();
-            if (v === CORRECT) {
-                try { SugarCube.State.variables[VAR_KEY] = true; } catch (e) {}
-                msg.style.color = '#5a9a5a';
-                msg.textContent = '解密成功。';
-                setTimeout(function () {
-                    box.innerHTML = renderUnlocked();
-                }, 300);
-            } else {
-                msg.style.color = '#a00';
-                msg.textContent = '密码错误。';
-            }
-        }
-
-        btn.addEventListener('click', submit);
-        input.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') { e.preventDefault(); submit(); }
-        });
-    }
-
-    function renderUnlocked() {
-        return [
-            '<p style="color:#c83535;font-size:13px;margin:0 0 12px;',
-            '          letter-spacing:3px;">·以下内容已解密·</p>',
-            '<p style="color:#e0c0c0;font-size:14px;line-height:2.1;margin:0;">',
-            '  苏言来找过我。<br><br>',
-            '  她说她想退社。<br>',
-            '  我问为什么。<br>',
-            '  她说，她们不让她说话。<br>',
-            '  我说，你可以跟我说。<br>',
-            '  她摇头。<br>',
-            '  她说，老师，您说过，「诗是写给别人看的」。<br>',
-            '  可我不想给别人看。<br>',
-            '  我只想让自己知道，我来过。<br><br>',
-            '  我没听懂。<br>',
-            '  我以为是小孩子赌气。<br>',
-            '  我让她先回去。<br>',
-            '  那是 2015 年 9 月 13 日。<br>',
-            '  两天后，她死了。<br><br>',
-            '  我本来可以留下她的。<br>',
-            '  我本来可以。<br><br>',
-            '  —— 陈默<br>',
-            '  2015.09.16 凌晨',
-            '</p>'
-        ].join('');
-    }
-
-    function tick() {
-        if (!onChenmoLog()) return;
-        buildUI();
-    }
-
-    if (window.jQuery) {
-        jQuery(document).on(':passagedisplay.nhPwdA3', function () {
-            [30, 200, 600].forEach(function (t) { setTimeout(tick, t); });
-        });
-    }
-    setInterval(tick, 1000);
-    tick();
-
-    console.log('[nh-pwd-a3] loaded');
-})();
-</script>
 <!-- ===== end NH_PWD_A3_V1 ===== -->
 
 <!-- ===== NH_PUZZLE_B1_V1：论坛楼层顺序谜 ===== -->
@@ -8509,6 +8921,166 @@ document.addEventListener('keydown', function(e) {
 
 
 
+
+<script id="nh-corruption-triggers">
+
+(function () {
+    'use strict';
+
+    function currentPassage() {
+        try { return window.SugarCube.State.passage; } catch (e) { return ''; }
+    }
+    
+    function fire() {
+        if (!window.SugarCube || !window.SugarCube.State) return;
+        
+        var core = window.__nhCorruption;
+        if (!core) return;
+        
+        var cur = currentPassage();
+        if (!cur) return;
+
+        // 核心文件污染值映射表（补齐了苏言档案及其他文档）
+        var mapping = {
+            '苏言档案': 3, // <-- 补齐了
+            '苏言残稿': 6, '苏言残稿A': 2, '苏言残稿B': 2, '苏言残稿C': 2, '苏言残稿D': 2,
+            '2015笔录': 6,
+            '毕业照2015': 6,
+            '地下室': 5,
+            '监控录像': 8,
+            '诗刊': 3,
+            '旧教学楼失火': 4,
+            '张昊资料': 2,
+            '王佳资料': 2,
+            '李阳资料': 2,
+            '赵晓资料': 2,
+            '陈默资料': 5,
+            '第七首诗': 15,
+            '陈默教研日志': 10,
+            '林晚的留言': 8,
+            '第七个书架': 10,
+            '消防事故调查报告': 5,
+            '2003年旧档': 5,
+            'B103杂物间': 5
+        };
+
+        if (mapping[cur] !== undefined) {
+            try {
+                // 判定是否首次访问
+                var isFirstVisit = !window.SugarCube.State.hasPlayed(cur);
+                
+                if (isFirstVisit) {
+                    var delta = mapping[cur];
+                    var before = core.get();
+                    var after = before + delta;
+                    
+                    // 直接修改基础数值，由 locklevel 自动推算等级
+                    core.set(after);
+                    
+                    console.log('[nh-corruption] 首次访问文件:', cur, '污染 +', delta, '=>', after);
+                    
+                    document.dispatchEvent(new CustomEvent('nh:corruption-add', {
+                        detail: { key: 'visit:' + cur, delta: delta, before: before, after: after }
+                    }));
+                }
+            } catch (err) {
+                console.warn('[nh-corruption] 触发器执行错误:', err);
+            }
+        }
+    }
+
+    if (window.jQuery) {
+        jQuery(document).on(':passagestart.nhCorruptionTrigger', fire);
+    }
+    setTimeout(fire, 500);
+})();
+    
+</script>
+
+
+
+
+<script id="nh-login-lock-hard">
+(function () {
+    'use strict';
+
+    var LS_LOGIN = 'nh_is_logged_in_locked';
+    var LS_USER = 'nh_username_locked';
+
+    // 1. 监听登录成功（捕获点击事件）
+    document.addEventListener('click', function(ev) {
+        var el = ev.target;
+        while (el && el !== document.body) {
+            if (el.tagName === 'BUTTON' && (el.textContent || '').indexOf('登') !== -1) {
+                setTimeout(function() {
+                    try {
+                        if (window.SugarCube && SugarCube.State && SugarCube.State.variables) {
+                            if (SugarCube.State.variables.loggedIn === true) {
+                                localStorage.setItem(LS_LOGIN, 'true');
+                                localStorage.setItem(LS_USER, SugarCube.State.variables.username || 'admin');
+                                console.log('🔒 [Login Lock] 登录状态已刻入本地');
+                            }
+                        }
+                    } catch(e) {}
+                }, 500); // 延迟等待游戏内部赋值
+                break;
+            }
+            el = el.parentNode;
+        }
+    }, true);
+
+    // 2. 核心：在每个页面即将渲染完成时，强行把变量塞进去
+    function enforceLogin() {
+        if (localStorage.getItem(LS_LOGIN) !== 'true') return;
+        
+        try {
+            if (window.SugarCube && SugarCube.State && SugarCube.State.variables) {
+                var v = SugarCube.State.variables;
+                if (v.loggedIn !== true) {
+                    v.loggedIn = true;
+                    v.username = localStorage.getItem(LS_USER) || 'admin';
+                    console.log('🔒 [Login Lock] 强制恢复登录状态');
+                }
+            }
+        } catch(e) {}
+    }
+
+    // 3. 拦截引擎，在页面渲染的瞬间和之后强制执行
+    if (window.jQuery) {
+        // 监听引擎的所有关键节点
+        jQuery(document).on(':passagestart', enforceLogin);
+        jQuery(document).on(':passagerender', enforceLogin);
+        jQuery(document).on(':passagedisplay', function() {
+            enforceLogin();
+            setTimeout(enforceLogin, 10);
+            setTimeout(enforceLogin, 100);
+            setTimeout(enforceLogin, 500);
+        });
+    }
+
+    // 4. 极限兜底：每 100 毫秒轮询一次（比游戏自身的防作弊还快）
+    setInterval(enforceLogin, 100);
+
+    // 页面加载第一瞬间执行
+    setTimeout(enforceLogin, 0);
+    setTimeout(enforceLogin, 100);
+
+    // 暴露给全局，如果进入 Start 页，强行跳转
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay', function() {
+            try {
+                if (SugarCube.State.passage === 'Start' && localStorage.getItem(LS_LOGIN) === 'true') {
+                    // 发现跳回了登录页，立刻强行跳回首页
+                    console.log('🔒 [Login Lock] 拦截登录页跳转，强入内网首页');
+                    setTimeout(function() {
+                        SugarCube.Engine.play('内网首页');
+                    }, 50);
+                }
+            } catch(e) {}
+        });
+    }
+})();
+</script>
 
 </body> 前注册的 capture click 监听器，
                 晚于 <head> 里 nh-zmail-send 的 capture 监听器，
@@ -16944,6 +17516,21 @@ body[data-passage="名如其人"] #lw-nav-bar {
 }
 </style>
 
+
+
+
+
+
+<style id="nh-menu-btn-position-fix">
+#nh-menu-btn {
+    position: fixed !important;
+    top: 100px !important; 
+    left: 20px !important;
+    transform: scale(0.8) !important; /* 稍微缩小一点 */
+    z-index: 99999 !important;
+}
+</style>
+
 </head>
 <body>
 	<div id="init-screen">
@@ -21303,7 +21890,7 @@ document.addEventListener('visibilitychange', function () {
             try { SugarCube.State.variables.loggedIn = true; } catch (e) {}
             try { SugarCube.Engine.play(&quot;内网首页&quot;); } catch (e) {}
         } else {
-            if (errEl) errEl.textContent = &quot;用户名或密码错误，请重试。&quot;;
+            if (errEl) errEl.textContent = &quot;凭据失效。系统拒绝了你，好像它知道你不是原本那个人。&quot;;
             var boxes = document.querySelectorAll(&quot;#passages .nh3-field .box&quot;);
             for (var i = 0; i &lt; boxes.length; i++) {
                 boxes[i].style.borderColor = &quot;#d94a3d&quot;;
@@ -21353,7 +21940,7 @@ document.addEventListener('visibilitychange', function () {
         if (back &amp;&amp; !back.__nh3Bound) {
             back.__nh3Bound = true;
             back.addEventListener(&quot;click&quot;, function () {
-                alert(&quot;当前为离线镜像，无法访问官网首页。&quot;);
+                alert(&quot;网页不存在，错误代码：DX404LIC，请联系管理员处理。&quot;);
             });
         }
     }
@@ -21386,7 +21973,7 @@ document.addEventListener('visibilitychange', function () {
 &lt;&lt;set $nh_pwd_a3 = false&gt;&gt;
 
 /* 异变等级：0=完全正常 1=轻微异常 2=明显异常 3=重度污染 */
-&lt;&lt;set $corruptionLevel = 0&gt;&gt;
+
 
 /* 各角色页面访问次数计数 */
 &lt;&lt;set $linwanCount = 0&gt;&gt;
@@ -21938,7 +22525,7 @@ body.level-3 .uni-footer { background: #000; }
 &lt;div class=&quot;notice-box&quot;&gt;
 &lt;h4&gt;现任成员&lt;/h4&gt;
 &lt;ul style=&quot;list-style:none; padding-left:0;&quot;&gt;
-    &lt;li&gt;社长：林晚&lt;/li&gt;
+    &lt;li&gt;社长：<span class="shake" style="color:#c83535;">林晚</span>&lt;/li&gt;
     &lt;li&gt;副社长：张昊&lt;/li&gt;
     &lt;li&gt;创作部：王佳、李阳&lt;/li&gt;
     &lt;li&gt;创作部（原）：王佳、李阳、&lt;span style=&quot;color:#8b0000;text-decoration:line-through;&quot;&gt;苏言&lt;/span&gt;
@@ -22022,452 +22609,34 @@ body.level-3 .uni-footer { background: #000; }
 页面访问量：&lt;&lt;print $visitCount&gt;&gt;
 &lt;br&gt;
 系统时间：2015-09-15 00:00
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="7" name="林晚资料" tags="人物 林晚 文学社 社长" position="950,800" size="100,100">&lt;&lt;set $visitCount += 1&gt;&gt;
-&lt;&lt;set $linwanCount += 1&gt;&gt;
-&lt;!-- [NH_LINWAN_NO_POLLUTION_V1]
-     林晚资料不再主动提升污染等级。
-     视觉变化改由 corruptionLevel 驱动（见下方 if 分支）。
-     访问次数 $linwanCount 仍累加，仅用于内部展示。 --&gt;
-&lt;!-- 背景音同步 --&gt;
-&lt;&lt;if $corruptionLevel is 0&gt;&gt;
-    &lt;&lt;audio &quot;fan_ambient&quot; loop volume 0.1 &gt;&gt;
-&lt;&lt;elseif $corruptionLevel is 1&gt;&gt;
-    &lt;&lt;run dh.fadeBgm(&quot;static_baseline&quot;, 0.1, 3)&gt;&gt;
-&lt;&lt;elseif $corruptionLevel is 2&gt;&gt;
-    &lt;&lt;run dh.fadeBgm(&quot;static_baseline&quot;, 0.12, 3)&gt;&gt;
-&lt;&lt;elseif $corruptionLevel &gt;= 3&gt;&gt;
-    &lt;&lt;audio &quot;static_noise&quot; loop volume 0.3 &gt;&gt;
-    &lt;&lt;audio &quot;breath&quot; loop volume 0.2 &gt;&gt;
-&lt;&lt;/if&gt;&gt;
-
-&lt;style&gt;
-.photo-box {
-    float: left;
-    margin-right: 20px;
-    border: 1px solid #666;
-    padding: 3px;
-    background: #fff;
-    position: relative;
-}
-.photo-mid {
-    filter: grayscale(80%) brightness(0.9) contrast(1.1);
-}
-.fade-text {
-    opacity: 0.7;
-}
-
-/* —— 第二次访问：缓缓逼近的凝视 —— */
-#linwanStage2 {
-    float: left;
-    margin-right: 20px;
-    border: 1px solid #666;
-    padding: 3px;
-    background: #fff;
-    position: relative;
-}
-#linwanStage2 img {
-    display: block;
-    animation: slowZoom 11s ease-in-out forwards;
-}
-@keyframes slowZoom {
-    from { transform: scale(1); }
-    to   { transform: scale(1.16) translate(-2%, -2.5%); }
-}
-.tilt-box {
-    transition: transform 0.25s ease-out;
-    transform-style: preserve-3d;
-}
-.whisper-line { opacity: 0.75; }
-.whisper-2 { opacity: 0; animation: fadeInLate 1.4s ease 2.6s forwards; }
-@keyframes fadeInLate { from { opacity: 0; } to { opacity: 1; } }
-.subtle-flicker { animation: subtleFlicker 0.12s steps(2); }
-@keyframes subtleFlicker { 50% { opacity: 0.35; } }
-
-/* —— 第三次访问：频道故障 → 换脸 → 前扑 → 碎裂 —— */
-#linwanStage {
-    float: left;
-    margin-right: 20px;
-    width: 208px;
-    position: relative;
-    z-index: 2147483200;
-}
-#linwanPhoto {
-    position: relative;
-    z-index: 3;
-    border: 1px solid #666;
-    padding: 3px;
-    background: #fff;
-}
-#linwanPhoto img { display: block; }
-#linwanWipe {
-    position: absolute; inset: 0; z-index: 6; opacity: 0; pointer-events: none;
-    background:
-        repeating-linear-gradient(0deg, rgba(255,255,255,0.9) 0 1px, rgba(0,0,0,0.9) 1px 3px),
-        radial-gradient(circle at 38% 30%, rgba(255,255,255,0.95), rgba(20,0,0,0.9) 80%);
-    mix-blend-mode: screen;
-}
-#linwanWipe.on { animation: wipeIn 0.36s steps(6) forwards; }
-@keyframes wipeIn { from { opacity: 0; } to { opacity: 1; } }
-#linwanPhoto.glitch1 img { animation: sliceGlitch 0.18s steps(4); }
-@keyframes sliceGlitch {
-    0%   { clip-path: inset(0 0 0 0); filter: none; transform: none; }
-    20%  { clip-path: inset(36% 0 44% 0); filter: hue-rotate(90deg) saturate(3); transform: translateX(-4px); }
-    40%  { clip-path: inset(10% 0 66% 0); filter: hue-rotate(-70deg) saturate(2); transform: translateX(4px); }
-    60%  { clip-path: inset(58% 0 6% 0); filter: contrast(2); transform: translateX(-3px); }
-    100% { clip-path: inset(0 0 0 0); }
-}
-#linwanPhoto.invert img { animation: invertFlash 0.1s; }
-@keyframes invertFlash { 50% { filter: invert(1) brightness(1.4); } }
-#linwanPhoto.lunge img { animation: lunge 0.55s cubic-bezier(.55,0,.2,1) forwards; }
-@keyframes lunge {
-    0%   { transform: scale(1); }
-    42%  { transform: scale(1.32) translateY(-2%); }
-    75%  { transform: scale(1.06); }
-    100% { transform: scale(1.16); }
-}
-#linwanPhoto.twitch img { animation: twitch 0.4s steps(3); }
-@keyframes twitch {
-    0%   { transform: translate(0,0); filter: none; }
-    33%  { transform: translate(-3px,1px); filter: hue-rotate(40deg); }
-    66%  { transform: translate(3px,-1px); filter: contrast(1.6); }
-    100% { transform: translate(0,0); }
-}
-/* 照片背后的暗室：碎裂后显现 */
-#linwanReveal {
-    position: absolute; inset: 0; z-index: 1;
-    background:
-        radial-gradient(circle at 50% 42%, rgba(140,0,0,0.28), transparent 60%),
-        #0a0000;
-    border: 2px solid #8b0000;
-    padding: 26px 14px;
-    text-align: center;
-    color: #ff4444;
-    opacity: 0;
-    box-shadow: 0 0 26px rgba(255,0,0,0.4) inset;
-}
-#linwanReveal.show {
-    opacity: 1;
-    transition: opacity 0.9s;
-    animation: breathRed 2.4s infinite ease-in-out;
-}
-@keyframes breathRed {
-    0%, 100% { box-shadow: 0 0 18px rgba(255,0,0,0.3) inset; }
-    50%      { box-shadow: 0 0 40px rgba(255,0,0,0.6) inset; }
-}
-.typed {
-    font-family: &quot;楷体&quot;, &quot;KaiTi&quot;, serif;
-    font-size: 17px;
-    color: #ff5555;
-    text-shadow: 0 0 6px rgba(255,0,0,0.7);
-    min-height: 1.5em;
-    margin: 4px 0;
-    letter-spacing: 2px;
-}
-.shake {
-    animation: shakeText 0.25s infinite;
-    text-shadow: 0 0 8px rgba(255, 0, 0, 0.9), 2px 0 rgba(0, 0, 0, 0.6);
-}
-@keyframes shakeText {
-    0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(-3px); }
-    40% { transform: translateX(3px); }
-    60% { transform: translateX(-2px); }
-    80% { transform: translateX(2px); }
-}
-
-/* —— 第三次强化：全屏故障 / RGB 分离 / 融化 / 整页抖动 / 变黑 —— */
-#linwanGlitch {
-    position: fixed; inset: 0; z-index: 2147483500; pointer-events: none; opacity: 0;
-    background: repeating-linear-gradient(0deg, rgba(255,255,255,0.18) 0 1px, rgba(0,0,0,0.3) 1px 3px);
-    mix-blend-mode: screen;
-}
-#linwanGlitch.on { animation: linwanGlitchFlash 0.22s steps(3); }
-@keyframes linwanGlitchFlash { 0% { opacity: 0; } 40% { opacity: 1; } 100% { opacity: 0; } }
-
-#linwanPhoto.rgb img { animation: rgbSplit 0.5s steps(6); }
-@keyframes rgbSplit {
-    0%   { filter: none; transform: none; }
-    25%  { filter: drop-shadow(3px 0 0 rgba(255,0,0,0.75)) drop-shadow(-3px 0 0 rgba(0,255,255,0.75)); transform: translateX(1px); }
-    50%  { filter: drop-shadow(-4px 0 0 rgba(255,0,0,0.75)) drop-shadow(4px 0 0 rgba(0,255,255,0.75)); transform: translateX(-1px); }
-    75%  { filter: drop-shadow(2px 0 0 rgba(255,0,0,0.75)) drop-shadow(-2px 0 0 rgba(0,255,255,0.75)); transform: translateX(2px); }
-    100% { filter: none; }
-}
-#linwanPhoto.melt img { animation: meltAnim 1.3s ease-in forwards; }
-@keyframes meltAnim {
-    0%   { filter: none; transform: none; }
-    100% { filter: blur(7px) hue-rotate(-35deg) saturate(2.2) contrast(1.5); transform: skewY(3deg) scaleY(1.08) translateY(8px); }
-}
-body.linwan-shake #passages { animation: pageShake 0.32s ease-in-out; }
-@keyframes pageShake {
-    0%, 100% { transform: translate(0,0); }
-    20% { transform: translate(-7px,2px); }
-    40% { transform: translate(6px,-3px); }
-    60% { transform: translate(-5px,1px); }
-    80% { transform: translate(4px,2px); }
-}
-#linwanFade {
-    position: fixed; inset: 0; z-index: 2147483400; pointer-events: none;
-    background: #000; opacity: 0;
-}
-#linwanFade.on { transition: opacity 1.4s; opacity: 1; }
-.linwan-voice {
-    position: relative;
-    z-index: 2147483200;
-    font-family: &quot;楷体&quot;, &quot;KaiTi&quot;, serif;
-    color: #ff9a9a;
-    text-shadow: 0 0 5px rgba(255,90,90,0.5);
-    min-height: 1.6em;
-    font-size: 15px;
-    letter-spacing: 1px;
-}
-/* 全屏乱码背景：污染3时页面&quot;溶解&quot;进乱码 */
-#linwanCorrupt {
-    position: fixed; inset: 0; z-index: 2147483100; pointer-events: none;
-    overflow: hidden; opacity: 0;
-    background: #070102;
-    color: #c01810;
-    font-family: &quot;Consolas&quot;, &quot;Courier New&quot;, monospace;
-    font-size: 13px; line-height: 1.05;
-    word-break: break-all; white-space: pre-wrap;
-    text-shadow: 0 0 2px rgba(255,0,0,0.4);
-}
-#linwanCorrupt.on { opacity: 1; transition: opacity 0.9s; }
-&lt;/style&gt;&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:'微软雅黑',sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play('内网首页')&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;林晚资料&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:'Consolas',monospace;&quot;&gt;# 人物  # 文学社&lt;/span&gt;&lt;/div&gt;
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="7" name="林晚资料" tags="人物 林晚 文学社 社长" position="950,800" size="100,100">
+&lt;div style="background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:'微软雅黑',sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);"&gt;
+&lt;a href="javascript:void(0)" onclick="Engine.play('内网首页')" style="color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);"&gt;← 返回首页&lt;/a&gt;
+&lt;span style="font-size:15px;letter-spacing:2px;font-weight:500;"&gt;林晚资料&lt;/span&gt;
+&lt;span style="font-size:12px;opacity:0.85;font-family:'Consolas',monospace;"&gt;# 人物  # 文学社&lt;/span&gt;
+&lt;/div&gt;
 
 &lt;h3&gt; 学生信息：林晚&lt;/h3&gt;
 &lt;hr&gt;
 
-&lt;&lt;if $corruptionLevel is 0&gt;&gt;
-    &lt;!-- [NH_LINWAN_NO_POLLUTION_V1] 第一次：完全正常 --&gt;
-    &lt;div class=&quot;photo-box&quot;&gt;
-       &lt;img src=&quot;img/linwan_normal.png&quot; width=&quot;200&quot; alt=&quot;林晚证件照&quot; onerror=&quot;this.parentNode.style.display=&#39;none&#39;&quot;&gt;
-    &lt;/div&gt;
-    &lt;p&gt;学号：2015010456&lt;/p&gt;
-    &lt;p&gt;院系：中文系2015级&lt;/p&gt;
-    &lt;p&gt;身份：文学社社长&lt;/p&gt;
-    &lt;p&gt;备注：性格细腻敏感，擅长抒情诗，多次在校刊发表作品。&lt;/p&gt;
-    &lt;p&gt;当前借阅：《中国现代诗论》&lt;/p&gt;
-    &lt;p&gt;最后登录时间：2015-09-17 23:47&lt;/p&gt;
-    &lt;p class=&quot;fade-text&quot; style=&quot;font-size:12px;&quot;&gt;（学籍照片 · 2015-09 采集）&lt;/p&gt;
-    &lt;div style=&quot;clear:both;&quot;&gt;&lt;/div&gt;
-    &lt;&lt;script&gt;&gt;
-    /* 一次几乎感知不到的闪烁：制造“刚才是不是看错了”的不适 */
-    setTimeout(function () {
-        var el = document.querySelector(&quot;.photo-box&quot;);
-        if (el) {
-            el.classList.add(&quot;subtle-flicker&quot;);
-            setTimeout(function () { el.classList.remove(&quot;subtle-flicker&quot;); }, 150);
-        }
-    }, 900);
-    &lt;&lt;/script&gt;&gt;
+&lt;div class="photo-box" style="float:left;margin-right:20px;border:1px solid #666;padding:3px;background:#fff;"&gt;
+    &lt;img src="img/linwan_normal.png" width="200" alt="林晚证件照" onerror="this.parentNode.style.display='none'"&gt;
+&lt;/div&gt;
+&lt;p&gt;学号：2015010456&lt;/p&gt;
+&lt;p&gt;院系：中文系2015级&lt;/p&gt;
+&lt;p&gt;身份：文学社社长&lt;/p&gt;
+&lt;p&gt;备注：性格细腻敏感，擅长抒情诗，多次在校刊发表作品。&lt;/p&gt;
+&lt;p&gt;当前借阅：《中国现代诗论》&lt;/p&gt;
+&lt;p&gt;最后登录时间：2015-09-17 23:47&lt;/p&gt;
+&lt;p class="fade-text" style="font-size:12px;"&gt;（学籍照片 · 2015-09 采集）&lt;/p&gt;
+&lt;div style="clear:both;"&gt;&lt;/div&gt;
 
-&lt;&lt;elseif $corruptionLevel is 2&gt;&gt;
-    &lt;!-- 第二次：照片缓缓逼近，像在注视 --&gt;
-    &lt;div id=&quot;linwanStage2&quot; class=&quot;photo-mid&quot;&gt;
-        &lt;img src=&quot;img/linwan_normal2.png&quot; width=&quot;200&quot; alt=&quot;林晚证件照&quot; onerror=&quot;this.parentNode.style.display=&#39;none&#39;&quot;&gt;
-    &lt;/div&gt;
-    &lt;p style=&quot;color:#555;&quot;&gt;学号：2015010456&lt;/p&gt;
-    &lt;p style=&quot;color:#555;&quot;&gt;院系：中文系2015级&lt;/p&gt;
-    &lt;p&gt;身份：文学社社长？&lt;/p&gt;
-    &lt;p&gt;最后登录时间：2015-09-15 23:47&lt;/p&gt;
-    &lt;p class=&quot;fade-text whisper-line&quot;&gt;照片的眼神好像和刚才不一样了&lt;/p&gt;
-    &lt;p class=&quot;fade-text whisper-line whisper-2&quot;&gt;……还是说，是她在看镜头外面？&lt;/p&gt;
-    &lt;div style=&quot;clear:both;&quot;&gt;&lt;/div&gt;
-
-&lt;&lt;elseif $corruptionLevel &gt;= 3&gt;&gt;
-    &lt;!-- 第三次：崩坏 → 换脸 → 前扑 → 碎裂 → 全屏故障 → 强制返回 --&gt;
-    &lt;div id=&quot;linwanGlitch&quot;&gt;&lt;/div&gt;
-    &lt;div id=&quot;linwanFade&quot;&gt;&lt;/div&gt;
-    &lt;div id=&quot;linwanCorrupt&quot;&gt;&lt;/div&gt;
-    &lt;div id=&quot;linwanStage&quot;&gt;
-        &lt;div id=&quot;linwanPhoto&quot;&gt;
-            &lt;img src=&quot;img/linwan_normal2.png&quot; width=&quot;200&quot; alt=&quot;林晚证件照&quot; onerror=&quot;this.parentNode.style.display=&#39;none&#39;&quot;&gt;
-            &lt;div id=&quot;linwanWipe&quot;&gt;&lt;/div&gt;
-        &lt;/div&gt;
-        &lt;div id=&quot;linwanReveal&quot;&gt;
-            &lt;p class=&quot;typed&quot; id=&quot;typed1&quot;&gt;&lt;/p&gt;
-            &lt;p class=&quot;typed&quot; id=&quot;typed2&quot;&gt;&lt;/p&gt;
-        &lt;/div&gt;
-    &lt;/div&gt;
-    &lt;&lt;script&gt;&gt;
-    /* 关键修复：SugarCube 的 script 宏在本段落插入 DOM 之前就执行，
-       直接 getElementById 会取到 null 导致整段时间线不启动。
-       这里用 dh.ready 延后到元素真正存在后再开始。 */
-    (function () {
-        function start() {
-        var stage = document.getElementById(&quot;linwanStage&quot;);
-        if (!stage) return;
-        var photo = document.getElementById(&quot;linwanPhoto&quot;);
-        var img = photo ? photo.querySelector(&quot;img&quot;) : null;
-        var wipe = document.getElementById(&quot;linwanWipe&quot;);
-        var glitchLayer = document.getElementById(&quot;linwanGlitch&quot;);
-        var fadeLayer = document.getElementById(&quot;linwanFade&quot;);
-        var corruptLayer = document.getElementById(&quot;linwanCorrupt&quot;);
-
-        function sfx(id, vol) {
-            try { SimpleAudio.select(id).volume(vol).playWhenAllowed(); } catch (e) {}
-        }
-        function flashGlitch() {
-            if (!glitchLayer) return;
-            glitchLayer.classList.add(&quot;on&quot;);
-            setTimeout(function () { glitchLayer.classList.remove(&quot;on&quot;); }, 260);
-        }
-        function shakePage() {
-            document.body.classList.add(&quot;linwan-shake&quot;);
-            setTimeout(function () { document.body.classList.remove(&quot;linwan-shake&quot;); }, 360);
-        }
-        function fillCorrupt() {
-            if (!corruptLayer) return;
-var glyphs = String.fromCharCode(0xFFFD, 35, 37, 38, 64, 36, 63, 33, 42)
-    + "0123456789"
-    + "abcdefghijklmnopqrstuvwxyz"
-    + "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            var s = &quot;&quot;;
-            for (var i = 0; i &lt; 30000; i++) s += glyphs.charAt(Math.floor(Math.random() * glyphs.length));
-            corruptLayer.textContent = s;
-        }
-        function showCorrupt() {
-            if (!corruptLayer) return;
-            fillCorrupt();
-            corruptLayer.classList.add(&quot;on&quot;);
-        }
-        function focusPhoto() {
-            if (stage) { try { stage.scrollIntoView({ behavior: &quot;smooth&quot;, block: &quot;center&quot; }); } catch (e) {} }
-        }
-        /* 页面彻底扭曲：背景渗血 + 打乱文字位置（保护照片区域，避免与碎裂/前扑冲突） */
-        function pageTwist() {
-            try {
-                var wrap = document.querySelector(&quot;.passage&quot;);
-                if (wrap) {
-                    wrap.style.transition = &quot;background 3s, box-shadow 3s&quot;;
-                    wrap.style.background = &quot;radial-gradient(circle, #2a0000, #000000)&quot;;
-                    wrap.style.boxShadow = &quot;inset 0 0 150px #ff0000&quot;;
-                }
-                var allTexts = document.querySelectorAll(&quot;#passages p, #passages span, #passages div&quot;);
-                for (var i = 0; i &lt; allTexts.length; i++) {
-                    var el = allTexts[i];
-                    if (el.closest &amp;&amp; el.closest(&quot;#linwanStage&quot;)) continue;
-                    el.style.transform = &quot;translate(&quot; + ((Math.random() - 0.5) * 20) + &quot;px, &quot; + ((Math.random() - 0.5) * 20) + &quot;px) rotate(&quot; + ((Math.random() - 0.5) * 10) + &quot;deg)&quot;;
-                    el.style.transition = &quot;transform 0.5s ease-in-out&quot;;
-                }
-            } catch (e) {}
-        }
-        function typeLine(id, text, delay, speed) {
-            setTimeout(function () {
-                var el = document.getElementById(id);
-                if (!el) return;
-                el.textContent = &quot;&quot;;
-                var i = 0;
-                var timer = setInterval(function () {
-                    el.textContent = text.slice(0, ++i);
-                    if (i &gt;= text.length) clearInterval(timer);
-                }, speed || 110);
-            }, delay);
-        }
-        function shatter() {
-            if (!img) return;
-            var w = img.offsetWidth, h = img.offsetHeight;
-            if (!w || !h) return;
-            var src = img.src;
-            var ir = img.getBoundingClientRect();
-            var sr = stage.getBoundingClientRect();
-            var layer = document.createElement(&quot;div&quot;);
-            layer.style.cssText = &quot;position:absolute;z-index:5;pointer-events:none;&quot;;
-            layer.style.left = (ir.left - sr.left) + &quot;px&quot;;
-            layer.style.top = (ir.top - sr.top) + &quot;px&quot;;
-            layer.style.width = w + &quot;px&quot;;
-            layer.style.height = h + &quot;px&quot;;
-            var cols = 6, rows = 8, cw = w / cols, ch = h / rows;
-            for (var r = 0; r &lt; rows; r++) {
-                for (var c = 0; c &lt; cols; c++) {
-                    (function (r, c) {
-                        var f = document.createElement(&quot;div&quot;);
-                        f.style.cssText = &quot;position:absolute;left:&quot; + (c * cw) + &quot;px;top:&quot; + (r * ch) + &quot;px;width:&quot; + cw + &quot;px;height:&quot; + ch + &quot;px;&quot; +
-                            &quot;background-image:url(&quot; + src + &quot;);background-size:&quot; + w + &quot;px &quot; + h + &quot;px;&quot; +
-                            &quot;background-position:-&quot; + (c * cw) + &quot;px -&quot; + (r * ch) + &quot;px;&quot;;
-                        layer.appendChild(f);
-                        var dx = (Math.random() - 0.5) * 150,
-                            dy = 50 + Math.random() * 170,
-                            rz = (Math.random() - 0.5) * 240;
-                        setTimeout(function () {
-                            f.animate([
-                                { transform: &quot;translate(0,0) rotate(0deg)&quot;, opacity: 1 },
-                                { transform: &quot;translate(&quot; + dx + &quot;px,&quot; + dy + &quot;px) rotate(&quot; + rz + &quot;deg)&quot;, opacity: 0 }
-                            ], { duration: 850 + Math.random() * 650, easing: &quot;cubic-bezier(.3,.6,.4,1)&quot;, fill: &quot;forwards&quot; });
-                        }, Math.random() * 280);
-                    })(r, c);
-                }
-            }
-            stage.appendChild(layer);
-            img.style.visibility = &quot;hidden&quot;;
-            var panel = document.getElementById(&quot;linwanReveal&quot;);
-            if (panel) panel.classList.add(&quot;show&quot;);
-            sfx(&quot;static_noise&quot;, 0.45);
-        }
-
-        /* 0.6s 整页轻微故障 */
-        setTimeout(flashGlitch, 600);
-        /* 0.9s 照片撕裂 */
-        setTimeout(function () { if (!photo) return; photo.classList.add(&quot;glitch1&quot;); setTimeout(function () { photo.classList.remove(&quot;glitch1&quot;); }, 200); }, 900);
-        /* 1.7s 反色闪 */
-        setTimeout(function () { if (!photo) return; photo.classList.add(&quot;invert&quot;); setTimeout(function () { photo.classList.remove(&quot;invert&quot;); }, 110); }, 1700);
-        /* 1.8s 强制聚焦照片，确保玩家看到换脸 */
-        setTimeout(focusPhoto, 1800);
-        /* 2.2s 信号噪声覆盖，噪声中完成换脸 */
-        setTimeout(function () {
-            if (wipe) { wipe.classList.add(&quot;on&quot;); }
-            sfx(&quot;static_noise&quot;, 0.3);
-            setTimeout(function () { if (img) img.src = &quot;img/linwan_scary.png&quot;; }, 260);
-            setTimeout(function () { if (wipe) { wipe.classList.remove(&quot;on&quot;); wipe.style.opacity = 0; } sfx(&quot;screech&quot;, 0.4); }, 620);
-        }, 2200);
-        /* 2.9s RGB 分离 + 背景变乱码 */
-        setTimeout(function () { if (!photo) return; photo.classList.add(&quot;rgb&quot;); setTimeout(function () { photo.classList.remove(&quot;rgb&quot;); }, 520); }, 2900);
-        setTimeout(showCorrupt, 2900);
-        /* 3.2s 强制聚焦照片；3.4s 前扑 */
-        setTimeout(focusPhoto, 3200);
-        setTimeout(function () { if (!photo) return; photo.classList.add(&quot;lunge&quot;); }, 3400);
-        /* 4.0s 页面彻底扭曲：背景渗血 + 文字错位 */
-        setTimeout(pageTwist, 4000);
-        /* 4.1s 痉挛 */
-        setTimeout(function () { if (!photo) return; photo.classList.add(&quot;twitch&quot;); setTimeout(function () { photo.classList.remove(&quot;twitch&quot;); }, 420); }, 4100);
-        /* 4.6s 整页抖动 */
-        setTimeout(shakePage, 4600);
-        /* 4.8s 强制聚焦照片；5.0s 碎裂 */
-        setTimeout(focusPhoto, 4800);
-        setTimeout(shatter, 5000);
-        /* 6.2s / 7.6s 打字 */
-        typeLine(&quot;typed1&quot;, &quot;她不在照片里。&quot;, 6200, 110);
-        typeLine(&quot;typed2&quot;, &quot;她在你身后。&quot;, 7600, 130);
-        /* 8.2s 融化残影 + 全屏故障 */
-        setTimeout(function () { if (!photo) return; photo.classList.add(&quot;melt&quot;); flashGlitch(); sfx(&quot;static_noise&quot;, 0.5); }, 8200);
-        /* 9.6s 林晚开口（诱导、带句号、不乱码） */
-        typeLine(&quot;linwanTalk&quot;, &quot;别听她的。来找我，我在第七个书架等你。&quot;, 9600, 120);
-        /* 10.8s 全屏变黑 */
-        setTimeout(function () { if (fadeLayer) fadeLayer.classList.add(&quot;on&quot;); }, 10800);
-        }
-        if (window.dh &amp;&amp; dh.ready) { dh.ready(start, &quot;#linwanStage&quot;); } else { setTimeout(start, 80); }
-    })();
-    &lt;&lt;/script&gt;&gt;
-    &lt;!-- 文字同步异变 --&gt;
-    &lt;div style=&quot;background:#110000; padding:20px; border:2px solid #8b0000; margin-top: 10px; position:relative; z-index:2147483200;&quot;&gt;
-    &lt;p class=&quot;shake&quot; style=&quot;color:#ff2222; font-size:20px;&quot;&gt;为什么总看她？&lt;/p&gt;
-    &lt;p class=&quot;shake&quot; style=&quot;color:#ff4444;&quot;&gt;她i）*道（&amp;你在（……她&lt;/p&gt;
-    &lt;p class=&quot;shake&quot; style=&quot;color:#ff6666;&quot;&gt;别（&amp;搜了&lt;/p&gt;
-    &lt;p class=&quot;fade-text&quot; style=&quot;color:#ff8888;&quot;&gt;警09*当（*……面已  属YGT……&amp;￥。&lt;/p&gt;
-    &lt;/div&gt;
-    &lt;p class=&quot;linwan-voice&quot; id=&quot;linwanTalk&quot;&gt;&amp;nbsp;&lt;/p&gt;
-    &lt;div style=&quot;clear:both;&quot;&gt;&lt;/div&gt;
-    &lt;!-- 动画播完后封存五人档案并强制返回首页 --&gt;
-    
-&lt;&lt;/if&gt;&gt;
-
-
-
-&lt;div class=&quot;footer-time&quot;&gt;
+&lt;div class="footer-time" style="margin-top:40px;border-top:1px solid #ccc;padding-top:10px;font-size:12px;color:#666;text-align:right;"&gt;
 页面访问量：&lt;&lt;print $visitCount&gt;&gt;
 &lt;br&gt;
 系统时间：2015-09-15 00:00
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="8" name="旧教学楼说明" tags="公告 事件 旧教学楼 说明" position="950,900" size="100,100">&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:'微软雅黑',sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play('内网首页')&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;旧教学楼说明&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:'Consolas',monospace;&quot;&gt;# 事件&lt;/span&gt;&lt;/div&gt;&lt;&lt;set $visitCount += Math.floor(Math.random() * 2) + 2&gt;&gt;
+&lt;/div&gt;
+            </tw-passagedata><tw-passagedata pid="8" name="旧教学楼说明" tags="公告 事件 旧教学楼 说明" position="950,900" size="100,100">&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:'微软雅黑',sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play('内网首页')&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;旧教学楼说明&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:'Consolas',monospace;&quot;&gt;# 事件&lt;/span&gt;&lt;/div&gt;&lt;&lt;set $visitCount += Math.floor(Math.random() * 2) + 2&gt;&gt;
 
 &lt;h3 class=&quot;school-title&quot;&gt; 旧教学楼说明&lt;/h3&gt;
 &lt;hr&gt;
@@ -22498,29 +22667,26 @@ var glyphs = String.fromCharCode(0xFFFD, 35, 37, 38, 64, 36, 63, 33, 42)
 页面访问量：&lt;&lt;print $visitCount&gt;&gt;
 &lt;br&gt;
 系统时间：2015-09-15 00:00
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="9" name="旧教学楼失火" tags="公告 事件 旧教学楼 失火 旧楼失火 火灾" position="950,1000" size="100,100">&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:'微软雅黑',sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play('内网首页')&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;旧教学楼失火&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:'Consolas',monospace;&quot;&gt;# 事件  # 公告&lt;/span&gt;&lt;/div&gt;&lt;&lt;set $visitCount += Math.floor(Math.random() * 2) + 2&gt;&gt;
-
-&lt;h3&gt; 后勤处通知（2015-09-16）&lt;/h3&gt;
-&lt;hr&gt;
-&lt;p&gt;兹有旧教学楼地下室于 2015 年 9 月 14 日 22:00 之后发生电路起火事故，电路受外力损坏引发。1 人失联，遗体未找到。&lt;/p&gt;
-&lt;p&gt;即日起地下室永久封闭，禁止任何师生进入。&lt;/p&gt;
-
-&lt;p class=&quot;fade-text&quot;&gt;附件：现场照片（烧焦的杂物堆，角落有半本烧毁的诗集）&lt;/p&gt;
-&lt;p class=&quot;fade-text&quot; style=&quot;text-align: right;&quot;&gt;事故责任人：6名学生 已批评教育&lt;/p&gt;
-&lt;p class=&quot;fade-text&quot; style=&quot;text-align: right;&quot;&gt;相关笔录存档号：2015-09-16-JY&lt;/p&gt;&lt;p class=&quot;fade-text&quot; style=&quot;margin-top:10px;&quot;&gt;相关文档：&lt;&lt;link &quot;消防事故调查报告&quot; &quot;消防事故调查报告&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/p&gt;
-
-
-
-
-&lt;div class=&quot;nh-act-links&quot; style=&quot;margin-top:28px;margin-left:auto;margin-right:auto;max-width:720px;box-sizing:border-box;padding:12px 18px;background:#faf7f0;border-left:2px solid #d8c8b0;border-radius:2px;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:13px;line-height:1.9;&quot;&gt;
-&lt;div style=&quot;color:#8b0000;letter-spacing:2px;margin-bottom:8px;font-size:12.5px;&quot;&gt;相关文档&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;消防事故调查报告&quot; &quot;消防事故调查报告&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class=&quot;footer-time&quot;&gt;
-页面访问量：&lt;&lt;print $visitCount&gt;&gt;
-&lt;br&gt;
-系统时间：2015-09-15 00:00
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="10" name="诗刊" tags="资料 社团 文学社 诗刊 青野" position="950,1100" size="100,100">&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:'微软雅黑',sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play('内网首页')&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;诗刊&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:'Consolas',monospace;&quot;&gt;# 图书馆  # 社团&lt;/span&gt;&lt;/div&gt;&lt;&lt;set $visitCount += Math.floor(Math.random() * 2) + 2&gt;&gt;
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="9" name="旧教学楼失火" tags="公告 事件 旧教学楼 失火 旧楼失火 火灾" position="950,1000" size="100,100">
+&lt;table width=&quot;100%&quot; border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; style=&quot;max-width:750px; margin:20px auto; background:#ffffff; border:1px solid #cccccc; box-shadow:0 4px 12px rgba(0,0,0,0.1); font-family:'仿宋','FangSong',serif; font-size:16px; line-height:2; color:#333;&quot;&gt;
+    &lt;tr&gt;&lt;td align=&quot;center&quot; style=&quot;padding-bottom:10px;&quot;&gt;
+    &lt;font color=&quot;#d32f2f&quot; size=&quot;6&quot; face=&quot;黑体&quot;&gt;&lt;b&gt;南 华 大 学&lt;/b&gt;&lt;/font&gt;
+&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td align=&quot;center&quot; style=&quot;font-size:14px; color:#666;&quot;&gt;南华后勤〔2015〕09号&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td style=&quot;padding:0 40px;&quot;&gt;&lt;hr style=&quot;border:none; border-top:2px solid #d32f2f; margin:15px 0 30px 0;&quot;&gt;&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td align=&quot;center&quot; style=&quot;font-size:20px; font-family:'黑体'; font-weight:bold; padding-bottom:30px;&quot;&gt;关于旧教学楼地下室火灾事故的情况通报&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td style=&quot;padding:0 40px; text-indent:2em;&quot;&gt;
+        &lt;p&gt;各学院、各部门：&lt;/p&gt;
+        &lt;p&gt;2015年9月14日22时40分许，我校旧教学楼地下室发生一起火情。接警后，公安消防部门迅速赶赴现场扑救，22时55分明火被扑灭。&lt;/p&gt;
+        &lt;p&gt;经初步勘查，起火点位于地下室密集书库东侧，系老旧线路短路引燃周边堆积的废弃旧报刊及纸质杂物所致。此次事故造成地下室部分旧藏图书及设施损毁，经排查，事故未造成人员伤亡（1名涉事人员处于失联状态，遗体未寻获）。&lt;/p&gt;
+        &lt;p&gt;鉴于旧教学楼建筑老化且受损严重，校方决定即日起对旧教学楼实施永久封闭。&lt;/p&gt;
+        &lt;p&gt;希望各单位深刻吸取教训，引以为戒，立即开展消防安全隐患自查自纠工作，坚决杜绝此类事故再次发生。&lt;/p&gt;
+    &lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td align=&quot;right&quot; style=&quot;padding:40px 50px 60px 0; line-height:1.8;&quot;&gt;
+        南华大学后勤管理处&lt;br&gt;2015年9月16日
+    &lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+</tw-passagedata><tw-passagedata pid="10" name="诗刊" tags="资料 社团 文学社 诗刊 青野" position="950,1100" size="100,100">&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:'微软雅黑',sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play('内网首页')&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;诗刊&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:'Consolas',monospace;&quot;&gt;# 图书馆  # 社团&lt;/span&gt;&lt;/div&gt;&lt;&lt;set $visitCount += Math.floor(Math.random() * 2) + 2&gt;&gt;
 
 &lt;h3&gt; 《青野》文学社内部诗刊 2015年秋季号&lt;/h3&gt;
 &lt;hr&gt;
@@ -22659,7 +22825,7 @@ var glyphs = String.fromCharCode(0xFFFD, 35, 37, 38, 64, 36, 63, 33, 42)
 
     &lt;!-- 已解锁状态：完整档案 + 污染升级逻辑 --&gt;
     &lt;&lt;if $chenmoCount &gt;= 3 and $corruptionLevel &lt; 2&gt;&gt;
-        &lt;&lt;set $corruptionLevel to 2&gt;&gt;
+        
         &lt;&lt;audio &quot;static_noise&quot; play volume 0.3&gt;&gt;
     &lt;&lt;/if&gt;&gt;
 
@@ -22742,7 +22908,7 @@ var glyphs = String.fromCharCode(0xFFFD, 35, 37, 38, 64, 36, 63, 33, 42)
 &lt;div class=&quot;nh-act-links&quot; style=&quot;margin-top:28px;margin-left:auto;margin-right:auto;max-width:720px;box-sizing:border-box;padding:12px 18px;background:#faf7f0;border-left:2px solid #d8c8b0;border-radius:2px;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:13px;line-height:1.9;&quot;&gt;
 &lt;div style=&quot;color:#8b0000;letter-spacing:2px;margin-bottom:8px;font-size:12.5px;&quot;&gt;相关文档&lt;/div&gt;
 &lt;div&gt;· &lt;&lt;link &quot;陈默教研日志（未提交）&quot; &quot;陈默教研日志&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;他为什么沉默？&quot; &quot;名如其人&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
+
 &lt;/div&gt;
 &lt;div class=&quot;footer-time&quot;&gt;
 页面访问量：&lt;&lt;print $visitCount&gt;&gt;
@@ -23295,32 +23461,25 @@ var glyphs = String.fromCharCode(0xFFFD, 35, 37, 38, 64, 36, 63, 33, 42)
 页面访问量：&lt;&lt;print $visitCount&gt;&gt;
 &lt;br&gt;
 系统时间：2015-09-15 00:00
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="22" name="公告:旧教学楼封锁" tags="公告 旧教学楼 封锁 通知" position="1375,700" size="100,100">&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:'微软雅黑',sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play('内网首页')&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;公告：旧教学楼封锁&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:'Consolas',monospace;&quot;&gt;# 公告  # 事件&lt;/span&gt;&lt;/div&gt;&lt;&lt;set $visitCount += Math.floor(Math.random() * 2) + 2&gt;&gt;
-
-&lt;div class=&quot;notice-box&quot;&gt;
-&lt;h4&gt;关于旧教学楼临时封锁的通知&lt;/h4&gt;
-&lt;p&gt;各学院、全体师生：&lt;/p&gt;
-&lt;p&gt;因旧教学楼楼体老化、电路存在安全隐患，经学校研究决定，自2015年9月10日起，旧教学楼整体临时封锁，停止一切教学与社团活动。&lt;/p&gt;
-&lt;p&gt;地下室区域同步封闭，严禁任何人员进入。&lt;/p&gt;
-&lt;p&gt;依据《南华大学学生手册》第四十七条、校园安全管理规定执行。&lt;/p&gt;
-&lt;p style=&quot;text-align:right;&quot;&gt;后勤管理处&lt;/p&gt;
-&lt;p style=&quot;text-align:right;&quot;&gt;2015年9月9日&lt;/p&gt;
-&lt;/div&gt;
-
-&lt;p class=&quot;fade-text&quot; style=&quot;margin-top:15px;&quot;&gt;相关推荐：&lt;&lt;link &quot;旧教学楼使用须知&quot;&gt;&gt;&lt;&lt;goto &quot;旧教学楼说明&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/p&gt;
-
-
-
-
-&lt;div class=&quot;nh-act-links&quot; style=&quot;margin-top:28px;margin-left:auto;margin-right:auto;max-width:720px;box-sizing:border-box;padding:12px 18px;background:#faf7f0;border-left:2px solid #d8c8b0;border-radius:2px;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:13px;line-height:1.9;&quot;&gt;
-&lt;div style=&quot;color:#8b0000;letter-spacing:2px;margin-bottom:8px;font-size:12.5px;&quot;&gt;相关文档&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;后勤处失火通报&quot; &quot;旧教学楼失火&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class=&quot;footer-time&quot;&gt;
-页面访问量：&lt;&lt;print $visitCount&gt;&gt;
-&lt;br&gt;
-系统时间：2015-09-15 00:00
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="23" name="公告:选课安排" tags="公告 选课 教务 通知" position="1500,700" size="100,100">&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:'微软雅黑',sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play('内网首页')&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;公告：选课安排&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:'Consolas',monospace;&quot;&gt;# 公告  # 教务&lt;/span&gt;&lt;/div&gt;&lt;&lt;set $visitCount += Math.floor(Math.random() * 2) + 2&gt;&gt;
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="22" name="公告:旧教学楼封锁" tags="公告 旧教学楼 封锁 通知" position="1375,700" size="100,100">
+&lt;table width=&quot;100%&quot; border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; style=&quot;max-width:750px; margin:20px auto; background:#ffffff; border:1px solid #cccccc; box-shadow:0 4px 12px rgba(0,0,0,0.1); font-family:'仿宋','FangSong',serif; font-size:16px; line-height:2; color:#333;&quot;&gt;
+    &lt;tr&gt;&lt;td align=&quot;center&quot; style=&quot;padding-bottom:10px;&quot;&gt;
+    &lt;font color=&quot;#d32f2f&quot; size=&quot;6&quot; face=&quot;黑体&quot;&gt;&lt;b&gt;南 华 大 学&lt;/b&gt;&lt;/font&gt;
+&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td align=&quot;center&quot; style=&quot;font-size:14px; color:#666;&quot;&gt;南华后勤〔2015〕11号&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td style=&quot;padding:0 40px;&quot;&gt;&lt;hr style=&quot;border:none; border-top:2px solid #d32f2f; margin:15px 0 30px 0;&quot;&gt;&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td align=&quot;center&quot; style=&quot;font-size:20px; font-family:'黑体'; font-weight:bold; padding-bottom:30px;&quot;&gt;关于旧教学楼临时封锁的通知&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td style=&quot;padding:0 40px; text-indent:2em;&quot;&gt;
+        &lt;p&gt;各学院、全体师生：&lt;/p&gt;
+        &lt;p&gt;因旧教学楼楼体老化、地下电路存在严重安全隐患，经学校研究决定，自2015年9月10日起，旧教学楼整体临时封锁，停止一切教学与社团活动，地下室区域同步封闭。&lt;/p&gt;
+        &lt;p&gt;即日起，门禁系统将实行最高级别管控。请全体师生严格遵守规定，严禁翻越围挡或尾随进入。近期校方将联合保卫处开展夜间突击巡查，一经发现违规进入者，将直接记大过处分，绝不姑息。&lt;/p&gt;
+        &lt;p&gt;请各学院务必通知到每一位学生，切勿以身试险。&lt;/p&gt;
+    &lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td align=&quot;right&quot; style=&quot;padding:40px 50px 60px 0; line-height:1.8;&quot;&gt;
+        后勤管理处&lt;br&gt;2015年9月9日
+    &lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+</tw-passagedata><tw-passagedata pid="23" name="公告:选课安排" tags="公告 选课 教务 通知" position="1500,700" size="100,100">&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:'微软雅黑',sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play('内网首页')&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;公告：选课安排&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:'Consolas',monospace;&quot;&gt;# 公告  # 教务&lt;/span&gt;&lt;/div&gt;&lt;&lt;set $visitCount += Math.floor(Math.random() * 2) + 2&gt;&gt;
 
 &lt;div class=&quot;notice-box&quot;&gt;
 &lt;h4&gt;2015级秋季学期选课工作安排&lt;/h4&gt;
@@ -23442,35 +23601,26 @@ var glyphs = String.fromCharCode(0xFFFD, 35, 37, 38, 64, 36, 63, 33, 42)
 页面访问量：&lt;&lt;print $visitCount&gt;&gt;
 &lt;br&gt;
 系统时间：2015-09-15 00:00
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="26" name="公告:失联通报" tags="公告 失联 失踪 通报" position="1375,950" size="100,100">&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:'微软雅黑',sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play('内网首页')&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;公告：失联通报&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:'Consolas',monospace;&quot;&gt;# 公告  # 事件&lt;/span&gt;&lt;/div&gt;&lt;&lt;set $visitCount += Math.floor(Math.random() * 2) + 2&gt;&gt;
-
-&lt;div class=&quot;notice-box&quot;&gt;
-&lt;h4&gt;关于5名学生失联情况的通报&lt;/h4&gt;
-&lt;p&gt;2015年9月14日，我校5名学生于夜间进入旧教学楼后失联。&lt;/p&gt;
-&lt;p&gt;事发时间为非教学活动时段，违反校舍管理规定。&lt;/p&gt;
-&lt;p&gt;警方已介入调查，学校全力配合。&lt;/p&gt;
-&lt;p&gt;失联人员名单：&lt;/p&gt;
-&lt;p&gt;林晚、张昊、王佳、李阳、赵晓&lt;/p&gt;
-&lt;p&gt;如有线索请拨打保卫处电话：0XXX-XXXXXXX&lt;/p&gt;
-&lt;p style=&quot;text-align:right;&quot;&gt;保卫处 宣传部&lt;/p&gt;
-&lt;p style=&quot;text-align:right;&quot;&gt;2015年9月17日&lt;/p&gt;
-&lt;/div&gt;
-
-&lt;p class=&quot;fade-text&quot; style=&quot;margin-top:15px;&quot;&gt;提示：搜索人名可查看学生档案&lt;/p&gt;
-&lt;p class=&quot;fade-text&quot;&gt;相关记录：&lt;&lt;link &quot;调取当晚监控片段&quot; &quot;监控录像&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/p&gt;
-
-
-
-
-&lt;div class=&quot;nh-act-links&quot; style=&quot;margin-top:28px;margin-left:auto;margin-right:auto;max-width:720px;box-sizing:border-box;padding:12px 18px;background:#faf7f0;border-left:2px solid #d8c8b0;border-radius:2px;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:13px;line-height:1.9;&quot;&gt;
-&lt;div style=&quot;color:#8b0000;letter-spacing:2px;margin-bottom:8px;font-size:12.5px;&quot;&gt;相关文档&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;关于旧教学楼临时封锁的通知&quot; &quot;公告:旧教学楼封锁&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class=&quot;footer-time&quot;&gt;
-页面访问量：&lt;&lt;print $visitCount&gt;&gt;
-&lt;br&gt;
-系统时间：2015-09-15 00:00
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="27" name="公告:安全排查" tags="公告 安全 排查 通知" position="1500,950" size="100,100">&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:'微软雅黑',sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play('内网首页')&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;公告：安全排查&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:'Consolas',monospace;&quot;&gt;# 公告  # 事件&lt;/span&gt;&lt;/div&gt;&lt;&lt;set $visitCount += Math.floor(Math.random() * 2) + 2&gt;&gt;
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="26" name="公告:失联通报" tags="公告 失联 失踪 通报" position="1375,950" size="100,100">
+&lt;table width=&quot;100%&quot; border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; style=&quot;max-width:750px; margin:20px auto; background:#ffffff; border:1px solid #cccccc; box-shadow:0 4px 12px rgba(0,0,0,0.1); font-family:'仿宋','FangSong',serif; font-size:16px; line-height:2; color:#333;&quot;&gt;
+    &lt;tr&gt;&lt;td align=&quot;center&quot; style=&quot;padding-bottom:10px;&quot;&gt;
+    &lt;font color=&quot;#d32f2f&quot; size=&quot;6&quot; face=&quot;黑体&quot;&gt;&lt;b&gt;南 华 大 学&lt;/b&gt;&lt;/font&gt;
+&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td align=&quot;center&quot; style=&quot;font-size:14px; color:#666;&quot;&gt;南华保卫〔2015〕17号&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td style=&quot;padding:0 40px;&quot;&gt;&lt;hr style=&quot;border:none; border-top:2px solid #d32f2f; margin:15px 0 30px 0;&quot;&gt;&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td align=&quot;center&quot; style=&quot;font-size:20px; font-family:'黑体'; font-weight:bold; padding-bottom:30px;&quot;&gt;关于我校五名学生失联情况的紧急通报&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td style=&quot;padding:0 40px; text-indent:2em;&quot;&gt;
+        &lt;p&gt;全校师生员工：&lt;/p&gt;
+        &lt;p&gt;2015年9月14日晚，我校发生一起学生集体失联事件。经核实，林晚（女，中文系）、张昊（男，中文系）、王佳（女，中文系）、李阳（男，中文系）、赵晓（女，中文系）等五名2015级学生，于当晚夜间私自违规进入旧教学楼后失联，至今未归。&lt;/p&gt;
+        &lt;p&gt;事发时间为非教学活动时段，该行为严重违反了《南华大学学生宿舍管理规定》及校舍安全管理规定。事件发生后，学校高度重视，已联合公安机关全力开展调查与搜寻工作。目前，警方已封锁旧教学楼相关区域，排查工作正在进行中。&lt;/p&gt;
+        &lt;p&gt;请广大师生提高安全防范意识，切勿听信谣言。严禁任何人员私自靠近或进入旧教学楼封锁区域，违者将按校规严肃处理。如有上述失联人员线索，请立即拨打保卫处24小时值班电话：0XXX-XXXXXXX。&lt;/p&gt;
+        &lt;p&gt;特此通报。&lt;/p&gt;
+    &lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td align=&quot;right&quot; style=&quot;padding:40px 50px 60px 0; line-height:1.8;&quot;&gt;
+        南华大学保卫处&lt;br&gt;2015年9月17日
+    &lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+</tw-passagedata><tw-passagedata pid="27" name="公告:安全排查" tags="公告 安全 排查 通知" position="1500,950" size="100,100">&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:'微软雅黑',sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play('内网首页')&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;公告：安全排查&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:'Consolas',monospace;&quot;&gt;# 公告  # 事件&lt;/span&gt;&lt;/div&gt;&lt;&lt;set $visitCount += Math.floor(Math.random() * 2) + 2&gt;&gt;
 
 &lt;div class=&quot;notice-box&quot;&gt;
 &lt;h4&gt;秋季校园安全隐患排查通知&lt;/h4&gt;
@@ -23502,7 +23652,7 @@ var glyphs = String.fromCharCode(0xFFFD, 35, 37, 38, 64, 36, 63, 33, 42)
 
 &lt;!-- 污染等级升级控制 --&gt;
 &lt;&lt;if $zhanghaoCount &gt;= 3 and $corruptionLevel &lt; 2&gt;&gt;
-    &lt;&lt;set $corruptionLevel to 2&gt;&gt;
+    
     &lt;&lt;audio &quot;static_noise&quot; play volume 0.35&gt;&gt;
 &lt;&lt;/if&gt;&gt;
 
@@ -23604,7 +23754,7 @@ var glyphs = String.fromCharCode(0xFFFD, 35, 37, 38, 64, 36, 63, 33, 42)
 
 &lt;!-- 污染等级升级控制 --&gt;
 &lt;&lt;if $wangjiaCount &gt;= 3 and $corruptionLevel &lt; 2&gt;&gt;
-    &lt;&lt;set $corruptionLevel to 2&gt;&gt;
+    
     &lt;&lt;audio &quot;static_noise&quot; play volume 0.35&gt;&gt;
 &lt;&lt;/if&gt;&gt;
 
@@ -23706,7 +23856,7 @@ var glyphs = String.fromCharCode(0xFFFD, 35, 37, 38, 64, 36, 63, 33, 42)
 
 &lt;!-- 污染等级升级控制 --&gt;
 &lt;&lt;if $liyangCount &gt;= 3 and $corruptionLevel &lt; 2&gt;&gt;
-    &lt;&lt;set $corruptionLevel to 2&gt;&gt;
+    
     &lt;&lt;audio &quot;static_noise&quot; play volume 0.35&gt;&gt;
 &lt;&lt;/if&gt;&gt;
 
@@ -23808,7 +23958,7 @@ var glyphs = String.fromCharCode(0xFFFD, 35, 37, 38, 64, 36, 63, 33, 42)
 
 &lt;!-- 污染等级升级控制 --&gt;
 &lt;&lt;if $zhaoxiaoCount &gt;= 3 and $corruptionLevel &lt; 2&gt;&gt;
-    &lt;&lt;set $corruptionLevel to 2&gt;&gt;
+    
     &lt;&lt;audio &quot;static_noise&quot; play volume 0.35&gt;&gt;
 &lt;&lt;/if&gt;&gt;
 
@@ -24052,72 +24202,32 @@ var glyphs = String.fromCharCode(0xFFFD, 35, 37, 38, 64, 36, 63, 33, 42)
 页面访问量：&lt;&lt;print $visitCount&gt;&gt;
 &lt;br&gt;
 系统时间：2015-09-15 00:00
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="36" name="图书馆" tags="" position="1325,1725" size="100,100">&lt;div class=&quot;lib-wrap&quot;&gt;&lt;div class=&quot;lib-banner&quot;&gt;&lt;div class=&quot;lib-banner-left&quot;&gt;&lt;div class=&quot;lib-logo&quot;&gt;&lt;/div&gt;&lt;div class=&quot;lib-banner-text&quot;&gt;&lt;div class=&quot;lib-title&quot;&gt;南华大学图书馆&lt;/div&gt;&lt;div class=&quot;lib-sub&quot;&gt;NANHUA UNIVERSITY LIBRARY · 读者服务系统 v3.1&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;lib-user&quot;&gt;当前用户：&lt;b&gt;&lt;&lt;print $username || &quot;访客&quot;&gt;&gt;&lt;/b&gt;&lt;br&gt;&lt;span class=&quot;lib-user-time&quot;&gt;2015-09-15&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;lib-nav&quot;&gt;&lt;span class=&quot;lib-nav-item active&quot;&gt;馆藏检索&lt;/span&gt;&lt;span class=&quot;lib-nav-item&quot;&gt;我的借阅&lt;/span&gt;&lt;span class=&quot;lib-nav-item&quot;&gt;读者服务&lt;/span&gt;&lt;span class=&quot;lib-nav-item&quot;&gt;新书通报&lt;/span&gt;&lt;span class=&quot;lib-nav-item&quot;&gt;逾期公示&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;lib-body&quot;&gt;&lt;div class=&quot;lib-side&quot;&gt;&lt;div class=&quot;lib-side-block&quot;&gt;&lt;h4&gt;读者服务&lt;/h4&gt;&lt;ul&gt;&lt;li&gt;&lt;&lt;link &quot;逾期图书催还通知&quot; &quot;公告：图书催还&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/li&gt;&lt;li&gt;&lt;&lt;link &quot;图书馆借阅规则&quot; &quot;借阅规则&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/li&gt;&lt;li&gt;&lt;&lt;link &quot;管理员教研日志&quot; &quot;陈默教研日志&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/li&gt;&lt;li&gt;&lt;&lt;link &quot;地下书库借阅记录&quot; &quot;苏言残稿B&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/li&gt;&lt;li&gt;&lt;&lt;link &quot;返回内网首页&quot; &quot;内网首页&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;div class=&quot;lib-side-block&quot;&gt;&lt;h4&gt;馆藏分布&lt;/h4&gt;&lt;ul&gt;&lt;li&gt;主馆 · 文学区 2 层&lt;/li&gt;&lt;li&gt;新馆 · 社科区 2 层&lt;/li&gt;&lt;li&gt;新馆 · 艺术区 3 层&lt;/li&gt;&lt;li&gt;新馆 · 建筑区 4 层&lt;/li&gt;&lt;li class=&quot;fade&quot;&gt;旧教学楼地下室密集书库（封存）&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;div class=&quot;lib-side-block&quot;&gt;&lt;h4&gt;开馆时间&lt;/h4&gt;&lt;ul&gt;&lt;li&gt;周一至周五 08:00 – 22:00&lt;/li&gt;&lt;li&gt;周六周日 09:00 – 21:00&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;lib-main&quot;&gt;&lt;div class=&quot;lib-search&quot;&gt;&lt;div class=&quot;lib-search-title&quot;&gt;馆藏检索&lt;/div&gt;&lt;p class=&quot;lib-search-hint&quot;&gt;输入书名进行检索&lt;/p&gt;&lt;div class=&quot;lib-search-row&quot;&gt;&lt;input type=&quot;text&quot; id=&quot;lw-book-input&quot; class=&quot;lw-book-input&quot; autofocus&gt;&lt;span id=&quot;lw-lib-search-btn&quot; onclick=&quot;if(window.lwLibSubmit)window.lwLibSubmit();return false;&quot; style=&quot;cursor:pointer;user-select:none;display:inline-block;background:#8b0000;color:#fff;padding:9px 26px;font-size:13px;border-radius:2px;letter-spacing:3px;font-family:inherit;white-space:nowrap;&quot;&gt;检索&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;lib-result&quot; id=&quot;lw-lib-result&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;lib-footer&quot;&gt;页面访问量：&lt;&lt;print $visitCount&gt;&gt; &amp;nbsp;|&amp;nbsp; 校内网络 · 2015-09-15 &amp;nbsp;|&amp;nbsp; 系统时间：00:00&lt;/div&gt;&lt;/div&gt;</tw-passagedata><tw-passagedata pid="38" name="借阅规则" tags="资料 图书馆 借阅规则" position="1175,1850" size="100,100">&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:'微软雅黑',sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play('内网首页')&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;借阅规则&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:'Consolas',monospace;&quot;&gt;# 图书馆&lt;/span&gt;&lt;/div&gt;&lt;&lt;set $visitCount += Math.floor(Math.random() * 2) + 2&gt;&gt;
-
-&lt;&lt;if $corruptionLevel &gt;= 3&gt;&gt;
-    &lt;&lt;audio &quot;static_noise&quot; play volume 0.2&gt;&gt;
-&lt;&lt;/if&gt;&gt;
-
-&lt;h3 class=&quot;school-title&quot;&gt; 图书馆借阅规则&lt;/h3&gt;
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="36" name="图书馆" tags="" position="1325,1725" size="100,100">&lt;div class=&quot;lib-wrap&quot;&gt;&lt;div class=&quot;lib-banner&quot;&gt;&lt;div class=&quot;lib-banner-left&quot;&gt;&lt;div class=&quot;lib-logo&quot;&gt;&lt;/div&gt;&lt;div class=&quot;lib-banner-text&quot;&gt;&lt;div class=&quot;lib-title&quot;&gt;南华大学图书馆&lt;/div&gt;&lt;div class=&quot;lib-sub&quot;&gt;NANHUA UNIVERSITY LIBRARY · 读者服务系统 v3.1&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;lib-user&quot;&gt;当前用户：&lt;b&gt;&lt;&lt;print $username || &quot;访客&quot;&gt;&gt;&lt;/b&gt;&lt;br&gt;&lt;span class=&quot;lib-user-time&quot;&gt;2015-09-15&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;lib-nav&quot;&gt;&lt;span class=&quot;lib-nav-item active&quot;&gt;馆藏检索&lt;/span&gt;&lt;span class=&quot;lib-nav-item&quot;&gt;我的借阅&lt;/span&gt;&lt;span class=&quot;lib-nav-item&quot;&gt;读者服务&lt;/span&gt;&lt;span class=&quot;lib-nav-item&quot;&gt;新书通报&lt;/span&gt;&lt;span class=&quot;lib-nav-item&quot;&gt;逾期公示&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;lib-body&quot;&gt;&lt;div class=&quot;lib-side&quot;&gt;&lt;div class=&quot;lib-side-block&quot;&gt;&lt;h4&gt;读者服务&lt;/h4&gt;&lt;ul&gt;&lt;li&gt;&lt;&lt;link &quot;逾期图书催还通知&quot; &quot;公告：图书催还&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/li&gt;&lt;li&gt;&lt;&lt;link &quot;图书馆借阅规则&quot; &quot;借阅规则&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/li&gt;&lt;li&gt;&lt;&lt;link &quot;管理员教研日志&quot; &quot;陈默教研日志&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/li&gt;&lt;li&gt;&lt;&lt;link &quot;地下书库借阅记录&quot; &quot;苏言残稿B&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/li&gt;&lt;li&gt;&lt;&lt;link &quot;返回内网首页&quot; &quot;内网首页&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;div class=&quot;lib-side-block&quot;&gt;&lt;h4&gt;馆藏分布&lt;/h4&gt;&lt;ul&gt;&lt;li&gt;主馆 · 文学区 2 层&lt;/li&gt;&lt;li&gt;新馆 · 社科区 2 层&lt;/li&gt;&lt;li&gt;新馆 · 艺术区 3 层&lt;/li&gt;&lt;li&gt;新馆 · 建筑区 4 层&lt;/li&gt;&lt;li class=&quot;fade&quot;&gt;旧教学楼地下室密集书库（封存）&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;div class=&quot;lib-side-block&quot;&gt;&lt;h4&gt;开馆时间&lt;/h4&gt;&lt;ul&gt;&lt;li&gt;周一至周五 08:00 – 22:00&lt;/li&gt;&lt;li&gt;周六周日 09:00 – 21:00&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;lib-main&quot;&gt;&lt;div class=&quot;lib-search&quot;&gt;&lt;div class=&quot;lib-search-title&quot;&gt;馆藏检索&lt;/div&gt;&lt;p class=&quot;lib-search-hint&quot;&gt;输入书名进行检索&lt;/p&gt;&lt;div class=&quot;lib-search-row&quot;&gt;&lt;input type=&quot;text&quot; id=&quot;lw-book-input&quot; class=&quot;lw-book-input&quot; autofocus&gt;&lt;span id=&quot;lw-lib-search-btn&quot; onclick=&quot;if(window.lwLibSubmit)window.lwLibSubmit();return false;&quot; style=&quot;cursor:pointer;user-select:none;display:inline-block;background:#8b0000;color:#fff;padding:9px 26px;font-size:13px;border-radius:2px;letter-spacing:3px;font-family:inherit;white-space:nowrap;&quot;&gt;检索&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;lib-result&quot; id=&quot;lw-lib-result&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;lib-footer&quot;&gt;页面访问量：&lt;&lt;print $visitCount&gt;&gt; &amp;nbsp;|&amp;nbsp; 校内网络 · 2015-09-15 &amp;nbsp;|&amp;nbsp; 系统时间：00:00&lt;/div&gt;&lt;/div&gt;</tw-passagedata><tw-passagedata pid="38" name="借阅规则" tags="资料 图书馆 借阅规则" position="1175,1850" size="100,100">&lt;div class=&quot;page-wrap&quot;&gt;
+&lt;h3 class=&quot;school-title&quot;&gt;图书馆借阅规则&lt;/h3&gt;
+&lt;p class=&quot;fade-text&quot; style=&quot;font-family:'仿宋',serif; text-align:center;&quot;&gt;南华大学图书馆管理处 制定&lt;/p&gt;
 &lt;hr&gt;
 
-&lt;div class=&quot;notice-box&quot;&gt;
-&lt;&lt;if $corruptionLevel &lt; 3&gt;&gt;
-    &lt;p&gt;&lt;b&gt;第一条 开馆时间&lt;/b&gt;&lt;/p&gt;
-    &lt;p&gt;主馆开馆时间为每日8:00-22:00，闭馆后请读者有序离场，严禁滞留。&lt;/p&gt;
-    &lt;p class=&quot;fade-text&quot;&gt;旧教学楼分馆（地下室书库）2015年起停止对外开放。&lt;/p&gt;
+&lt;div class=&quot;notice-box&quot; style=&quot;font-family:'仿宋',serif; font-size:15px; line-height:2.2;&quot;&gt;
+    &lt;p&gt;&lt;b&gt;第一章 开馆时间&lt;/b&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;b&gt;第一条&lt;/b&gt; 主馆开馆时间为每日 8:00-22:00，闭馆后请读者有序离场，严禁滞留。&lt;/p&gt;
+    &lt;p&gt;&lt;b&gt;第三条&lt;/b&gt; （原第二条已删除）旧教学楼分馆（地下室书库）自 2015 年起停止对外开放。夜间若听见该区域传来翻书声或诵读声，属于设备老化产生的错觉，请勿前往查看。&lt;/p&gt;
     &lt;br&gt;
-    &lt;p&gt;&lt;b&gt;第二条 借阅权限&lt;/b&gt;&lt;/p&gt;
-    &lt;p&gt;本科生凭校园卡每人限借5册，借期30天，可续借一次。&lt;/p&gt;
-    &lt;p&gt;研究生、教职工每人限借10册，借期60天。&lt;/p&gt;
+    
+    &lt;p&gt;&lt;b&gt;第二章 借阅权限&lt;/b&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;b&gt;第五条&lt;/b&gt; 本科生凭校园卡每人限借 5 册，借期 30 天。研究生、教职工每人限借 10 册，借期 60 天。&lt;/p&gt;
+    &lt;p&gt;&lt;b&gt;第七条&lt;/b&gt; （原第六条已涂黑）若在书架缝隙中捡到未登记的手稿、残页，请勿带出图书馆，请勿阅读，直接投掷于前台的信箱中。&lt;/p&gt;
     &lt;br&gt;
-    &lt;p&gt;&lt;b&gt;第三条 密集书库管理&lt;/b&gt;&lt;/p&gt;
-    &lt;p&gt;旧教学楼地下室密集书库为封存馆藏，不提供开架阅览。&lt;/p&gt;
-    &lt;p&gt;需查阅封存图书请提前三个工作日提交申请，由工作人员代取。&lt;/p&gt;
-    &lt;p class=&quot;fade-text&quot;&gt;2015年火灾后，地下室书库已停止所有申请服务。&lt;/p&gt;
+
+    &lt;p&gt;&lt;b&gt;第三章 密集书库管理&lt;/b&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;b&gt;第十条&lt;/b&gt; 旧教学楼地下室密集书库为封存馆藏，绝对不提供开架阅览。&lt;/p&gt;
+    &lt;p&gt;&lt;b&gt;第十一条&lt;/b&gt; 地下室有七个书架。请记住，左数第七个书架是空的。无论你看到了什么，它都是空的。&lt;/p&gt;
+    &lt;p&gt;&lt;b&gt;第十二条&lt;/b&gt; 如果你在图书馆检索系统里搜到了并不存在的书目，请立刻关闭网页。不要尝试点击借阅。&lt;/p&gt;
     &lt;br&gt;
-    &lt;p&gt;&lt;b&gt;历史逾期图书（永久保留记录）&lt;/b&gt;&lt;/p&gt;
-    &lt;table class=&quot;lib-table&quot; style=&quot;font-size:12.5px;margin-top:8px;&quot;&gt;
-    &lt;tr&gt;&lt;th&gt;年份&lt;/th&gt;&lt;th&gt;借阅人&lt;/th&gt;&lt;th&gt;书名&lt;/th&gt;&lt;th&gt;状态&lt;/th&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td&gt;2003&lt;/td&gt;&lt;td&gt;中文系 99 级 李某&lt;/td&gt;&lt;td&gt;《文学理论》&lt;/td&gt;&lt;td&gt;未还&lt;/td&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td&gt;2005&lt;/td&gt;&lt;td&gt;历史系 01 级 张某&lt;/td&gt;&lt;td&gt;《地方志·南华卷》&lt;/td&gt;&lt;td&gt;未还&lt;/td&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td&gt;2007&lt;/td&gt;&lt;td&gt;艺术系 04 级 陈某&lt;/td&gt;&lt;td&gt;《美学》&lt;/td&gt;&lt;td&gt;未还&lt;/td&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td&gt;2009&lt;/td&gt;&lt;td&gt;哲学系 06 级 王某&lt;/td&gt;&lt;td&gt;《存在与时间》&lt;/td&gt;&lt;td&gt;未还&lt;/td&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td&gt;2011&lt;/td&gt;&lt;td&gt;历史系 08 级 刘某&lt;/td&gt;&lt;td&gt;《南方旧志》&lt;/td&gt;&lt;td&gt;未还&lt;/td&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td&gt;2013&lt;/td&gt;&lt;td&gt;中文系 10 级 赵某&lt;/td&gt;&lt;td&gt;《诗集》&lt;/td&gt;&lt;td&gt;未还&lt;/td&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td&gt;2015&lt;/td&gt;&lt;td&gt;中文系 15 级 苏言&lt;/td&gt;&lt;td&gt;《朦胧诗选》&lt;/td&gt;&lt;td&gt;未还&lt;/td&gt;&lt;/tr&gt;
-    &lt;/table&gt;
-    &lt;p class=&quot;fade-text&quot; style=&quot;font-size:12px;margin-top:8px;&quot;&gt;系统备注：以上记录已逾期多年，借阅人无法联系。按照《图书馆管理办法》，记录永久保留，不清除，不抵扣。&lt;/p&gt;
-    &lt;br&gt;
-    &lt;p&gt;&lt;b&gt;第四条 逾期与遗失&lt;/b&gt;&lt;/p&gt;
-    &lt;p&gt;逾期图书按每日0.1元收取滞纳金。&lt;/p&gt;
-    &lt;p&gt;遗失、污损图书按原价1-3倍赔偿。&lt;/p&gt;
-    &lt;p class=&quot;fade-text&quot;&gt;注：1998-2015年借出的封存图书，至今未还者记录永久保留。&lt;/p&gt;
-&lt;&lt;else&gt;&gt;
-    &lt;p class=&quot;shake&quot; style=&quot;color:#ff2222;&quot;&gt;&lt;b&gt;第一条 闭馆时间&lt;/b&gt;&lt;/p&gt;
-    &lt;p class=&quot;shake&quot; style=&quot;color:#ff4444;&quot;&gt;地下室没有时间。永远都是凌晨零点。&lt;/p&gt;
-    &lt;p class=&quot;fade-text&quot; style=&quot;color:#ff8888;&quot;&gt;别进去 别开灯 别说话。&lt;/p&gt;
-    &lt;br&gt;
-    &lt;p class=&quot;shake&quot; style=&quot;color:#ff2222;&quot;&gt;&lt;b&gt;第二条 借阅规则&lt;/b&gt;&lt;/p&gt;
-    &lt;p class=&quot;shake&quot; style=&quot;color:#ff4444;&quot;&gt;地下室的书不用还。&lt;/p&gt;
-    &lt;p class=&quot;shake&quot; style=&quot;color:#ff4444;&quot;&gt;只要你留下来陪她一起看。&lt;/p&gt;
-    &lt;br&gt;
-    &lt;p class=&quot;shake&quot; style=&quot;color:#ff2222;&quot;&gt;&lt;b&gt;第三条 第七个书架&lt;/b&gt;&lt;/p&gt;
-    &lt;p class=&quot;shake&quot; style=&quot;color:#ff4444;&quot;&gt;最里面那排，左数第七个。&lt;/p&gt;
-    &lt;p class=&quot;fade-text&quot; style=&quot;color:#ff8888;&quot;&gt;她一直坐在那里。等有人来。&lt;/p&gt;
-    &lt;br&gt;
-    &lt;p class=&quot;shake&quot; style=&quot;color:#ff2222;&quot;&gt;&lt;b&gt;第四条 出馆规则&lt;/b&gt;&lt;/p&gt;
-    &lt;p class=&quot;shake&quot; style=&quot;color:#ff4444;&quot;&gt;听见背后有人叫你名字，别回头&lt;/p&gt;
-    &lt;p class=&quot;shake&quot; style=&quot;color:#ff4444;&quot;&gt;回头你就留下来了&lt;/p&gt;
-&lt;&lt;/if&gt;&gt;
+    
+    &lt;p&gt;&lt;b&gt;附则：&lt;/b&gt;本规则自 2015 年 9 月起执行。最终解释权归南华大学图书馆所有。&lt;/p&gt;
 &lt;/div&gt;
 
-&lt;p style=&quot;margin-top: 30px;&quot;&gt;&lt;&lt;button &quot;返回图书馆首页&quot;&gt;&gt;&lt;&lt;goto &quot;图书馆&quot;&gt;&gt;&lt;&lt;/button&gt;&gt;&lt;/p&gt;
-
-&lt;div class=&quot;footer-time&quot;&gt;
-页面访问量：&lt;&lt;print $visitCount&gt;&gt;
-&lt;br&gt;
-系统时间：2015-09-15 00:00
+&lt;p style=&quot;margin-top: 30px; text-align:center;&quot;&gt;&amp;lt;&amp;lt;button &amp;quot;返回图书馆首页&amp;quot;&amp;gt;&amp;gt;&amp;lt;&amp;lt;goto &amp;quot;图书馆&amp;quot;&amp;gt;&amp;gt;&amp;lt;&amp;lt;/button&amp;gt;&amp;gt;&lt;/p&gt;
 &lt;/div&gt;</tw-passagedata><tw-passagedata pid="39" name="PassageHeader" tags="" position="" size="100,100">&lt;&lt;if passage() is not &quot;Start&quot; and passage() is not &quot;&quot; and passage() is not &quot;&quot; and passage() is not &quot;&quot; and passage() is not &quot;&quot; and passage() is not &quot;&quot; and passage() is not &quot;第七首诗&quot; and passage() is not &quot;测试页&quot;&gt;&gt;
 &lt;div id=&quot;fakeBar&quot;&gt;
 &lt;span id=&quot;fakeBarUser&quot;&gt;&lt;/span&gt;
@@ -24499,7 +24609,7 @@ if (window.dh &amp;&amp; dh.ready) { dh.ready(dhFooterInit, &quot;#onlineCount&q
 &lt;div class=&quot;nh-act-links&quot; style=&quot;margin-top:28px;margin-left:auto;margin-right:auto;max-width:720px;box-sizing:border-box;padding:12px 18px;background:#faf7f0;border-left:2px solid #d8c8b0;border-radius:2px;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:13px;line-height:1.9;&quot;&gt;
 &lt;div style=&quot;color:#8b0000;letter-spacing:2px;margin-bottom:8px;font-size:12.5px;&quot;&gt;相关文档&lt;/div&gt;
 &lt;div&gt;· &lt;&lt;link &quot;第七个书架&quot; &quot;第七个书架&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;他为什么沉默？&quot; &quot;名如其人&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
+
 &lt;/div&gt;
 &lt;p style=&quot;text-align:center;margin:20px 0;&quot;&gt;
   &lt;&lt;link &quot;← 返回首页&quot; &quot;内网首页&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;
@@ -25667,120 +25777,48 @@ D 的最后两行，是林晚补上的。）&lt;/p&gt;
 &lt;/p&gt;
 &lt;/div&gt;
 </tw-passagedata><tw-passagedata pid="9000" name="消防事故调查报告" tags="" position="0,0" size="100,100">
-&lt;div class=&quot;page-wrap&quot;&gt;
-&lt;h3 class=&quot;school-title&quot;&gt;旧教学楼地下书库火灾事件初步调查报告&lt;/h3&gt;
-&lt;p class=&quot;fade-text&quot;&gt;南华大学保卫科联合消防大队 事故简档 2015.09.16&lt;/p&gt;
-
-&lt;div class=&quot;notice-box&quot;&gt;
-&lt;p&gt;&lt;b&gt;起火地点：&lt;/b&gt;旧教学楼地下密闭书库。&lt;/p&gt;
-&lt;p&gt;&lt;b&gt;起火时间预估：&lt;/b&gt;2015 年 9 月 14 日 23:47。&lt;/p&gt;
-&lt;p&gt;&lt;b&gt;初步判定：&lt;/b&gt;老旧供电线路老化短路，引燃周边堆积旧报刊、手稿，造成火情。&lt;/p&gt;
-&lt;p&gt;&lt;b&gt;现场搜救：&lt;/b&gt;大火扑灭后，在书库深处发现部分焚毁手稿、诗集残片。无幸存者在地下室被找到。&lt;/p&gt;
-&lt;p&gt;&lt;b&gt;安全结论：&lt;/b&gt;地下书库永久封闭，禁止一切人员进入。&lt;/p&gt;
+&lt;table width=&quot;100%&quot; border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; style=&quot;max-width:750px; margin:20px auto; background:#ffffff; border:1px solid #cccccc; box-shadow:0 4px 12px rgba(0,0,0,0.1); font-family:'仿宋','FangSong',serif; font-size:16px; line-height:2; color:#333;&quot;&gt;
+    &lt;tr&gt;&lt;td align=&quot;center&quot; style=&quot;padding-bottom:10px;&quot;&gt;
+    &lt;font color=&quot;#d32f2f&quot; size=&quot;6&quot; face=&quot;黑体&quot;&gt;&lt;b&gt;南 华 大 学&lt;/b&gt;&lt;/font&gt;
+&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td align=&quot;center&quot; style=&quot;font-size:14px; color:#666;&quot;&gt;档案编号：2015-09-16-JY（绝密）&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td style=&quot;padding:0 40px;&quot;&gt;&lt;hr style=&quot;border:none; border-top:2px solid #d32f2f; margin:15px 0 30px 0;&quot;&gt;&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td align=&quot;center&quot; style=&quot;font-size:20px; font-family:'黑体'; font-weight:bold; padding-bottom:30px;&quot;&gt;旧教学楼地下室火灾事故初步调查报告&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td style=&quot;padding:0 40px; text-indent:2em;&quot;&gt;
+        &lt;p&gt;&lt;b&gt;一、基本情况&lt;/b&gt;&lt;br&gt;起火时间：2015年9月14日 22:47左右。起火地点：旧教学楼地下密集书库 B102 房间。过火面积约120平方米。&lt;/p&gt;
+        &lt;p&gt;&lt;b&gt;二、现场勘查异常&lt;/b&gt;&lt;br&gt;起火点周边不仅有烧毁的废旧报刊，还发现了大量被撕扯的现代诗歌手稿。部分手稿边缘焦黑，但中心区域字迹清晰，呈现不自然的散落状。不排除在起火前，该区域发生过剧烈的人员肢体拉扯与争执。&lt;/p&gt;
+        &lt;p&gt;&lt;b&gt;三、证人证言高度同质化&lt;/b&gt;&lt;br&gt;对涉事5名学生的连夜询问中，五人一致声称当晚仅在地下活动厅排练，发现浓烟后即撤离，并否认见过任何手稿。五人的笔录在行文结构、用词甚至错别字上呈现惊人的一致性，情绪异常稳定，缺乏常理下的恐慌反应。询问过程疑似受到人为干预或提前串供。&lt;/p&gt;
+        &lt;p&gt;&lt;b&gt;四、监控与门禁数据冲突&lt;/b&gt;&lt;br&gt;经调取安防日志，地下室门禁系统当晚 22:13 刷卡记录仅为 5 人。但走廊监控（CAM-07）画面中，清晰记录有 6 个身形进入 B102。22:21 门禁记录 5 人离开，监控画面亦显示 5 人跑出，但门内仍有 1 道模糊人影停留。22:26，监控画面受到强电磁干扰，时间戳发生跳变，随后画面丢失。&lt;/p&gt;
+        &lt;p&gt;&lt;b&gt;五、初步结论与建议&lt;/b&gt;&lt;br&gt;综合现场物证与监控矛盾，本次火灾大概率非自然意外，且存在一名“未登记人员”滞留在火场。但鉴于缺乏直接指认人为纵火的直接物证，且关键监控硬盘在火灾中被高温烧毁，物证链断裂，暂无法推翻“线路老化引发意外”的最终定论。&lt;/p&gt;
+        &lt;p&gt;建议：立即封存旧教学楼地下室，全面清理未登记人员档案，统一涉事5人对外口径，避免引发社会舆论。档案暂予封存，列为机密。&lt;/p&gt;
+    &lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td align=&quot;right&quot; style=&quot;padding:40px 50px 60px 0; line-height:1.8;&quot;&gt;
+        联合调查组&lt;br&gt;2015年9月18日
+    &lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+</tw-passagedata><tw-passagedata pid="9000" name="陈默教研日志" tags="" position="0,0" size="100,100">&lt;div style="max-width:800px; margin:0 auto; padding:20px; font-family:'微软雅黑',sans-serif; line-height:1.8; color:#333;"&gt;
+&lt;h3 style="color:#8b0000;border-bottom:2px solid #8b0000;padding-bottom:10px;"&gt;教研日志 · 内部备份&lt;/h3&gt;
+&lt;div class="nh-sys-tip" style="margin: 16px 0; padding: 12px 16px; background: #1e1e1e; border-left: 3px solid #c83535; border-radius: 4px; font-family: Consolas, monospace; font-size: 13px; color: #d4d4d4; line-height: 1.6; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"&gt;&lt;div style="color: #c83535; margin-bottom: 4px; font-size: 11px; font-weight: bold;"&gt;[ SYSTEM ALERT ]&lt;/div&gt;[系统提示：该文件由服务器底层碎片拼凑恢复，存在大量数据丢失]&lt;/div&gt;
+&lt;div style="font-family:Consolas,monospace;font-size:14px;line-height:2.2;color:#333;background:#f7f7f7;padding:20px;border:1px solid #ddd;border-radius:3px;"&gt;
+&lt;p style="margin-bottom:15px;"&gt;&lt;b style="color:#8b0000;"&gt;【2015-09-03 23:14:02】&lt;/b&gt;&lt;br&gt;苏言提交了组诗《地下书库札记》。共七首。第七首的意象非常极端，充满了献祭与遗忘。作为指导老师，我建议她修改。她拒绝了。她说：诗是写给不存在的人看的。&lt;/p&gt;
+&lt;p style="margin-bottom:15px;"&gt;&lt;b style="color:#8b0000;"&gt;【2015-09-10 22:45:11】&lt;/b&gt;&lt;br&gt;读书会爆发了争吵。林晚认为这组诗会给社团带来麻烦，张昊甚至提议直接开除她的社籍。苏言没有哭，她只是看着他们。那种眼神&lt;del&gt;就像在看死人&lt;/del&gt;。我去安抚她，但她对我说：陈老师，你也会忘记我的，对吗？&lt;/p&gt;
+&lt;p style="margin-bottom:15px;"&gt;&lt;b style="color:#8b0000;"&gt;【2015-09-14 21:05:00】&lt;/b&gt;&lt;br&gt;今晚我不在学校。但我总觉得&lt;del&gt;会出事&lt;/del&gt;。我给林晚发了短信，让她停止今晚的集会。她没有回复。&lt;/p&gt;
+&lt;p style="margin-bottom:15px;color:#8b0000;"&gt;&lt;b&gt;【2015-09-15 02:30:17】&lt;/b&gt;&lt;br&gt;火警。B102。警察。5个学生。&lt;br&gt;&lt;del&gt;6个人进去的。&lt;/del&gt;&lt;br&gt;&lt;del&gt;我看到了监控。她没出来。&lt;/del&gt;&lt;/p&gt;
+&lt;p style="margin-bottom:15px;color:#8b0000;background:#ffe5e5;padding:5px;"&gt;&lt;b&gt;【数据丢失】&lt;/b&gt;&lt;/p&gt;
+&lt;p style="margin-bottom:15px;"&gt;&lt;b style="color:#8b0000;"&gt;【2015-09-16 08:12:00】&lt;/b&gt;&lt;br&gt;他们来找我了。五个孩子哭着求我，说那是意外，说如果我说出去，他们这辈子就毁了。我看着他们，就像看着五个怪物。但我答应了。&lt;br&gt;我撒了谎。&lt;br&gt;因为我懦弱。&lt;/p&gt;
+&lt;p style="margin-bottom:15px;"&gt;&lt;b style="color:#8b0000;"&gt;【系统日志异常】&lt;/b&gt;&lt;br&gt;该账号已于 2015-09-16 09:00 办理离职。但系统检测到，此工号于每年的 09-15 23:20 都会执行一次登录，且不产生任何操作。&lt;br&gt;似乎在等待什么。&lt;/p&gt;
 &lt;/div&gt;
 
-&lt;div id=&quot;nh-fire-extra&quot; style=&quot;display:none;margin-top:16px;border-top:1px dashed #8b0000;padding-top:12px;color:#8b0000;&quot;&gt;
-&lt;p&gt;&lt;b&gt;现场勘查补充记录：&lt;/b&gt;&lt;/p&gt;
-&lt;p&gt;起火点周边存在拉扯、移位痕迹，不排除人为争执引燃可燃物的可能性。现场发现一页残存诗歌手稿，无法确认归属。&lt;/p&gt;&lt;p&gt;监控与门禁时间轴对齐后确认：最后一名进入者 22:13 入楼，22:21 有 5 人跑出，无人返回。起火点在 B102 内部，起火时间为 22:00 之后。&lt;/p&gt;
-&lt;p&gt;多名学生口供高度同质化，询问过程情绪异常稳定，疑点较多。缺乏直接证据支撑，无法推翻意外起火结论。&lt;/p&gt;
-&lt;p&gt;档案备注：物证残片保留归档，存入校内服务器备份。&lt;/p&gt;
+&lt;!-- 这里是修复后的底部按钮组 --&gt;
+&lt;div style="display:flex; justify-content:center; align-items:center; gap:24px; margin-top:30px;"&gt;
+    &lt;div style="color:#8b0000; font-size:14px; letter-spacing:1px;"&gt;
+        &lt;&lt;link "← 返回图书馆" "图书馆"&gt;&gt;&lt;&lt;/link&gt;&gt;
+    &lt;/div&gt;
+    &lt;div style="color:#8b0000; font-size:14px; letter-spacing:1px;"&gt;
+        &lt;&lt;link "返回首页" "内网首页"&gt;&gt;&lt;&lt;/link&gt;&gt;
+    &lt;/div&gt;
 &lt;/div&gt;
-
-&lt;p class=&quot;fade-text&quot; style=&quot;margin-top:12px;cursor:pointer;&quot; id=&quot;nh-fire-toggle&quot;&gt;
-  （点击空白处展开补充记录）
-&lt;/p&gt;
-
-&lt;script&gt;
-(function () {
-  var t = document.getElementById('nh-fire-toggle');
-  var e = document.getElementById('nh-fire-extra');
-  if (t &amp;&amp; e &amp;&amp; !t.__nhBound) {
-    t.__nhBound = true;
-    t.addEventListener('click', function () {
-      e.style.display = (e.style.display === 'none' || !e.style.display) ? 'block' : 'none';
-    });
-  }
-})();
-&lt;/script&gt;
-
-
-&lt;div class=&quot;nh-act-links&quot; style=&quot;margin-top:28px;margin-left:auto;margin-right:auto;max-width:720px;box-sizing:border-box;padding:12px 18px;background:#faf7f0;border-left:2px solid #d8c8b0;border-radius:2px;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:13px;line-height:1.9;&quot;&gt;
-&lt;div style=&quot;color:#8b0000;letter-spacing:2px;margin-bottom:8px;font-size:12.5px;&quot;&gt;相关文档&lt;/div&gt;
-&lt;/div&gt;
-&lt;p style=&quot;text-align:center;margin:20px 0;&quot;&gt;
-  &lt;&lt;link &quot;← 返回首页&quot; &quot;内网首页&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;
-&lt;/p&gt;
-&lt;/div&gt;
-</tw-passagedata><tw-passagedata pid="9000" name="陈默教研日志" tags="" position="0,0" size="100,100">
-&lt;div class=&quot;page-wrap&quot;&gt;
-&lt;h3 class=&quot;school-title&quot;&gt;教研随笔 · 文学社读书会记录&lt;/h3&gt;
-&lt;p class=&quot;fade-text&quot;&gt;陈默 · 私人留存，未提交&lt;/p&gt;
-
-&lt;div class=&quot;notice-box&quot; style=&quot;line-height:1.9;&quot;&gt;
-&lt;p&gt;&lt;b&gt;9 月 3 日：&lt;/b&gt;苏言提交一组诗作，命名《地下书库札记》，共七首。
-第七首力量极强，内核是关于存在与遗忘。她的文字有很锋利的痛感。&lt;/p&gt;
-
-&lt;p&gt;&lt;b&gt;9 月 10 日：&lt;/b&gt;读书会矛盾加剧。其余社员无法接受她的诗歌理念，
-私下讨论剔除苏言。我试图调解，但效果微弱。&lt;/p&gt;
-
-&lt;p&gt;&lt;b&gt;9 月 14 日晚间：&lt;/b&gt;我不在校园。凌晨接到保卫科电话，地下书库起火。&lt;/p&gt;
-
-&lt;p&gt;&lt;b&gt;9 月 15 日：&lt;/b&gt;五名社员找到我，哭着恳求我保密。他们害怕前途尽毁，
-害怕这件丑闻毁掉南华文学社。&lt;/p&gt;
-
-&lt;p&gt;我清楚全部真相。我欣赏苏言的文字，但我选择沉默。我没有参与销毁证据，
-但是我的不作为，也是谎言的一部分。&lt;/p&gt;
-
-&lt;p class=&quot;fade-text&quot;&gt;我把这份日志藏在内网图书馆分区。
-如果有人读到这里，希望真相不会永远埋在地下室。&lt;/p&gt;
-&lt;p&gt;&lt;b&gt;9 月 16 日：&lt;/b&gt;警方找我谈话。
-我撒了谎。
-我说我什么都不知道。&lt;/p&gt;
-&lt;p&gt;但我夜里总是听见地下室的哭声。
-我决定离开南华大学，明天就走。&lt;/p&gt;
-&lt;p&gt;我把这份日志留在了服务器的深处。
-如果有一天，
-有人找得够深，
-如果……有人还记得苏言，
-请帮我把真相公之于众。&lt;/p&gt;
-&lt;p class=&quot;fade-text&quot;&gt;这个页面，不需要密码。&lt;/p&gt;
-&lt;hr style=&quot;border-color:#550000;margin:24px 0;&quot;&gt;
-&lt;p&gt;&lt;b&gt;补充：&lt;/b&gt;&lt;/p&gt;
-&lt;p&gt;我没有参与销毁证据。&lt;br&gt;
-但是我的不作为，&lt;br&gt;
-也是谎言的一部分。&lt;/p&gt;
-&lt;p&gt;我看着苏言的手稿残篇被塞进档案袋。&lt;br&gt;
-我没有阻止。&lt;br&gt;
-我看着五个学生练习口供。&lt;br&gt;
-我没有说话。&lt;br&gt;
-我看着林晚在合影上刮掉苏言的脸。&lt;br&gt;
-我转过头。&lt;/p&gt;
-&lt;p&gt;多年之后我才知道，&lt;br&gt;
-那天我做的最恶的事，&lt;br&gt;
-不是掩盖真相。&lt;/p&gt;
-&lt;p&gt;是让一个孩子，&lt;br&gt;
-孤零零地留在了那栋楼里。&lt;/p&gt;
-&lt;div style=&quot;text-align:right;color:#8b0000;font-size:14px;margin-top:20px;&quot;&gt;
-—— 陈默&lt;br&gt;
-2015.09.16
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;p class=&quot;nh-page-foot-links&quot; style=&quot;text-align:center;margin:24px 0;&quot;&gt;
-  &lt;&lt;link &quot;← 返回图书馆&quot; &quot;图书馆&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;
-  &lt;span class=&quot;nh-sep&quot;&gt;｜&lt;/span&gt;
-  &lt;&lt;link &quot;陈默资料&quot; &quot;陈默资料&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;
-  &lt;span class=&quot;nh-sep&quot;&gt;｜&lt;/span&gt;
-  &lt;&lt;link &quot;返回首页&quot; &quot;内网首页&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;
-&lt;/p&gt;
-&lt;/div&gt;
-
-&lt;div class=&quot;nh-act-links&quot; style=&quot;margin-top:28px;margin-left:auto;margin-right:auto;max-width:720px;box-sizing:border-box;padding:12px 18px;background:#faf7f0;border-left:2px solid #d8c8b0;border-radius:2px;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:13px;line-height:1.9;&quot;&gt;
-&lt;div style=&quot;color:#8b0000;letter-spacing:2px;margin-bottom:8px;font-size:12.5px;&quot;&gt;相关文档&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;林晚的留言&quot; &quot;林晚的留言&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;他为什么沉默？&quot; &quot;名如其人&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;/div&gt;
-</tw-passagedata><tw-passagedata pid="9000" name="苏言档案" tags="" position="0,0" size="100,100">
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="9000" name="苏言档案" tags="" position="0,0" size="100,100">
 &lt;div class=&quot;page-wrap&quot;&gt;
 &lt;h3 class=&quot;school-title&quot; style=&quot;color:#8b0000;&quot;&gt;学生信息：苏言&lt;/h3&gt;
 &lt;p class=&quot;fade-text&quot; style=&quot;font-size:12px;&quot;&gt;（档案被重复覆盖，多处字段已残缺）&lt;/p&gt;
@@ -25797,7 +25835,12 @@ D 的最后两行，是林晚补上的。）&lt;/p&gt;
 &lt;p&gt;最后登录时间：&lt;span style=&quot;color:#999;text-decoration:line-through;&quot;&gt;2015-09-14 23:47&lt;/span&gt;&lt;/p&gt;
 &lt;/div&gt;
 
-&lt;p class=&quot;fade-text&quot;&gt;系统提示：该档案在内网中已被反复覆盖，多个字段无法读取。&lt;/p&gt;
+&lt;div class="nh-sys-tip" style="margin: 20px 0; padding: 16px 20px; background: #1a1a1a; border-left: 4px solid #c83535; border-radius: 4px; font-family: 'Consolas', 'Courier New', monospace; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 4px 10px rgba(0,0,0,0.15);"&gt;
+&lt;div style="color: #c83535; margin-bottom: 8px; font-size: 11px; font-weight: bold; letter-spacing: 2px;"&gt;! SYSTEM WARNING !&lt;/div&gt;
+&lt;div style="font-size: 13.5px; color: #d4d4d4; line-height: 1.8; letter-spacing: 0.5px;"&gt;
+系统提示：该档案在内网中已被反复覆盖，多个字段无法读取。
+&lt;/div&gt;
+&lt;/div&gt;
 
 &lt;p style=&quot;text-align:center;margin:20px 0;&quot;&gt;
   &lt;&lt;link &quot;← 返回首页&quot; &quot;内网首页&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;
@@ -26019,7 +26062,7 @@ D 的最后两行，是林晚补上的。）&lt;/p&gt;
 &lt;div class=&quot;nh-act-links&quot; style=&quot;margin-top:28px;margin-left:auto;margin-right:auto;max-width:720px;box-sizing:border-box;padding:12px 18px;background:#faf7f0;border-left:2px solid #d8c8b0;border-radius:2px;font-family:&apos;微软雅黑&apos;,sans-serif;font-size:13px;line-height:1.9;&quot;&gt;
 &lt;div style=&quot;color:#8b0000;letter-spacing:2px;margin-bottom:8px;font-size:12.5px;&quot;&gt;相关文档&lt;/div&gt;
 &lt;div&gt;· &lt;&lt;link &quot;客座教授 · 顾承声&quot; &quot;客座教授&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
-&lt;div&gt;· &lt;&lt;link &quot;他为什么沉默？&quot; &quot;名如其人&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;&lt;/div&gt;
+
 &lt;/div&gt;
 </tw-passagedata>
 <tw-passagedata pid="9010" name="客座教授" tags="" position="0,0" size="100,100">&lt;div style=&quot;background:linear-gradient(90deg,#8b0000 0%,#a52a2a 100%);color:#fff;padding:12px 22px;margin:0 0 24px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-family:'微软雅黑',sans-serif;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.15);&quot;&gt;&lt;a href=&quot;javascript:void(0)&quot; onclick=&quot;Engine.play('内网首页')&quot; style=&quot;color:#fff;text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.3);&quot;&gt;← 返回首页&lt;/a&gt;&lt;span style=&quot;font-size:15px;letter-spacing:2px;font-weight:500;&quot;&gt;客座教授&lt;/span&gt;&lt;span style=&quot;font-size:12px;opacity:0.85;font-family:'Consolas',monospace;&quot;&gt;# 人物  # 学术&lt;/span&gt;&lt;/div&gt;
@@ -31902,6 +31945,166 @@ body[data-passage="身份揭露"] .nh-identity-box {
 
 
 
+
+<script id="nh-corruption-triggers">
+
+(function () {
+    'use strict';
+
+    function currentPassage() {
+        try { return window.SugarCube.State.passage; } catch (e) { return ''; }
+    }
+    
+    function fire() {
+        if (!window.SugarCube || !window.SugarCube.State) return;
+        
+        var core = window.__nhCorruption;
+        if (!core) return;
+        
+        var cur = currentPassage();
+        if (!cur) return;
+
+        // 核心文件污染值映射表（补齐了苏言档案及其他文档）
+        var mapping = {
+            '苏言档案': 3, // <-- 补齐了
+            '苏言残稿': 6, '苏言残稿A': 2, '苏言残稿B': 2, '苏言残稿C': 2, '苏言残稿D': 2,
+            '2015笔录': 6,
+            '毕业照2015': 6,
+            '地下室': 5,
+            '监控录像': 8,
+            '诗刊': 3,
+            '旧教学楼失火': 4,
+            '张昊资料': 2,
+            '王佳资料': 2,
+            '李阳资料': 2,
+            '赵晓资料': 2,
+            '陈默资料': 5,
+            '第七首诗': 15,
+            '陈默教研日志': 10,
+            '林晚的留言': 8,
+            '第七个书架': 10,
+            '消防事故调查报告': 5,
+            '2003年旧档': 5,
+            'B103杂物间': 5
+        };
+
+        if (mapping[cur] !== undefined) {
+            try {
+                // 判定是否首次访问
+                var isFirstVisit = !window.SugarCube.State.hasPlayed(cur);
+                
+                if (isFirstVisit) {
+                    var delta = mapping[cur];
+                    var before = core.get();
+                    var after = before + delta;
+                    
+                    // 直接修改基础数值，由 locklevel 自动推算等级
+                    core.set(after);
+                    
+                    console.log('[nh-corruption] 首次访问文件:', cur, '污染 +', delta, '=>', after);
+                    
+                    document.dispatchEvent(new CustomEvent('nh:corruption-add', {
+                        detail: { key: 'visit:' + cur, delta: delta, before: before, after: after }
+                    }));
+                }
+            } catch (err) {
+                console.warn('[nh-corruption] 触发器执行错误:', err);
+            }
+        }
+    }
+
+    if (window.jQuery) {
+        jQuery(document).on(':passagestart.nhCorruptionTrigger', fire);
+    }
+    setTimeout(fire, 500);
+})();
+    
+</script>
+
+
+
+
+<script id="nh-login-lock-hard">
+(function () {
+    'use strict';
+
+    var LS_LOGIN = 'nh_is_logged_in_locked';
+    var LS_USER = 'nh_username_locked';
+
+    // 1. 监听登录成功（捕获点击事件）
+    document.addEventListener('click', function(ev) {
+        var el = ev.target;
+        while (el && el !== document.body) {
+            if (el.tagName === 'BUTTON' && (el.textContent || '').indexOf('登') !== -1) {
+                setTimeout(function() {
+                    try {
+                        if (window.SugarCube && SugarCube.State && SugarCube.State.variables) {
+                            if (SugarCube.State.variables.loggedIn === true) {
+                                localStorage.setItem(LS_LOGIN, 'true');
+                                localStorage.setItem(LS_USER, SugarCube.State.variables.username || 'admin');
+                                console.log('🔒 [Login Lock] 登录状态已刻入本地');
+                            }
+                        }
+                    } catch(e) {}
+                }, 500); // 延迟等待游戏内部赋值
+                break;
+            }
+            el = el.parentNode;
+        }
+    }, true);
+
+    // 2. 核心：在每个页面即将渲染完成时，强行把变量塞进去
+    function enforceLogin() {
+        if (localStorage.getItem(LS_LOGIN) !== 'true') return;
+        
+        try {
+            if (window.SugarCube && SugarCube.State && SugarCube.State.variables) {
+                var v = SugarCube.State.variables;
+                if (v.loggedIn !== true) {
+                    v.loggedIn = true;
+                    v.username = localStorage.getItem(LS_USER) || 'admin';
+                    console.log('🔒 [Login Lock] 强制恢复登录状态');
+                }
+            }
+        } catch(e) {}
+    }
+
+    // 3. 拦截引擎，在页面渲染的瞬间和之后强制执行
+    if (window.jQuery) {
+        // 监听引擎的所有关键节点
+        jQuery(document).on(':passagestart', enforceLogin);
+        jQuery(document).on(':passagerender', enforceLogin);
+        jQuery(document).on(':passagedisplay', function() {
+            enforceLogin();
+            setTimeout(enforceLogin, 10);
+            setTimeout(enforceLogin, 100);
+            setTimeout(enforceLogin, 500);
+        });
+    }
+
+    // 4. 极限兜底：每 100 毫秒轮询一次（比游戏自身的防作弊还快）
+    setInterval(enforceLogin, 100);
+
+    // 页面加载第一瞬间执行
+    setTimeout(enforceLogin, 0);
+    setTimeout(enforceLogin, 100);
+
+    // 暴露给全局，如果进入 Start 页，强行跳转
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay', function() {
+            try {
+                if (SugarCube.State.passage === 'Start' && localStorage.getItem(LS_LOGIN) === 'true') {
+                    // 发现跳回了登录页，立刻强行跳回首页
+                    console.log('🔒 [Login Lock] 拦截登录页跳转，强入内网首页');
+                    setTimeout(function() {
+                        SugarCube.Engine.play('内网首页');
+                    }, 50);
+                }
+            } catch(e) {}
+        });
+    }
+})();
+</script>
 
 </body>
 </html>

@@ -11,12 +11,15 @@ import type { MeResponse } from '@/lib/types';
 
 type Phase = 'checking' | 'guest' | 'visitor' | 'internal';
 
+// 主按钮：白底黑字（暗色页面上的反相）
 const btnSolid =
-  'border-0 bg-[#1b1c1e] text-[#f5f6f7] hover:bg-[#3a3c40] rounded-none';
+  'border-0 bg-[#e8e9eb] text-[#0a0a0b] hover:bg-white rounded-none';
+// 次按钮：透明底 + 暗色边框
 const btnGhost =
-  'border border-[#d4d6da] bg-transparent text-[#55585e] hover:border-[#1b1c1e] hover:text-[#1b1c1e] rounded-none';
+  'border border-[#3a3b40] bg-transparent text-[#a0a2a8] hover:border-[#e8e9eb] hover:text-[#e8e9eb] rounded-none';
+// 表单字段：暗色底 + 暗色边框
 const fieldCls =
-  'rounded-none border-[#e3e4e8] bg-white text-[#1b1c1e] font-light placeholder:text-[#b9bcc2] focus-visible:ring-[#1b1c1e]/15 focus-visible:border-[#1b1c1e]';
+  'rounded-none border-[#2a2b30] bg-[#0f1012] text-[#e8e9eb] font-light placeholder:text-[#4a4c52] focus-visible:ring-[#e8704a]/25 focus-visible:border-[#e8704a]';
 
 export function InquirySection() {
   const [phase, setPhase] = useState<Phase>('checking');
@@ -81,14 +84,14 @@ export function InquirySection() {
   };
 
   return (
-    <div className="max-w-2xl border border-[#e3e4e8] bg-white p-8 sm:p-10">
+    <div className="max-w-2xl border border-[#25262a] bg-[#111215] p-8 sm:p-10">
       {phase === 'checking' && (
-        <p className="py-8 text-center text-sm font-light text-[#9b9ea4]">正在确认登录状态…</p>
+        <p className="py-8 text-center text-sm font-light text-[#5a5c62]">正在确认登录状态…</p>
       )}
 
       {phase === 'guest' && (
         <div className="flex flex-col items-center gap-5 py-6">
-          <p className="text-sm font-light text-[#55585e]">提交合作意向需要先登录访客账号</p>
+          <p className="text-sm font-light text-[#a0a2a8]">提交合作意向需要先登录访客账号</p>
           <div className="flex gap-3">
             <Button asChild className={btnSolid}>
               <Link href="/login">登录</Link>
@@ -102,7 +105,7 @@ export function InquirySection() {
 
       {phase === 'internal' && (
         <div className="flex flex-col items-center gap-5 py-6">
-          <p className="text-sm font-light text-[#55585e]">
+          <p className="text-sm font-light text-[#a0a2a8]">
             当前是内部成员账号，可在工作台查看和跟进访客意向
           </p>
           <Button asChild className={btnSolid}>
@@ -113,10 +116,10 @@ export function InquirySection() {
 
       {phase === 'visitor' && done && (
         <div className="flex flex-col items-center gap-5 py-6">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#d4d6da] text-lg font-light text-[#1b1c1e]">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#3a3b40] text-lg font-light text-[#e8e9eb]">
             ✓
           </div>
-          <p className="text-sm font-light text-[#1b1c1e]">合作意向已提交，感谢你的信任！</p>
+          <p className="text-sm font-light text-[#e8e9eb]">合作意向已提交，感谢你的信任！</p>
           <div className="flex gap-3">
             <Button variant="outline" className={btnGhost} onClick={() => setDone(false)}>
               再提交一条
@@ -131,7 +134,7 @@ export function InquirySection() {
       {phase === 'visitor' && !done && (
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="subject" className="text-xs font-light tracking-[0.15em] text-[#85888e]">
+            <Label htmlFor="subject" className="text-xs font-light tracking-[0.15em] text-[#8a8c91]">
               合作主题
             </Label>
             <Input
@@ -143,7 +146,7 @@ export function InquirySection() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="message" className="text-xs font-light tracking-[0.15em] text-[#85888e]">
+            <Label htmlFor="message" className="text-xs font-light tracking-[0.15em] text-[#8a8c91]">
               需求描述
             </Label>
             <Textarea
@@ -156,7 +159,7 @@ export function InquirySection() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="contact" className="text-xs font-light tracking-[0.15em] text-[#85888e]">
+            <Label htmlFor="contact" className="text-xs font-light tracking-[0.15em] text-[#8a8c91]">
               联系方式（选填）
             </Label>
             <Input
@@ -167,7 +170,7 @@ export function InquirySection() {
               className={fieldCls}
             />
           </div>
-          {errorMsg && <p className="text-xs font-light text-[#c2410c]">{errorMsg}</p>}
+          {errorMsg && <p className="text-xs font-light text-[#f07a52]">{errorMsg}</p>}
           <Button type="submit" disabled={submitting} className={`w-full ${btnSolid}`}>
             {submitting ? '提交中…' : '提交合作意向'}
           </Button>

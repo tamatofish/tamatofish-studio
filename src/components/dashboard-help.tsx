@@ -26,30 +26,30 @@ const FAQ = [
 export function DashboardHelp() {
   return (
     <div className="space-y-6">
-      <div className="border border-[#e3e4e8] bg-white">
-        <div className="border-b border-[#e3e4e8] px-7 py-5">
-          <h2 className="text-sm font-light tracking-[0.2em] text-[#1b1c1e]">使用帮助</h2>
-          <p className="mt-1 text-xs font-light text-[#9b9ea4]">常见问题与联系方式</p>
+      <div className="border border-[#25262a] bg-[#111215]">
+        <div className="border-b border-[#25262a] px-7 py-5">
+          <h2 className="text-sm font-light tracking-[0.2em] text-[#e8e9eb]">使用帮助</h2>
+          <p className="mt-1 text-xs font-light text-[#6b6e74]">常见问题与联系方式</p>
         </div>
-        <div className="divide-y divide-[#f0f1f3]">
+        <div className="divide-y divide-[#1a1b1e]">
           {FAQ.map((item, i) => (
             <div key={i} className="px-7 py-5">
-              <p className="text-sm font-light text-[#1b1c1e]">
+              <p className="text-sm font-light text-[#e8e9eb]">
                 <span className="mr-2 text-[#e8704a]">Q{i + 1}</span>
                 {item.q}
               </p>
-              <p className="mt-2 whitespace-pre-wrap text-xs font-light leading-6 text-[#85888e]">{item.a}</p>
+              <p className="mt-2 whitespace-pre-wrap text-xs font-light leading-6 text-[#a0a2a8]">{item.a}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="border border-[#e3e4e8] bg-white p-7">
-        <h3 className="text-xs font-light tracking-[0.25em] text-[#85888e]">联系我们</h3>
-        <div className="mt-4 space-y-2 text-xs font-light text-[#55585e]">
-          <p>邮箱：<span className="text-[#1b1c1e]">contact@tamatofish.top</span></p>
+      <div className="border border-[#25262a] bg-[#111215] p-7">
+        <h3 className="text-xs font-light tracking-[0.25em] text-[#a0a2a8]">联系我们</h3>
+        <div className="mt-4 space-y-2 text-xs font-light text-[#8a8c91]">
+          <p>邮箱：<span className="text-[#e8e9eb]">contact@tamatofish.top</span></p>
           <p>工作时间：周一至周五 10:00 - 19:00</p>
-          <p className="text-[#9b9ea4]">如需紧急联系，请通过「问题反馈」注明「紧急」。</p>
+          <p className="text-[#5a5c62]">如需紧急联系，请通过「问题反馈」注明「紧急」。</p>
         </div>
       </div>
     </div>

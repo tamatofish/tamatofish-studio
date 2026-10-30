@@ -22,41 +22,73 @@ def check_ok(html, label):
 if not check_ok(html, 'start'):
     raise SystemExit(1)
 
-# ============ 找 泉都论坛 passage 里的 style，改 qd-body 的 CSS ============
-# 找那个 &lt;style&gt; 里的 .qd-body { ... }
-# 替换为 grid-column 强约束
+# ============ 先删掉 V137 加的坏 CSS ============
+bad_css_pattern = re.compile(
+    r'<style id="nh-hide-navbar-qd-expand">.*?</style>\s*',
+    re.DOTALL
+)
+html, n = bad_css_pattern.subn('', html)
+print(f'[1] 删 V137 的坏 CSS：{n} 处')
 
-old_qd_body = '.qd-body {\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 12px 16px;\n  display: grid;\n  grid-template-columns: 1fr 220px;\n  gap: 12px;\n}'
+if not check_ok(html, 'after del'):
+    shutil.copy2(backup_path, PATH); raise SystemExit(1)
 
-new_qd_body = '''.qd-body {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 12px 16px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px;
-  gap: 12px;
-}
-.qd-body > .qd-left { grid-column: 1; grid-row: 1; }
-.qd-body > .qd-right { grid-column: 2; grid-row: 1; }'''
+# ============ 新脚本：暴力按 passage 隐藏 nav bar ============
+new_script = '''<script id="nh-hide-navbar-by-passage">
+/* NH_HIDE_NAVBAR_BY_PASSAGE_V1：
+   每次 passagedisplay 时，按当前 passage 决定是否隐藏 #lw-nav-bar。
+   不依赖 body[data-passage]（SugarCube 不加这个属性）。 */
+(function () {
+    'use strict';
 
-if old_qd_body in html:
-    html = html.replace(old_qd_body, new_qd_body, 1)
-    print('[1] 替换 .qd-body CSS ✅')
-else:
-    # 宽松匹配
-    pattern = re.compile(
-        r'\.qd-body\s*\{[^}]*\}',
-        re.DOTALL
-    )
-    m = pattern.search(html)
-    if m:
-        print(f'[1] 找到 .qd-body，原内容：{m.group(0)[:200]}')
-        html = html[:m.start()] + new_qd_body + html[m.end():]
-        print('[1] 替换 ✅')
+    var HIDE_LIST = [
+        'ZEmail',
+        '泉都论坛', '泉都论坛·帖子1', '泉都论坛·帖子2', '泉都论坛·帖子3',
+        '失联时间线', '第六个人', '意外？', '名如其人'
+    ];
+
+    function apply() {
+        var bar = document.getElementById('lw-nav-bar');
+        if (!bar) return;
+        var cur = '';
+        try { cur = SugarCube.State.passage; } catch (e) {}
+        if (HIDE_LIST.indexOf(cur) !== -1) {
+            bar.style.display = 'none';
+        } else {
+            bar.style.display = '';
+        }
+    }
+
+    if (window.jQuery) {
+        jQuery(document).on(':passagedisplay.nhHideNavbar', function () {
+            [0, 30, 120, 300, 600].forEach(function (t) {
+                setTimeout(apply, t);
+            });
+        });
+        jQuery(document).on(':passagestart.nhHideNavbar', function () {
+            apply();
+        });
+    } else {
+        setInterval(apply, 300);
+    }
+    apply();
+
+    console.log('[nh-hide-navbar-by-passage] v1 loaded');
+})();
+</script>'''
+
+# 找 </body> 前插入
+if 'nh-hide-navbar-by-passage' not in html:
+    body_end = html.rfind('</body>')
+    if body_end != -1:
+        html = html[:body_end] + new_script + '\n' + html[body_end:]
+        print('[2] 插入独立脚本 ✅')
     else:
-        print('[1] WARN: 找不到 .qd-body')
+        print('[2] WARN: 找不到 </body>')
+else:
+    print('[2] 脚本已存在，跳过')
 
-if not check_ok(html, 'after'):
+if not check_ok(html, 'final'):
     shutil.copy2(backup_path, PATH); raise SystemExit(1)
 
 new_len = len(html)
